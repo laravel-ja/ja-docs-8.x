@@ -1,0 +1,10 @@
+/.vscode/
+/nbproject/
+/trans-sed/
+.directory
+/.kateproject
+/.kateproject.d
+/do-version-up
+/copy-new-markdowns-to-readouble
+/put-tag-and-push
+/official-docs

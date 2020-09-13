@@ -1,0 +1,21 @@
+name: 事前チェック
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: ファイル構成が等しいことを確認
+      run: |
+        en="$(ls original-en | tr -d [:cntrl:][:space:])"
+        ja="$(ls translation-ja | tr -d [:cntrl:][:space:])"
+        if test "${en}" != "${ja}"; then echo ディレクトリ中のMarkdownファイルの構成が一致しません。; exit 1; fi
+    - name: 各ファイルの構成が一致することを確認
+      run: for i in $(ls translation-ja); do if test $(awk -f scripts/structure-to-string.awk "original-en/${i}") != $(awk -f scripts/structure-to-string.awk "translation-ja/${i}"); then echo 日英ファイルの構造が一致しません "${i}"; echo $(awk -f scripts/structure-to-string.awk "original-en/${i}"); echo $(awk -f scripts/structure-to-string.awk "translation-ja/${i}"); exit 1; fi; done
+    - name: 用語の不統一がないことを確認
+      run: bash scripts/check-synonyms.sh
+      

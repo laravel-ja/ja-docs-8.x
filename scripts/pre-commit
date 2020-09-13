@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# コミット前のファイル構造と内容の整合性確認スクリプト
+
+# オリジナル英文と翻訳和文のファイル構成が等しいことを確認
+
+en="$(ls original-en | tr -d [:cntrl:][:space:])"
+ja="$(ls translation-ja | tr -d [:cntrl:][:space:])"
+
+if [ "${en}" != "${ja}" ]
+then
+    echo "日英ディレクトリ中に存在する、Markdownファイルの構成が異なっています。"
+    diff <(ls original-en) <(ls translation-ja)
+    exit 1
+fi
+
+# 各ファイルの文章構造を比較
+
+for i in $(ls original-en)
+do
+  en=$(awk -f scripts/structure-to-string.awk "original-en/${i}")
+  ja=$(awk -f scripts/structure-to-string.awk "translation-ja/${i}")
+
+  if [ "${en}" != "${ja}" ]
+  then
+    echo 日英ファイルの構造が一致しません "${i}"
+    diff <(echo "${en}") <(echo "${ja}")
+    awk -v en="${en}" -v ja="${ja}" -e 'BEGIN {line=0; for (i=8; i<=length(en); i++){ if (substr(en,i,1)!= substr(ja,i,1)) {print i-7 "行目が一致しません。英語ファイル：" substr(en,i,1), "日本語ファイル：" substr(ja,i,1)}; line++;} if(line>10) {exit}}'
+    exit 1
+  fi
+done
+
+# 用語の不統一を調べる
+
+bash scripts/check-synonyms.sh
