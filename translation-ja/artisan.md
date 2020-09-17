@@ -461,7 +461,7 @@ ArtisanコマンドをCLI以外から実行したい場合もあります。た�
 
     Artisan::call('email:send 1 --queue=default');
 
-`Artisan`ファサードの`queue`メソッドを使用すると、[キューワーカー](/docs/{{version}}/queues)によりバックグラウンドでArtisanコマンドが実行されるようにキューされます。このメソッドを使用する前にキューの設定を確実に済ませ、キューリスナを実行してください。
+`Artisan`ファサードの`queue`メソッドを使用すると、[キューワーカ](/docs/{{version}}/queues)によりバックグラウンドでArtisanコマンドが実行されるようにキューされます。このメソッドを使用する前にキューの設定を確実に済ませ、キューリスナを実行してください。
 
     Route::get('/foo', function () {
         Artisan::queue('email:send', [

@@ -25,7 +25,7 @@
     - [スロット](#slots)
     - [インラインコンポーネントビュー](#inline-component-views)
     - [無名コンポーネント](#anonymous-components)
-    - [Dynamic Components](#dynamic-components)
+    - [動的コンポーネント](#dynamic-components)
 - [サブビューの読み込み](#including-subviews)
     - [コレクションのレンダービュー](#rendering-views-for-collections)
 - [スタック](#stacks)
@@ -533,7 +533,7 @@ HTMLフォームでは、`PUT`、`PATCH`、`DELETE`リクエストを作成で�
 <a name="passing-data-to-components"></a>
 ### コンポーネントへのデータ渡し
 
-You may pass data to Blade components using HTML attributes. Hard-coded, primitive values may be passed to the component using simple HTML attributes. PHP expressions and variables should be passed to the component via attributes that use the `:` character as a prefix:
+HTML属性を使い、Bladeコンポーネントへデータを渡すことができます。シンプルなHTML属性を使い、ハードコードしたプリミティブ値をコンポーネントへ渡します。PHP表現と変数は、`:`文字を前に付けた属性によりコンポーネントへ渡します。
 
     <x-alert type="error" :message="$message"/>
 
@@ -687,7 +687,7 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
         <!-- コンポーネントのコンテンツ -->
     </div>
 
-> {note} Using directives such as `@env` directly on a component is not supported at this time.
+> {note} コンポーネントでの`@env`ディレクティブの使用は、今のところサポートしていません。
 
 #### デフォルト／属性のマージ
 
@@ -821,9 +821,9 @@ VueのようなJavaScriptフレームワークを使用している方は「ス�
     </div>
 
 <a name="dynamic-components"></a>
-### Dynamic Components
+### 動的コンポーネント
 
-Sometimes you may need to render a component but not know which component should be rendered until runtime. In this situation, you may use Laravel's built-in `dynamic-component` component to render the component based on a runtime value or variable:
+場合により、実行時までどのコンポーネントをレンダーすればよいのかわからないことがあります。このような状況では、Laravelに組み込まれている`dynamic-component`コンポーネントで、実行時の値や変数をもとにコンポーネントをレンダーしてください。
 
     <x-dynamic-component :component="$componentName" class="mt-4" />
 

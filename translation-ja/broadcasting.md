@@ -660,4 +660,4 @@ Laravelアプリケーションにまったく関係ないイベントを他の�
             console.log(notification.type);
         });
 
-In this example, all notifications sent to `App\Models\User` instances via the `broadcast` channel would be received by the callback. A channel authorization callback for the `App.User.{id}` channel is included in the default `BroadcastServiceProvider` that ships with the Laravel framework.
+上記の例の場合、「ブロードキャスト」チャンネルを通じ、`App\Models\User`インスタンスへ送られる通知は、全部コールバックにより受け取られます。`App.User.{id}`チャンネルのチャンネル認可コールバックは、Laravelフレームワークに用意されている、デフォルトの`BroadcastServiceProvider`に含まれています。

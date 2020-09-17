@@ -10,7 +10,7 @@
 - [Notification Fake](#notification-fake)
 - [Queue Fake](#queue-fake)
 - [Storage Fake](#storage-fake)
-- [Interacting With Time](#interacting-with-time)
+- [時間操作](#interacting-with-time)
 - [ファサード](#mocking-facades)
 
 <a name="イントロダクション"></a>
@@ -403,13 +403,13 @@ Laravelのサービスコンテナにより、アプリケーションへ依存�
 > {tip} `fake`メソッドはデフォルトとして、一時ディレクトリ内の全ファイルを削除します。ファイルを残しておきたい場合は、代わりに`persistentFake`メソッドを使用してください。
 
 <a name="interacting-with-time"></a>
-## Interacting With Time
+## 時間操作
 
-When testing, you may occasionally need to modify the time returned by helpers such as `now` or `Illuminate\Support\Carbon::now()`. Thankfully, Laravel's base feature test class includes helpers that allow you to manipulate the current time:
+Gテスト時、`now`や`Illuminate\Support\Carbon::now()`のようなヘルパが返す時間を変更したいことはよくあります。ありがたいことに、Laravelのベース機能テストクラスは現在時間を操作するヘルパを用意しています。
 
     public function testTimeCanBeManipulated()
     {
-        // Travel into the future...
+        // 未来へ移行する
         $this->travel(5)->milliseconds();
         $this->travel(5)->seconds();
         $this->travel(5)->minutes();
@@ -418,13 +418,13 @@ When testing, you may occasionally need to modify the time returned by helpers s
         $this->travel(5)->weeks();
         $this->travel(5)->years();
 
-        // Travel into the past...
+        // 過去へ移行する
         $this->travel(-5)->hours();
 
-        // Travel to an explicit time...
+        // 特定の時間へ移行する
         $this->travelTo(now()->subHours(6));
 
-        // Return back to the present time...
+        // 現在時刻へ戻る
         $this->travelBack();
     }
 

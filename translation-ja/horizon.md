@@ -56,10 +56,14 @@ Horizonでは３つのバランシング戦略が選択できます。`simple`�
                 'balance' => 'auto',
                 'minProcesses' => 1,
                 'maxProcesses' => 10,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
                 'tries' => 3,
             ],
         ],
     ],
+
+`balanceMaxShift`と`balanceCooldown`の設定値はいかに素早くHorizonをワーカの要求に合わせてスケールするかを決めるためのものです。上の例の場合、３秒毎に最大１つの新しいプロセスを生成するか、破棄します。アプリケーションの必要性を基にし、自由にこの値を調整してください。
 
 #### ジョブの整理
 
@@ -223,7 +227,7 @@ Horizonでは、mailableやイベントブロードキャスト、通知、キ�
         }
     }
 
-If this job is queued with an `App\Models\Video` instance that has an `id` of `1`, it will automatically receive the tag `App\Models\Video:1`. This is because Horizon will examine the job's properties for any Eloquent models. If Eloquent models are found, Horizon will intelligently tag the job using the model's class name and primary key:
+`id`が`1`の`App\Models\Video`インスタンスを持つジョブがキューされると、自動的に`App\Models\Video:1`タグが付けられます。HorizonはジョブのプロパティがEloquentモデルであるかを確認するからです。Eloquentモデルが見つかると、Horizonはモデルのクラス名と主キーを使用し、賢くタグ付けします。
 
     $video = App\Models\Video::find(1);
 

@@ -23,7 +23,7 @@ Valet（ベレット：従者）はMacミニマニストのためのLaravel開�
 
 Laravel Valetはマシン起動時にバックグランドで[Nginx](https://www.nginx.com/)がいつも実行されるように、Macを設定します。そのため、[DnsMasq](https://en.wikipedia.org/wiki/Dnsmasq)を使用し、Valetは`*.test`ドメインへの全リクエストを、ローカルマシンのインストール済みサイトへ向けるようにプロキシ動作します。
 
-言い換えれば、大体7MBのRAMを使うとても早いLaravelの開発環境です。ValetはVagrantやHomesteadを完全に置き換えるものではありませんが柔軟な基礎、とくにスピード重視であるか、RAMが限られているマシンで動作させるのに素晴らしい代替になります。
+言い換えれば、約7MBのRAMを使うとても早いLaravelの開発環境です。ValetはVagrantやHomesteadを完全に置き換えるものではありませんが柔軟な基礎、とくにスピード重視であるか、RAMが限られているマシンで動作させるのに素晴らしい代替になります。
 
 Valetは以下をサポートしていますが、これらに限定されません。
 

@@ -13,7 +13,7 @@
 - ## 構成の概念
     - [ライフサイクル](/docs/{{version}}/lifecycle)
     - [サービスコンテナ](/docs/{{version}}/container)
-    - [サービスプロバイダ](/docs/{{version}}/providers)      
+    - [サービスプロバイダ](/docs/{{version}}/providers)
     - [ファサード](/docs/{{version}}/facades)
     - [契約](/docs/{{version}}/contracts)
 - ## 基礎
@@ -32,7 +32,6 @@
 - ## フロントエンド
     - [Bladeテンプレート](/docs/{{version}}/blade)
     - [多言語化](/docs/{{version}}/localization)
-    - [スカフォールド](/docs/{{version}}/frontend)
     - [アセットコンパイル](/docs/{{version}}/mix)
 - ## セキュリティ
     - [認証](/docs/{{version}}/authentication)
@@ -83,6 +82,7 @@
     - [Dusk](/docs/{{version}}/dusk)
     - [Envoy](/docs/{{version}}/envoy)
     - [Horizon](/docs/{{version}}/horizon)
+    - [Jetstream](https://jetstream.laravel.com)
     - [Passport](/docs/{{version}}/passport)
     - [Sanctum](/docs/{{version}}/sanctum)
     - [Scout](/docs/{{version}}/scout)

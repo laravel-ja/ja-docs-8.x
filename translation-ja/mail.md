@@ -17,7 +17,7 @@
     - [コンポーネントのカスタマイズ](#customizing-the-components)
 - [メール送信](#sending-mail)
     - [キュー使用メール](#queueing-mail)
-- [Mailableのレンダーリング](#rendering-mailables)
+- [Mailableのレンダリング](#rendering-mailables)
     - [Mailablesをブラウザでプレビュー](#previewing-mailables-in-the-browser)
 - [Mailableのローカライズ](#localizing-mailables)
 - [メールとローカル開発](#mail-and-local-development)
@@ -616,7 +616,7 @@ Laravelは`mail`設定ファイルの`default`メーラーとして設定され�
     }
 
 <a name="rendering-mailables"></a>
-## Mailableのレンダーリング
+## Mailableのレンダリング
 
 場合により、実際に送信はしないが、MailableのHTMLコンテンツを利用したいことも起きます。そのためには、Mailableの`render`メソッドを呼び出してください。このメソッドは、Mailableのコンテンツを評価し、文字列として返します。
 

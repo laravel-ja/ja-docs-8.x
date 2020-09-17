@@ -80,7 +80,7 @@ Laravelの各通知は、（通常、`app/Notifications`ディレクトリに設
         use Notifiable;
     }
 
-This trait is utilized by the default `App\Models\User` model and contains one method that may be used to send notifications: `notify`. The `notify` method expects to receive a notification instance:
+このトレイトは、デフォルトの`App\Models\User`モデルで使用されており、通知を送るための`notify`メソッドを一つ含んでいます。`notify`メソッドは通知インスタンスを受け取ります。
 
     use App\Notifications\InvoicePaid;
 
@@ -524,7 +524,7 @@ LaravelのMarkdownコンポーネントの完全に新しいテーマを作成�
 <a name="accessing-the-notifications"></a>
 ### 通知へのアクセス
 
-Once notifications are stored in the database, you need a convenient way to access them from your notifiable entities. The `Illuminate\Notifications\Notifiable` trait, which is included on Laravel's default `App\Models\User` model, includes a `notifications` Eloquent relationship that returns the notifications for the entity. To fetch notifications, you may access this method like any other Eloquent relationship. By default, notifications will be sorted by the `created_at` timestamp:
+通知をデータベースへ保存したら、通知エンティティから便利にアクセスできる方法が必要になります。Laravelのデフォルト`App\Models\User`モデルに含まれている、`Illuminate\Notifications\Notifiable`トレイトは、`notifications` Eloquentリレーションを含んでおり、そのエンティティの通知を返します。通知を取得するために、他のEloquentリレーションと同様に、このメソッドにアクセスできます。デフォルトで、通知は`created_at`タイムスタンプでソートされます。
 
     $user = App\Models\User::find(1);
 
@@ -623,7 +623,7 @@ Once notifications are stored in the database, you need a convenient way to acce
 <a name="listening-for-notifications"></a>
 ### 通知のリッスン
 
-Notifications will broadcast on a private channel formatted using a `{notifiable}.{id}` convention. So, if you are sending a notification to a `App\Models\User` instance with an ID of `1`, the notification will be broadcast on the `App.User.1` private channel. When using [Laravel Echo](/docs/{{version}}/broadcasting), you may easily listen for notifications on a channel using the `notification` helper method:
+プライベートチャンネルにブロードキャストされる通知は、`{notifiable}.{id}`命名規則に従いフォーマットされます。ですから、IDが`1`の`App\Models\User`インスタンスを通知で送る場合、`App.User.1`プライベートチャンネルへブロードキャストされます。[Laravel Echo](/docs/{{version}}/broadcasting)を使用していれば、`notification`ヘルパメソッドを使い、チャンネルへの通知を簡単にリッスンできます。
 
     Echo.private('App.User.' + userId)
         .notification((notification) => {

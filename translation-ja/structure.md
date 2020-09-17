@@ -147,9 +147,9 @@ Laravelのデフォルトアプリケーション構造はアプリケーショ�
 このディレクトリはデフォルトでは存在していません。`make:mail` Artisanコマンドを実行すると、作成されます。`Mail`ディレクトリは、アプリケーションから送信されるメールを表す全クラスで構成します。メールオブジェクトにより、`Mail::send`メソッドを使用して送られるメールを組み立てるロジックをすべて、１つのシンプルなクラスへカプセル化できます。
 
 <a name="the-models-directory"></a>
-#### The Models Directory
+#### Modelsディレクトリ
 
-The `Models` directory contains all of your Eloquent model classes. The Eloquent ORM included with Laravel provides a beautiful, simple ActiveRecord implementation for working with your database. Each database table has a corresponding "Model" which is used to interact with that table. Models allow you to query for data in your tables, as well as insert new records into the table.
+`Models`ディレクトリはすべてのEloquentモデルクラスで構成します。Laravelが持っているEloquent ORMは、データベースを操作するための美しくシンプルなActiveRecordの実装を提供しています。各データベーステーブルには、そのテーブルを操作するために使用する、対応した「モデル」があります。モデルを使用するとテーブルのデータをクエリしたり、テーブルに新しいレコードを挿入したりできます。
 
 <a name="the-notifications-directory"></a>
 #### Notificationsディレクトリ

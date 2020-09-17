@@ -220,7 +220,7 @@ Laravelはデフォルトで同じセッションを使用するリクエスト�
 
 `block`メソッドの２番目の引数は、セッションロックを取得するときにリクエストが待つ秒数です。リクエストが指定秒数内にセッションロックを取得できない場合、`Illuminate\Contracts\Cache\LockTimoutException`が投げられます。
 
-If neither of these arguments are passed, the lock will be obtained for a maximum of 10 seconds and requests will wait a maximum of 10 seconds while attempting to obtain a lock:両引数のどちらも渡さない場合、ロックを最大１０秒間取得し、リクエストはロックを取得するまで最大１０秒間待ちます。
+両引数のどちらも渡さない場合、ロックを最大１０秒間取得し、リクエストはロックを取得するまで最大１０秒間待ちます。
 
     Route::post('/profile', function () {
         //

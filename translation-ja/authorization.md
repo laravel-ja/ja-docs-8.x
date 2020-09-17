@@ -57,7 +57,7 @@ Laravelは組み込み済みの[認証](/docs/{{version}}/authentication)サー�
         });
     }
 
-Gates may also be defined using a class callback array, like controllers:
+ゲートはコントローラのように、コールバックの配列を使い定義することもできます。
 
     use App\Policies\PostPolicy;
 
@@ -241,7 +241,7 @@ Gates may also be defined using a class callback array, like controllers:
 
 #### ポリシーの自動検出
 
-Instead of manually registering model policies, Laravel can auto-discover policies as long as the model and policy follow standard Laravel naming conventions. Specifically, the policies must be in a `Policies` directory at or above the directory that contains your models. So, for example, the models may be placed in the `app/Models` directory while the policies may be placed in the `app/Policies` directory. In this situation, Laravel will check for policies in `app/Models/Policies` then `app/Policies`. In addition, the policy name must match the model name and have a `Policy` suffix. So, a `User` model would correspond to a `UserPolicy` class.
+モデルポリシーをいちいち登録する代わりに、モデルとポリシーの標準命名規則にしたがっているポリシーを自動的にLaravelは見つけます。具体的にはモデルが含まれているディレクトリの下に存在する、`Policies`ディレクトリ中のポリシーです。たとえば、モデルが`app/Models`ディレクトリ下にあれば、ポリシーは`app/Policies`ディレクトリへ置く必要があります。この場合は、Laravelは`app/Models/Policies`下を調べ、次に`app/Policies`を調べます。さらに、ポリシーの名前は対応するモデルの名前へ、`Policy`サフィックスを付けたものにする必要があります。ですから、`User`モデルに対応させるには、`UserPolicy`クラスと命名します。
 
 独自のポリシー発見ロジックを利用したい場合、`Gate::guessPolicyNamesUsing`メソッドでカスタムコールバックを登録します。通常このメソッドは、`AuthServiceProvider`の`boot`メソッドから呼び出すべきでしょう。
 
@@ -251,7 +251,7 @@ Instead of manually registering model policies, Laravel can auto-discover polici
         // ポリシークラス名を返す
     });
 
-> {note} `AuthServiceProvider`中で明確にマップされたポリシーは、自動検出される可能性のあるポリシーよりも優先的に扱われます。
+> {note} Any policies that are explicitly mapped in your `AuthServiceProvider` will take precedence over any potentially auto-discovered policies.
 
 <a name="writing-policies"></a>
 ## ポリシーの記述
@@ -548,7 +548,7 @@ Bladeテンプレートを書くとき、指定したアクションを実行で
 
     @canany(['update', 'view', 'delete'], $post)
         // 現在のユーザーはポストとの更新、閲覧、削除ができる
-    @elsecanany(['create'], \App\Models\::class)
+    @elsecanany(['create'], \App\Models\Post::class)
         // 現在のユーザーはポストを作成できる
     @endcanany
 
@@ -556,11 +556,11 @@ Bladeテンプレートを書くとき、指定したアクションを実行で
 
 他の認可メソッド同様に、アクションでモデルインスタンスが必要でない場合、`@can`と`@cannot`ディレクティブへクラス名を渡すことができます。
 
-    @can('create', App\Models\::class)
+    @can('create', App\Models\Post::class)
         <!-- 現在のユーザーはポストを更新できる -->
     @endcan
 
-    @cannot('create', App\Models\::class)
+    @cannot('create', App\Models\Post::class)
         <!-- 現在のユーザーはポストを更新できない -->
     @endcannot
 

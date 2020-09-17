@@ -2,7 +2,7 @@
 
 - [イントロダクション](#introduction)
 - [マイグレーション生成](#generating-migrations)
-    - [Squashing Migrations](#squashing-migrations)
+    - [マイグレーションの圧縮](#squashing-migrations)
 - [マイグレーション構造](#migration-structure)
 - [マイグレーション実行](#running-migrations)
     - [ロールバック](#rolling-back-migrations)
@@ -36,7 +36,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
 マイグレーションは`database/migrations`フォルダに設置されます。マイグレーションの実行順をフレームワークに知らせるため、名前にタイムスタンプが含まれています。
 
-> {tip} Migration stubs may be customized using [stub publishing](/docs/{{version}}/artisan#stub-customization)
+> {tip} マイグレーションのスタブは[スタブのリソース公開](/docs/{{version}}/artisan#stub-customization)を使用しカスタマイズできます。
 
 `--table`と`--create`オプションも、テーブル名とマイグレーションで新しいテーブルを生成するかを指定するために使用できます。これらのオプションは生成するマイグレーションスタブの中へ指定したテーブルをあらかじめ埋め込みます。
 
@@ -47,20 +47,20 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 マイグレーションの生成出力先のパスを指定したい場合は、`make:migrate`コマンドの実行時に`--path`オプションを付けてください。パスはアプリケーションのベースパスからの相対位置です。
 
 <a name="squashing-migrations"></a>
-### Squashing Migrations
+### マイグレーションの圧縮
 
-As you build your application, you may accumulate more and more migrations over time. This can lead to your migration directory becoming bloated with potentially hundreds of migrations. If you would like, you may "squash" your migrations into a single SQL file. To get started, execute the `schema:dump` command:
+アプリケーションを構築していくと、時間が経過するにつれマイグレーションがだんだんと増えていきます。これによりマイグレーションディレクトリが数百のマイグレーションにも膨れ上がる可能性があります。お望みであれば、マイグレーションを１つのSQLファイルへ「圧縮」できます。そのためには、`schema:dump`コマンドを実行してください。
 
     php artisan schema:dump
 
-    // Dump the current database schema and prune all existing migrations...
+    // 現在のデータベーススキーマをダンプし、既存のマイグレーションをすべて切り詰める
     php artisan schema:dump --prune
 
-When you execute this command, Laravel will write a "schema" file to your `database/schema` directory. Now, when you attempt to migrate your database and no other migrations have been executed, Laravel will execute the schema file's SQL first. After executing the schema file's commands, Laravel will execute any remaining migrations that were not part of the schema dump.
+このコマンドを実行すると、Laravelは「スキーマ」ファイルを`database/schema`ディレクトリへ書き出します。これでデータベースをマイグレートする時に、その他のマイグレーションが実行されなくなり、LaravelはそのスキーマファイルのSQLを最初に実行します。それから、スキーマダンプに含まれていない残りのマイグレーションを実行します。
 
-You should commit your database schema file to source control so that other new developers on your team may quickly create your application's initial database structure.
+データベーススキーマはソース管理のコミットに含めるべきでしょう。それによりチームに入った別の新しい開発者がアプリケーションの初期データベース構造を簡単に生成できます。
 
-> {note} Migration squashing is only available for the MySQL, PostgreSQL, and SQLite databases.
+> {note} マイグレーションの圧縮はMySQLとPostgreSQLデータベースでのみ利用可能です。
 
 <a name="migration-structure"></a>
 ## マイグレーション構造
@@ -232,8 +232,8 @@ You should commit your database schema file to source control so that other new 
 
 コマンド  |  説明
 -----------------------------------  |  -----------------------------------------------------------
-`$table->id();`  |  Alias of `$table->bigIncrements('id')`.
-`$table->foreignId('user_id');`  |  Alias of `$table->unsignedBigInteger('user_id')`.
+`$table->id();`  |  `$table->bigIncrements('id')`の別名
+`$table->foreignId('user_id');`  |  `$table->unsignedBigInteger('user_id')`の別名
 `$table->bigIncrements('id');`  |  符号なしBIGINTを使用した自動増分ID（主キー）
 `$table->bigInteger('votes');`  |  BIGINTカラム
 `$table->binary('data');`  |  BLOBカラム
@@ -314,6 +314,7 @@ You should commit your database schema file to source control so that other new 
 `->comment('my comment')`  |  カラムにコメント追加(MySQL/PostgreSQLのみ)
 `->default($value)`  |  カラムのデフォルト(default)値設定
 `->first()`  |  カラムをテーブルの最初(first)に設置する(MySQLのみ)
+`->from($integer)`  |  Set the starting value of an auto-incrementing field (MySQL / PostgreSQL)
 `->nullable($value = true)`  |  （デフォルトで）NULL値をカラムに挿入する
 `->storedAs($expression)`  |  stored generatedカラムを生成(MySQLのみ)
 `->unsigned()`  |  整数カラムを符号なしに設定(MySQLのみ)

@@ -132,11 +132,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
 <a name="urls-for-controller-actions"></a>
 ## コントローラアクションのURL
 
-`action`関数は、指定するコントローラアクションに対するURLを生成します。コントローラの完全な名前空間を渡す必要はありません。代わりに、`App\Http\Controllers`名前空間からの相対的なコントローラクラス名を指定してください。
-
-    $url = action('HomeController@index');
-
-「呼び出し可能な」配列の記法により、アクションを参照することもできます。
+`action`関数は、指定するコントローラアクションに対するURLを生成します。
 
     use App\Http\Controllers\HomeController;
 
@@ -144,7 +140,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
 
 コントローラメソッドが、ルートパラメータを受け取る場合、この関数の第２引数として渡すことができます。
 
-    $url = action('UserController@profile', ['id' => 1]);
+    $url = action([UserController::class, 'profile'], ['id' => 1]);
 
 <a name="default-values"></a>
 ## デフォルト値

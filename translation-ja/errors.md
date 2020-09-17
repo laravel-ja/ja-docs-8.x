@@ -3,8 +3,8 @@
 - [イントロダクション](#introduction)
 - [設定](#configuration)
 - [例外ハンドラ](#the-exception-handler)
-    - [Reporting Exceptions](#reporting-exceptions)
-    - [Rendering Exceptions](#rendering-exceptions)
+    - [例外のレポート](#reporting-exceptions)
+    - [例外のレンダー](#rendering-exceptions)
     - [Reportable／Renderable例外](#renderable-exceptions)
 - [HTTP例外](#http-exceptions)
     - [カスタムHTTPエラーページ](#custom-http-error-pages)
@@ -25,16 +25,16 @@ local環境では`APP_DEBUG`環境変数を`true`に設定すべきでしょう�
 ## 例外ハンドラ
 
 <a name="reporting-exceptions"></a>
-### Reporting Exceptions
+### 例外のレポート
 
-All exceptions are handled by the `App\Exceptions\Handler` class. This class contains a `register` method where you may register custom exception reporter and renderer callbacks. We'll examine each of these concepts in detail. Exception reporting is used to log exceptions or send them to an external service like [Flare](https://flareapp.io), [Bugsnag](https://bugsnag.com) or [Sentry](https://github.com/getsentry/sentry-laravel). By default, exceptions will be logged based on your [logging](/docs/{{version}}/logging) configuration. However, you are free to log exceptions however you wish.
+例外はすべて、`App\Exceptions\Handler`クラスで処理されます。このクラスはカスタム例外レポーターとレンダラのコールバックを登録するための`register`メソッドを持っています。このコンセプトを詳細に確認していきましょう。例外レポーターは例外をログするか、[Flare](https://flareapp.io)や[BugSnag](https://bugsnag.com)、[Sentry](https://github.com/getsentry/sentry-laravel)のような外部サービスへ送信するために使います。デフォルトでは[ログ](/docs/{{version}}/logging)設定に基づき、例外をログします。しかし、お望みであれば自由に例外をログできます。
 
-For example, if you need to report different types of exceptions in different ways, you may use the the `reportable` method to register a Closure that should be executed when an exception of a given type needs to be reported. Laravel will deduce what type of exception the Closure reports by examining the type-hint of the Closure:
+たとえば異なった例外を別々の方法でレポートする必要がある場合、`reportable`メソッドを使用して、特定のタイプの例外を報告する必要があるときに実行するクロージャを登録できます。Laravelはクロージャのタイプヒントを調べ、クロージャが報告する例外のタイプを推測します。
 
     use App\Exceptions\CustomException;
 
     /**
-     * Register the exception handling callbacks for the application.
+     * アプリケーションの例外処理コールバックの登録
      *
      * @return void
      */
@@ -45,13 +45,13 @@ For example, if you need to report different types of exceptions in different wa
         });
     }
 
-When you register a custom exception reporting callback using the `reportable` method, Laravel will still log the exception using the default logging configuration for the application. If you wish to stop the propagation of the exception to the default logging stack, you may use the `stop` method when defining your reporting callback:
+`reportable`メソッドを使用しカスタム例外レポートコールバックを登録する場合でも、Laravelはアプリケーションのデフォルトログ設定を使い例外をログします。デフォルトログスタックへその例外が伝わるのを止めたい場合は、レポートコールバックの定義時に`stop`メソッドを使用してください。
 
     $this->reportable(function (CustomException $e) {
         //
     })->stop();
 
-> {tip} To customize the exception reporting for a given exception, you may also consider using [reportable exceptions](/docs/{{version}}/errors#renderable-exceptions)
+> {tip} 指定した例外に対する例外レポートをカスタマイズするには、[reportable例外](/docs/{{version}}/errors#renderable-exceptions)を使用することも一考してください。
 
 #### グローバルログコンテキスト
 
@@ -71,7 +71,7 @@ Laravelは可能である場合、文脈上のデータとしてすべての例�
 
 #### `report`ヘルパ
 
-Sometimes you may need to report an exception but continue handling the current request. The `report` helper function allows you to quickly report an exception using your exception handler without rendering an error page:
+例外のレポートは必要だが、現在のリクエストの処理は続行したい場合もあります。`report`ヘルパ関数は、エラーページをレンダリングせずに、例外ハンドラを使用し簡単にレポートできます。
 
     public function isValid($value)
     {
@@ -102,20 +102,20 @@ Sometimes you may need to report an exception but continue handling the current 
     ];
 
 <a name="rendering-exceptions"></a>
-### Rendering Exceptions
+### 例外のレンダー
 
-By default, the Laravel exception handler will convert exceptions into an HTTP response for you. However, you are free to register a custom rendering Closure for exceptions of a given type. You may accomplish this via the `renderable` method of your exception handler. Laravel will deduce what type of exception the Closure renders by examining the type-hint of the Closure:
+Laravelの例外ハンドラはデフォルトで例外をHTTPレスポンスに変換します。しかし、自由に特定のタイプの例外をレンダリングするカスタムクロージャを登録することもできます。例外ハンドラの`renderable`メソッドにより実現します。Laravelはクロージャのタイプヒントを調べ、クロージャがレンダーする例外のタイプを推測します。
 
     use App\Exceptions\CustomException;
 
     /**
-     * Register the exception handling callbacks for the application.
+     * アプリケーションの例外処理コールバックの登録
      *
      * @return void
      */
     public function register()
     {
-        $this->renderable(function (CustomException $e) {
+        $this->renderable(function (CustomException $e, $request) {
             return response()->view('errors.custom', [], 500);
         });
     }
@@ -155,16 +155,16 @@ By default, the Laravel exception handler will convert exceptions into an HTTP r
         }
     }
 
-If your exception contains custom reporting logic that only occurs when certain conditions are met, you may need to instruct Laravel to report the exception using the default exception handling configuration. To accomplish this, you may return `false` from the exception's `report` method:
+明確な条件と一致する場合のみ実行されるレポートのカスタムロジックが例外に含まれている場合、デフォルトの例外処理の設定を使用し、その例外をレポートするようにLaravelへ指示する必要があるでしょう。そのためには例外の`report`メソッドから`false`を返してください。
 
     /**
-     * Report the exception.
+     * 例外のレポート
      *
      * @return bool|void
      */
     public function report()
     {
-        // Determine if the exception needs custom reporting...
+        // 例外がカスタムレポートする必要があるかを決める
 
         return false;
     }

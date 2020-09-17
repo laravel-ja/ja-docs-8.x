@@ -15,13 +15,13 @@
     - [最大試行回数／タイムアウト値の指定](#max-job-attempts-and-timeout)
     - [レート制限](#rate-limiting)
     - [エラー処理](#error-handling)
-- [Job Batching](#job-batching)
-    - [Defining Batchable Jobs](#defining-batchable-jobs)
-    - [Dispatching Batches](#dispatching-batches)
-    - [Adding Jobs To Batches](#adding-jobs-to-batches)
-    - [Inspecting Batches](#inspecting-batches)
-    - [Cancelling Batches](#cancelling-batches)
-    - [Batch Failures](#batch-failures)
+- [ジョブのバッチ](#job-batching)
+    - [Batchableジョブの定義](#defining-batchable-jobs)
+    - [バッチのディスパッチ](#dispatching-batches)
+    - [バッチへのジョブ追加](#adding-jobs-to-batches)
+    - [バッチの調査](#inspecting-batches)
+    - [バッチのキャンセル](#cancelling-batches)
+    - [バッチの失敗](#batch-failures)
 - [クロージャのキュー投入](#queueing-closures)
 - [キューワーカの実行](#running-the-queue-worker)
     - [キュープライオリティ](#queue-priorities)
@@ -363,7 +363,7 @@ handleメソッドの中でレート制限をする代わりに、レート制�
 <a name="synchronous-dispatching"></a>
 ### 同期ディスパッチ
 
-If you would like to dispatch a job immediately (synchronously), you may use the `dispatchSync` method. When using this method, the job will not be queued and will be run immediately within the current process:
+ジョブを即時（同期的）にディスパッチしたい場合は、`dispatchSync`メソッドを使用します。このメソッドを使用する場合、そのジョブはキューされずに現在のプロセスで即時実行されます。
 
     <?php
 
@@ -392,7 +392,7 @@ If you would like to dispatch a job immediately (synchronously), you may use the
 <a name="job-chaining"></a>
 ### ジョブチェーン
 
-Job chaining allows you to specify a list of queued jobs that should be run in sequence after the primary job has executed successfully. If one job in the sequence fails, the rest of the jobs will not be run. To execute a queued job chain, you may use the `chain` method provided by the `Bus` facade:
+主要なジョブが正しく実行し終えた後に連続して実行する必要がある、キュー投入ジョブのリストをジョブチェーンで指定できます。一連のジョブの内、あるジョブが失敗すると、残りのジョブは実行されません。キュー投入ジョブチェーンを実行するには、`Bus`ファサードが提供する`chain`メソッドを使用します
 
     use Illuminate\Support\Facades\Bus;
 
@@ -416,17 +416,17 @@ Job chaining allows you to specify a list of queued jobs that should be run in s
 
 #### チェーンの接続とキュー
 
-ジョブチェーンで使用するデフォルトの接続とキューを指定したい場合は、`allOnConnection`と`allOnQueue`メソッドを使用します。これらのメソッドは、キューされたジョブへ別の接続／キューが明確に指定されていない限り使用される、接続とキューを設定します。
+ジョブチェーンで使用するデフォルトの接続とキューを指定したい場合は、`onConnection`と`onQueue`メソッドを使用します。これらのメソッドは、キューされたジョブへ別の接続／キューが明確に指定されていない限り使用される、接続とキューを設定します。
 
     Bus::chain([
         new ProcessPodcast,
         new OptimizePodcast,
         new ReleasePodcast,
-    ])->dispatch()->allOnConnection('redis')->allOnQueue('podcasts');
+    ])->onConnection('redis')->onQueue('podcasts')->dispatch();
 
-#### Chain Failures
+#### チェーンの失敗
 
-When chaining jobs, you may use the `chain` method to specify a Closure that should be invoked if a job within the chain fails. The given callback will receive the exception instance that caused the job failure:
+ジョブをチェーンするときに、そのチェーンの中のジョブが失敗した時に実行されるクロージャを`chain`メソッドに指定できます。指定コールバックはそのジョブの失敗を引き起こした例外のインスタンスを引数に取ります。
 
     use Illuminate\Support\Facades\Bus;
     use Throwable;
@@ -436,7 +436,7 @@ When chaining jobs, you may use the `chain` method to specify a Closure that sho
         new OptimizePodcast,
         new ReleasePodcast,
     ])->catch(function (Throwable $e) {
-        // A job within the chain has failed...
+        // チェーンの中のジョブが失敗した
     })->dispatch();
 
 <a name="customizing-the-queue-and-connection"></a>
@@ -612,6 +612,8 @@ When chaining jobs, you may use the `chain` method to specify a Closure that sho
         public $timeout = 120;
     }
 
+ソケットやHTTP接続の送信などのＩＯブロッキングプロセスは、指定したタイムアウトを考慮しません。そのため、こうした機能を使用する場合は、それらのAPIを使用して常にタイムアウトを指定してください。たとえばGuzzleを使用する場合は、常に接続とリクエストのタイムアウト値を指定する必要があります。
+
 <a name="rate-limiting"></a>
 ### レート制限
 
@@ -651,7 +653,7 @@ When chaining jobs, you may use the `chain` method to specify a Closure that sho
 ジョブの処理中に例外が投げられると、ジョブは自動的にキューへ戻され、再試行されます。ジョブはアプリケーションが許している最大試行回数に達するまで、連続して実行されます。最大試行回数は`queue:work` Artisanコマンドへ`--tries`スイッチを使い定義されます。もしくは、ジョブクラス自身に最大試行回数を定義することもできます。キューワーカの実行についての情報は、[以降](#running-the-queue-worker)で説明します。
 
 <a name="job-batching"></a>
-## Job Batching
+## ジョブのバッチ
 
 Laravel's job batching feature allows you to easily execute a batch of jobs and then perform some action when the batch of jobs has completed executing. Before getting started, you should create a database migration to build a table that will contain your job batch meta information. This migration may be generated using the `queue:batches-table` Artisan command:
 
@@ -660,7 +662,7 @@ Laravel's job batching feature allows you to easily execute a batch of jobs and 
     php artisan migrate
 
 <a name="defining-batchable-jobs"></a>
-### Defining Batchable Jobs
+### Batchableジョブの定義
 
 To build a batchable job, you should [create a queueable job](#creating-jobs) as normal; however, you should add the `Illuminate\Bus\Batchable` trait to the job class. This trait provides access to a `batch` method which may be used to retrieve the current batch that the job is executing in:
 
@@ -699,9 +701,9 @@ To build a batchable job, you should [create a queueable job](#creating-jobs) as
     }
 
 <a name="dispatching-batches"></a>
-### Dispatching Batches
+### バッチのディスパッチ
 
-To dispatch a batch of jobs, you should use `batch` method of the `Bus` facade. Of course, batching is primarily useful when combined with completion callbacks. So, you may use the `then`, `catch`, and `finally` methods to define completion callbacks for the batch. Each of these callbacks will receive an `Illuminate\Bus\Batch` instance when they are invoked:
+バッチジョブをディスパッチするには、`Bus`ファサードの`batch`メソッドを使います。もちろんバッチは完了のコールバックと組み合わせるときに便利です。そのためにバッチの完了コールバックを定義づけるために、`then`、`catch`、`finally`メソッドを使ってください。これらのコールバックはそれぞれ起動時に`Illuminate\Bus\Batch`インスタンスを引数に受けます。
 
     use App\Jobs\ProcessPodcast;
     use App\Podcast;
@@ -716,39 +718,49 @@ To dispatch a batch of jobs, you should use `batch` method of the `Bus` facade. 
         new ProcessPodcast(Podcast::find(4)),
         new ProcessPodcast(Podcast::find(5)),
     ])->then(function (Batch $batch) {
-        // All jobs completed successfully...
+        // すべてのジョブが成功して完了した
     })->catch(function (Batch $batch, Throwable $e) {
-        // First batch job failure detected...
+        // バッチジョブの失敗をはじめて検出した
     })->finally(function (Batch $batch) {
-        // The batch has finished executing...
+        // バッチの実行を終了した
     })->dispatch();
 
     return $batch->id;
 
-#### Naming Batches
+#### バッチの名前付け
 
-Some tools such as Laravel Horizon and Laravel Telescope may provide more user-friendly debug information for batches if batches are named. To assign an arbitrary name to a batch, you may call the `name` method while defining the batch:
+Laravel HorizonやLaravel Telescopeなどの一部のツールは、バッチに名前が付けられている場合、ユーザーフレンドリーなバッチのデバッグ情報を提供します。バッチに任意の名前を割り当てるには、バッチを定義するときに `name`メソッドを呼び出します。
 
     $batch = Bus::batch([
         // ...
     ])->then(function (Batch $batch) {
-        // All jobs completed successfully...
+        // 全ジョブが成功して完了した
     })->name('Process Podcasts')->dispatch();
 
-<a name="adding-jobs-to-batches"></a>
-### Adding Jobs To Batches
+#### バッチの接続とキュー
 
-Sometimes it may be useful to add additional jobs to a batch from within a batched job. This pattern can be useful when you need to batch thousands of jobs which may take too long to dispatch during a web request. So, instead, you may wish to dispatch an initial batch of "loader" jobs that hydrate the batch with more jobs:
+If you would like to specify the connection and queue that should be used for the batched jobs, you may use the `onConnection` and `onQueue` methods:バッチのジョブに使用する接続とキューを指定する場合は、`onConnection`と`onQueue`メソッドを使用します。
+
+    $batch = Bus::batch([
+        // ...
+    ])->then(function (Batch $batch) {
+        // 全ジョブが成功して完了した
+    })->onConnection('redis')->onQueue('podcasts')->dispatch();
+
+<a name="adding-jobs-to-batches"></a>
+### バッチへのジョブ追加
+
+バッチ処理しているジョブの中から追加のジョブをバッチに追加できると便利です。このパターンは数千のジョブをバッチする必要があり、Webリクエストでディスパッチするには長すぎる場合で便利でしょう。このような場合は代わりに初期バッチへ「ローダ」ジョブをディスパッチし、さらなるジョブをバッチに追加してください。
 
     $batch = Bus::batch([
         new LoadImportBatch,
         new LoadImportBatch,
         new LoadImportBatch,
     ])->then(function (Batch $batch) {
-        // All jobs completed successfully...
+        // 全ジョブが成功して完了した
     })->name('Import Contacts')->dispatch();
 
-In this example, we will use the `LoadImportBatch` job to hydrate the batch with additional jobs. To accomplish this, we may use the `add` method on the batch instance that can be accessed within the job:
+この例では、`LoadImportBatch`ジョブをバッチへ追加ジョブを追加するために使用します。そのためにはジョブの中からアクセスできる、バッチインスタンスの`add`メソッドを使います。
 
     use App\Jobs\ImportContacts;
     use Illuminate\Support\Collection;
@@ -769,46 +781,46 @@ In this example, we will use the `LoadImportBatch` job to hydrate the batch with
         }));
     }
 
-> {note} You may only add jobs to a batch from within a job that belongs to the same batch.
+> {note} バッチへジョブを追加できるのは、同じバッチに属しているジョブの中からだけです。
 
 <a name="inspecting-batches"></a>
-### Inspecting Batches
+### バッチの調査
 
-The `Illuminate\Bus\Batch` method that is provided to batch completion callbacks has a variety of properties and methods to assist you in interacting with and inspecting a given batch of jobs.
+バッチ完了コールバックに提供される`Illuminate\Bus\Batch`メソッドには、指定バッチを操作／調査に役立つさまざまなプロパティとメソッドがあります。
 
-    // The UUID of the batch...
+    // バッチのUUID
     $batch->id;
 
-    // The name of the batch (if applicable)...
+    // バッチの名前（付けられている場合）
     $batch->name;
 
-    // The number of jobs assigned to the batch...
+    // バッチに割り付けられているジョブの数
     $batch->totalJobs;
 
-    // The number of jobs that have not been processed by the queue...
+    // キューで処理されていないジョブの数
     $batch->pendingJobs;
 
-    // The number of jobs that have failed...
+    // 失敗したジョブの数
     $batch->failedJobs;
 
-    // The number of jobs that have been processed thus far...
+    // これまで処理したジョブの数
     $batch->processedJobs();
 
-    // The completion percentage of the batch (0-100)...
+    // バッチの完了パーセンテージ(0-100)
     $batch->progress();
 
-    // Indicates if the batch has finished executing...
+    // バッチが完了したかを表す
     $batch->finished();
 
-    // Cancel the execution of the batch...
+    // バッチの実行をキャンセル
     $batch->cancel();
 
-    // Indicates if the batch has been cancelled...
+    // バッチの実行がキャンセルされたかを表す
     $batch->cancelled();
 
 #### Returning Batches From Routes
 
-All `Illuminate\Bus\Batch` instances are JSON serializable, meaning you can return them directly from one of your application's routes to retrieve a JSON payload containing information about the batch, including its completion progress. To retrieve a batch by its ID, you may use the `Bus` facade's `findBatch` method:
+`Illuminate\Bus\Batch`インスタンスはすべてJSONシリアライズ可能です。つまり、完了プログレスを含むバッチに関する情報を含んだJSONペイロードを取得するため、アプリケーションのルートから直接返すことができます。IDによりバッチを取得するには、`Bus`ファサードの`findBatch`メソッドを使ってください。
 
     use Illuminate\Support\Facades\Bus;
     use Illuminate\Support\Facades\Route;
@@ -818,9 +830,9 @@ All `Illuminate\Bus\Batch` instances are JSON serializable, meaning you can retu
     });
 
 <a name="cancelling-batches"></a>
-### Cancelling Batches
+### バッチのキャンセル
 
-Sometimes you may need to cancel a given batch's execution. This can be accomplished by calling the `cancel` method on the `Illuminate\Bus\Batch` instance:
+特定のバッチの実行をキャンセルする必要もあるでしょう。`Illuminate\Bus\Batch`インスタンスの`cancel`メソッドを呼び出します。
 
     /**
      * ジョブの実行
@@ -839,30 +851,30 @@ Sometimes you may need to cancel a given batch's execution. This can be accompli
     }
 
 <a name="batch-failures"></a>
-### Batch Failures
+### バッチの失敗
 
-When a batch job fails, the `catch` callback (if assigned) will be invoked. This callback is only invoked for the job that fails within the batch.
+バッチのジョブが失敗するとき、（指定されていれば）`catch`コールバックが起動されます。このコールバックはバッチの中のジョブが失敗したときのみ起動されます。
 
-#### Allowing Failures
+#### 失敗の許可
 
-When a job within a batch fails, Laravel will automatically mark the batch as "cancelled". If you wish, you may disable this behavior so that a job failure does not automatically mark the batch as cancelled. This may be accomplished by calling the `allowFailures` method while dispatching the batch:
+バッチの中のジョブが失敗すると、Laravelは自動的にバッチに「キャンセル済み(cancelled)」のマークを付けます。この振る舞いを無効にする、つまり失敗したジョブにより自動的にバッチにキャンセル済みマークを付けなくできます。そのためには、バッチをディスパッチする時に`allowFailures`メソッドを呼び出してください。
 
     $batch = Bus::batch([
         // ...
     ])->then(function (Batch $batch) {
-        // All jobs completed successfully...
+        // 全ジョブが成功して完了した
     })->allowFailures()->dispatch();
 
-#### Retrying Failed Batch Jobs
+#### 失敗したバッチジョブの再試行
 
-For convenience, Laravel provides a `queue:retry-batch` Artisan command that allows you to easily retry all of the failed jobs for a given batch. The `queue:retry-batch` command accepts the UUID of the batch whose failed jobs should be retried:
+特定のバッチで失敗したジョブをすべて簡単にリトライできるよう、`queue:retry-batch` ArtisanコマンドをLaravelは提供しています。`queue:retry-batch`コマンドは再試行すべき失敗したジョブを含むバッチのUUIDを引数に指定します。
 
     php artisan queue:retry-batch 32dbc76c-4f82-4749-b610-a639fe0099b5
 
 <a name="queueing-closures"></a>
 ## クロージャのキュー投入
 
-Instead of dispatching a job class to the queue, you may also dispatch a Closure. This is great for quick, simple tasks that need to be executed outside of the current request cycle. When dispatching Closures to the queue, the Closure's code contents is cryptographically signed so it can not be modified in transit:
+ジョブクラスをキューへディスパッチする代わりに、クロージャもディスパッチできます。現在のリクエストサイクルの外で実行する必要のあるシンプルなタスクを素早くキュー投入するときに適しています。キューにクロージャをディスパッチする場合、クロージャのコードは暗号化して著名されるため、転送時に変更できません。
 
     $podcast = App\Podcast::find(1);
 
@@ -870,14 +882,14 @@ Instead of dispatching a job class to the queue, you may also dispatch a Closure
         $podcast->publish();
     });
 
-Using the `catch` method, you may provide a Closure that should be executed if the queued Closure fails to complete successfully after exhausting all of your queue's configured retry attempts:
+`catch`メソッドを使用すると、キューの再試行設定をすべて費やしても、キュー投入されたクロージャが失敗し完了できないと、指定したクロージャが実行されます。
 
     use Throwable;
 
     dispatch(function () use ($podcast) {
         $podcast->publish();
     })->catch(function (Throwable $e) {
-        // This job has failed...
+        // このジョブは失敗した
     });
 
 <a name="running-the-queue-worker"></a>
@@ -905,13 +917,13 @@ Laravelには、キューに投入された新しいジョブを処理する、�
 
     php artisan queue:work redis --queue=emails
 
-#### Processing A Specified Number Of Jobs
+#### 特定の数のジョブの処理
 
 `--once`オプションは、ワーカにキュー中のジョブをひとつだけ処理するように指示します。
 
     php artisan queue:work --once
 
-The `--max-jobs` option may be used to instruct the worker to process the given number of jobs and then exit. This option may be useful when combined with [Supervisor](supervisor-configuration) so that your workers are automatically restarted after processing a given number of jobs:
+`--max-jobs`オプションは指定した数のジョブを処理し、終了するようにワーカへ指示します。指定数のジョブを処理してからワーカは自動的に再起動するため、このオプションは[Supervisor](supervisor-configuration)と組み合わせて使用すると便利です。
 
     php artisan queue:work --max-jobs=1000
 
@@ -921,11 +933,11 @@ The `--max-jobs` option may be used to instruct the worker to process the given 
 
     php artisan queue:work --stop-when-empty
 
-#### Processing Jobs For A Given Number Of Seconds
+#### 指定秒数間、ジョブを処理する
 
-The `--max-time` option may be used to instruct the worker to process jobs for the given number of seconds and then exit. This option may be useful when combined with [Supervisor](supervisor-configuration) so that your workers are automatically restarted after processing jobs for a given amount of time:
+`--max-time`オプションは指定秒数の間、ジョブを処理し、終了するようにワーカへ指示するために使用します。指定時間ジョブを処理したあとで自動的にワーカが再起動するため、このオプションは[Supervisor](supervisor-configuration)と組み合わせて使用すると便利です。
 
-    // Process jobs for one hour and then exit...
+    // １時間ジョブを処理してから終了する
     php artisan queue:work --max-time=3600
 
 #### リソースの考察
@@ -950,7 +962,7 @@ The `--max-time` option may be used to instruct the worker to process jobs for t
 
     php artisan queue:restart
 
-このコマンドは存在しているジョブが失われないように、現在のジョブの処理が終了した後に、全キューワーカーへ穏やかに「終了する(die)」よう指示します。キューワーカは`queue:restart`コマンドが実行されると、終了するわけですから、キュージョブを自動的に再起動する、Supervisorのようなプロセスマネージャーを実行すべきでしょう。
+このコマンドは存在しているジョブが失われないように、現在のジョブの処理が終了した後に、全キューワーカへ穏やかに「終了する(die)」よう指示します。キューワーカは`queue:restart`コマンドが実行されると、終了するわけですから、キュージョブを自動的に再起動する、Supervisorのようなプロセスマネージャーを実行すべきでしょう。
 
 > {tip} このコマンドはリスタートシグナルを保存するために、[キャッシュ](/docs/{{version}}/cache)を使用します。そのため、この機能を使用する前に、アプリケーションのキャッシュドライバーが、正しく設定されていることを確認してください。
 
@@ -1034,11 +1046,11 @@ Supervisorの詳細情報は、[Supervisorドキュメント](http://supervisord
 
     php artisan queue:work redis --tries=3
 
-In addition, you may specify how many seconds Laravel should wait before retrying a job that has failed using the `--backoff` option. By default, a job is retried immediately:
+さらに、`--backoff`オプションを使用し、失敗してから再試行するまでに何秒待てばよいかをLaravelへ指定できます。デフォルトでは、時間を置かずに再試行します。
 
     php artisan queue:work redis --tries=3 --backoff=3
 
-If you would like to configure the failed job retry delay on a per-job basis, you may do so by defining a `backoff` property on your queued job class:
+ジョブごとに失敗したジョブの再試行までの遅延を設定したい場合は、キュー投入するジョブクラスで`backoff`プロパティを定義してください。
 
     /**
      * ジョブを再試行するまでに待つ秒数
@@ -1047,7 +1059,7 @@ If you would like to configure the failed job retry delay on a per-job basis, yo
      */
     public $backoff = 3;
 
-If you require more complex logic for determining the retry delay, you may define a `backoff` method on your queued job class:
+リトライ時のディレイを決める複雑なロジックが必要になる場合は、キュージョブクラスで、`backoff`メソッドを定義してください。
 
     /**
     * ジョブを再取得する前に何秒待つか計算する
@@ -1059,7 +1071,7 @@ If you require more complex logic for determining the retry delay, you may defin
         return 3;
     }
 
-You may easily configure "exponential" backoffs by returning an array of backoff values from the `backoff` method. In this example, the retry delay will be 1 seconds for the first retry, 5 seconds for the second retry, and 10 seconds for the third retry:
+`backoff`メソッドからバックオフ値の配列を返すことで、「指数関数的」なバックオフを簡単に設定できます。この例では、再試行の遅延は、１回目の再試行では１秒、２回目の再試行では５秒、３回目の再試行では１０秒になります。
 
     /**
     * ジョブを再取得する前に何秒待つか計算する

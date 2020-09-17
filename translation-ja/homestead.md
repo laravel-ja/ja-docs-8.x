@@ -119,7 +119,7 @@ HomesteadはWindowsやMac、Linuxシステム上で実行でき、NginxやPHP、
 - Python
 - RabbitMQ
 - Solr
-- Webdriver & Laravel Dusk Utilities
+- Webdriver & Laravel Duskユーティリティ
 </div>
 
 <a name="installation-and-setup"></a>

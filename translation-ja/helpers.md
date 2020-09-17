@@ -2287,15 +2287,13 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 <a name="method-action"></a>
 #### `action()` {#collection-method}
 
-`action`関数は、指定されたコントローラアクションのURLを生成します。完全修飾コントローラ名は必要ありません。代わりに、`App\Http\Controllers`名前空間からの相対クラス名を指定してください。
-
-    $url = action('HomeController@index');
+The `action` function generates a URL for the given controller action:
 
     $url = action([HomeController::class, 'index']);
 
 メソッドがルートパラメーターを受け付ける場合は、第２引数で指定してください。
 
-    $url = action('UserController@profile', ['id' => 1]);
+    $url = action([UserController::class, 'profile'], ['id' => 1]);
 
 <a name="method-asset"></a>
 #### `asset()` {#collection-method}
@@ -2680,7 +2678,7 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 <a name="method-report"></a>
 #### `report()` {#collection-method}
 
-The `report` function will report an exception using your [exception handler](/docs/{{version}}/errors#the-exception-handler):
+`report`関数は[例外ハンドラ](/docs/{{version}}/errors#the-exception-handler)を使用して例外をレポートします。
 
     report($e);
 
@@ -2696,7 +2694,7 @@ The `report` function will report an exception using your [exception handler](/d
 <a name="method-rescue"></a>
 #### `rescue()` {#collection-method}
 
-The `rescue` function executes the given Closure and catches any exceptions that occur during its execution. All exceptions that are caught will be sent to your [exception handler](/docs/{{version}}/errors#the-exception-handler); however, the request will continue processing:
+`rescue`関数は指定されたクロージャを実行し、その実行中に発生した例外をすべてキャッチします。キャッチした例外はすべて[例外ハンドラ](/docs/{{version}}/errors#the-exception-handler)へ送られますが、リクエストの処理は続行されます。
 
     return rescue(function () {
         return $this->method();

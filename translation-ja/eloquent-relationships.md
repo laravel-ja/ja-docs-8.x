@@ -307,7 +307,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
         }
     }
 
-As you can see, the relationship is defined exactly the same as its `User` counterpart, with the exception of referencing the `App\Models\User` model. Since we're reusing the `belongsToMany` method, all of the usual table and key customization options are available when defining the inverse of many-to-many relationships.
+ご覧の通り一方の`User`とまったく同じ定義のリレーションです。違いは`App\Models\User`モデルを参照していることです。同じ`belongsToMany`メソッドを使っているのですから、通常のテーブル名、キーカスタマイズのオプションは逆の多対多リレーションを定義するときでもすべて使用できます。
 
 #### 中間テーブルのカラム取得
 
@@ -824,7 +824,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
 <a name="custom-polymorphic-types"></a>
 ### カスタムポリモーフィックタイプ
 
-By default, Laravel will use the fully qualified class name to store the type of the related model. For instance, given the one-to-many example above where a `Comment` may belong to a `Post` or a `Video`, the default `commentable_type` would be either `App\Models\Post` or `App\Models\Video`, respectively. However, you may wish to decouple your database from your application's internal structure. In that case, you may define a "morph map" to instruct Eloquent to use a custom name for each model instead of the class name:
+関連付けたモデルのタイプを保存するため、デフォルトでLaravelははっきりと識別できるクラス名を使います。たとえば上記の例で、`Comment`が`Post`か`Video`に所属しているとすると、`commentable_type`はデフォルトで`App\Models\Post`か`App\Models\Video`のどちらかになるでしょう。しかし、データーベースをアプリケーションの内部構造と分離したい場合もあります。その場合、リレーションの"morph map"を定義し、クラス名の代わりに使用する、各モデルに関連づいたテーブル名をEloquentへ指示できます。
 
     use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -1122,7 +1122,7 @@ Eagerロードのクエリに追加の制約を指定する必要がある場合
 <a name="eager-loading"></a>
 ## Eagerロード
 
-When accessing Eloquent relationships as properties, the relationship data is "lazy loaded". This means the relationship data is not actually loaded until you first access the property. However, Eloquent can "eager load" relationships at the time you query the parent model. Eager loading alleviates the N + 1 query problem. To illustrate the N + 1 query problem, consider a `Book` model that is related to `Author`:
+プロパティとしてEloquentリレーションにアクセスする場合、そのリレーションデータは「遅延ロード」されます。つまり、そのプロパティへ最初にアクセスするまで、実際にはロードされません。しかし、Eloquentでは、親のモデルに対するクエリと同時にリレーションを「Eagerロード」可能です。EagerロードはN+1クエリ問題の解決策です。N+１クエリ問題を理解するために、`Author`と関連している`Book`モデルを考えてみてください。
 
     <?php
 
@@ -1149,7 +1149,7 @@ When accessing Eloquent relationships as properties, the relationship data is "l
         echo $book->author->name;
     }
 
-This loop will execute 1 query to retrieve all of the books on the table, then another query for each book to retrieve the author. So, if we have 25 books, the code above would run 26 queries: 1 for the original book, and 25 additional queries to retrieve the author of each book.
+このループではまずすべての本をテーブルから取得するために１クエリ実行され、それから著者をそれぞれの本について取得します。ですから２５冊あるならば、このループで２６クエリが発生します。１回はもととなる書籍の取得、追加の２５回のクエリは各書籍の著者を取得するためです。
 
 うれしいことにクエリの数を徹底的に減らすために、Eagerローディングを使うことができます。`with`メソッドを使い指定してください。
 
@@ -1424,7 +1424,7 @@ Eloquentは新しいモデルをリレーションへ追加するために便利
 <a name="default-models"></a>
 #### デフォルトモデル
 
-The `belongsTo`, `hasOne`, `hasOneThrough`, and `morphOne` relationships allow you to define a default model that will be returned if the given relationship is `null`. This pattern is often referred to as the [Null Object pattern](https://en.wikipedia.org/wiki/Null_Object_pattern) and can help remove conditional checks in your code. In the following example, the `user` relation will return an empty `App\Models\User` model if no `user` is attached to the post:
+`belongsTo`、`hasOne`、`hasOneThrough`、`morphOne`リレーションでは、指定したリレーションが`null`の場合に返却するデフォルトモデルを定義できます。このパターンは、頻繁に[Nullオブジェクトパターン](https://en.wikipedia.org/wiki/Null_Object_pattern)と呼ばれ、コードから条件のチェックを省くのに役立ちます。以下の例では、ポストに従属する`user`がない場合に、空の`App\Models\User`モデルを返しています。
 
     /**
      * ポストの著者を取得

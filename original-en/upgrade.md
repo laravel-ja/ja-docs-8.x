@@ -9,7 +9,9 @@
 - [Model Factories](#model-factories)
 - [Queue `retryAfter` Method](#queue-retry-after-method)
 - [Queue `timeoutAt` Property](#queue-timeout-at-property)
+- [Queue `allOnQueue` and `allOnConnection`](#queue-allOnQueue-allOnConnection)
 - [Pagination Defaults](#pagination-defaults)
+- [Seeder & Factory Namespaces](#seeder-factory-namespaces)
 </div>
 
 <a name="medium-impact-changes"></a>
@@ -19,6 +21,7 @@
 - [PHP 7.3.0 Required](#php-7.3.0-required)
 - [Failed Jobs Table Batch Support](#failed-jobs-table-batch-support)
 - [Maintenance Mode Updates](#maintenance-mode-updates)
+- [The `php artisan down --message` Option](#artisan-down-message)
 - [The `assertExactJson` Method](#assert-exact-json-method)
 </div>
 
@@ -42,10 +45,12 @@ The new minimum PHP version is now 7.3.0.
 Update the following dependencies in your `composer.json` file:
 
 <div class="content-list" markdown="1">
-- `laravel/framework` to `^8.0`
-- `nunomaduro/collision` to `^5.0`
 - `guzzlehttp/guzzle` to `^7.0.1`
 - `facade/ignition` to `^2.3.6`
+- `laravel/framework` to `^8.0`
+- `laravel/ui` to `^3.0`
+- `nunomaduro/collision` to `^5.0`
+- `phpunit/phpunit` to `^9.0`
 </div>
 
 The following first-party packages have new major releases to support Laravel 8. If applicable, you should read their individual upgrade guides before upgrading:
@@ -56,6 +61,8 @@ The following first-party packages have new major releases to support Laravel 8.
 - [Socialite v5.0](https://github.com/laravel/socialite/blob/master/UPGRADE.md)
 - [Telescope v4.0](https://github.com/laravel/telescope/releases)
 </div>
+
+In addition, the Laravel installer has been updated to support `composer create-project` and Laravel Jetstream. Any installer older than 4.0 will cease to work after October 2020. You should upgrade your global installer to `^4.0` as soon as possible.
 
 Finally, examine any other third-party packages consumed by your application and verify you are using the proper version for Laravel 8 support.
 
@@ -74,6 +81,47 @@ To be consistent with typical PHP behavior, the `offsetExists` method of `Illumi
 
     // Laravel 8.x - false
     isset($collection[0]);
+
+### Database
+
+<a name="seeder-factory-namespaces"></a>
+#### Seeder & Factory Namespaces
+
+**Likelihood Of Impact: High**
+
+Seeders and factories are now namespaced. To accommodate for these changes, add the `Database\Seeders` namespace to your seeder classes. In addition, the previous `database/seeds` directory should be renamed to `database/seeders`:
+
+    <?php
+
+    namespace Database\Seeders;
+
+    use App\Models\User;
+    use Illuminate\Database\Seeder;
+
+    class DatabaseSeeder extends Seeder
+    {
+        /**
+         * Seed the application's database.
+         *
+         * @return void
+         */
+        public function run()
+        {
+            ...
+        }
+    }
+
+If you are choosing to use the `laravel/legacy-factories` package, no changes to your factory classes are required. However, if you are upgrading your factories, you should add the `Database\Factories` namespace to those classes.
+
+Next, in your `composer.json` file, remove `classmap` block from the `autoload` section and add the new namespaced class directory mappings:
+
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
 
 ### Eloquent
 
@@ -125,6 +173,13 @@ The [maintenance mode](/docs/{{version}}/configuration#maintenance-mode) feature
         require __DIR__.'/../storage/framework/maintenance.php';
     }
 
+<a name="artisan-down-message"></a>
+#### The `php artisan down --message` Option
+
+**Likelihood Of Impact: Medium**
+
+The `--message` option of the `php artisan down` command has been removed. As an alternative, consider [pre-rendering your maintenance mode views](/docs/{{version}}/configuration#maintenance-mode) with the message of your choice.
+
 #### Manager `$app` Property
 
 **Likelihood Of Impact: Low**
@@ -174,6 +229,18 @@ For consistency with other features of Laravel, the `retryAfter` method and `ret
 
 The `timeoutAt` property of queued jobs, notifications, and listeners has been renamed to `retryUntil`. You should update the name of this property in the relevant classes in your application.
 
+<a name="#queue-allOnQueue-allOnConnection"></a>
+#### The `allOnQueue()` / `allOnConnection()` Methods
+
+**Likelihood Of Impact: High**
+
+For consistency with other dispatching methods, the `allOnQueue()` and `allOnConnection()` methods used with job chaining have been removed. You may use the `onQueue()` and `onConnection()` methods instead. These methods should be called before calling the `dispatch` method:
+
+    ProcessPodcast::withChain([
+        new OptimizePodcast,
+        new ReleasePodcast
+    ])->onConnection('redis')->onQueue('podcasts')->dispatch();
+
 <a name="failed-jobs-table-batch-support"></a>
 #### Failed Jobs Table Batch Support
 
@@ -185,10 +252,64 @@ If you plan to use the [job batching](/docs/{{version}}/queues#job-batching) fea
     use Illuminate\Support\Facades\Schema;
 
     Schema::table('failed_jobs', function (Blueprint $table) {
-        $table->string('uuid')->after('id')->unique();
+        $table->string('uuid')->after('id')->nullable()->unique();
     });
 
 Next, the `failed.driver` configuration option within your `queue` configuration file should be updated to `database-uuids`.
+
+### Routing
+
+#### Automatic Controller Namespace Prefixing
+
+**Likelihood Of Impact: Optional**
+
+In previous releases of Laravel, the `RouteServiceProvider` class contained a `$namespace` property with a value of `App\Http\Controllers`. This value of this property was used to automatically prefix controller route declarations controller route URL generation such as when calling the `action` helper.
+
+In Laravel 8, this property is set to `null` by default. This allows your controller route declarations to use the standard PHP callable syntax, which provides better support for jumping to the controller class in many IDEs:
+
+    use App\Http\Controllers\UserController;
+
+    // Using PHP callable syntax...
+    Route::get('/users', [UserController::class, 'index']);
+
+    // Using string syntax...
+    Route::get('/users', 'App\Http\Controllers\UserController@index');
+
+In most cases this won't impact applications that are being upgraded because your `RouteServiceProvider` will still contain the `$namespace` property with its previous value. However, if you upgrade your application by creating a brand new Laravel project, you may encounter this as a breaking change.
+
+If you would like to continue using the original auto-prefixed controller routing, you can simply set the value of the `$namespace` property within your `RouteServiceProvider` and update the route registrations within the `boot` method to use the `$namespace` property:
+
+    class RouteServiceProvider extends ServiceProvider
+    {
+        /**
+         * This namespace is applied to your controller routes.
+         *
+         * In addition, it is set as the URL generator's root namespace.
+         *
+         * @var string
+         */
+        protected $namespace = 'App\Http\Controllers';
+
+        /**
+         * Define your route model bindings, pattern filters, etc.
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            $this->configureRateLimiting();
+
+            $this->routes(function () {
+                Route::middleware('web')
+                    ->namespace($this->namespace)
+                    ->group(base_path('routes/web.php'));
+
+                Route::prefix('api')
+                    ->middleware('api')
+                    ->namespace($this->namespace)
+                    ->group(base_path('routes/api.php'));
+        });
+    }
 
 ### Scheduling
 
@@ -207,13 +328,13 @@ Laravel's dependency on `dragonmantank/cron-expression` has been updated from `2
 The `Illuminate\Contracts\Session\Session` contract has received a new `pull` method. If you are implementing this contract manually, you should update your implementation accordingly:
 
     /**
-      * Get the value of a given key and then forget it.
-      *
-      * @param  string  $key
-      * @param  mixed  $default
-      * @return mixed
-      */
-     public function pull($key, $default = null);
+     * Get the value of a given key and then forget it.
+     *
+     * @param  string  $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public function pull($key, $default = null);
 
 ### Testing
 

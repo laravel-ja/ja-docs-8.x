@@ -2,7 +2,7 @@
     - [Release Notes](/docs/{{version}}/releases)
     - [Upgrade Guide](/docs/{{version}}/upgrade)
     - [Contribution Guide](/docs/{{version}}/contributions)
-    - [API Documentation](/api/7.x)
+    - [API Documentation](/api/8.x)
 - ## Getting Started
     - [Installation](/docs/{{version}}/installation)
     - [Configuration](/docs/{{version}}/configuration)
@@ -32,7 +32,6 @@
 - ## Frontend
     - [Blade Templates](/docs/{{version}}/blade)
     - [Localization](/docs/{{version}}/localization)
-    - [Frontend Scaffolding](/docs/{{version}}/frontend)
     - [Compiling Assets](/docs/{{version}}/mix)
 - ## Security
     - [Authentication](/docs/{{version}}/authentication)
@@ -83,6 +82,7 @@
     - [Dusk](/docs/{{version}}/dusk)
     - [Envoy](/docs/{{version}}/envoy)
     - [Horizon](/docs/{{version}}/horizon)
+    - [Jetstream](https://jetstream.laravel.com)
     - [Passport](/docs/{{version}}/passport)
     - [Sanctum](/docs/{{version}}/sanctum)
     - [Scout](/docs/{{version}}/scout)

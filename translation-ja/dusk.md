@@ -333,6 +333,8 @@ PHPUnitテストランナが通常受け付ける引数は、`dusk`コマンド�
         use DatabaseMigrations;
     }
 
+> {note} SQLite in-memory databases may not be used when executing Dusk tests. Since the browser executes within its own process, it will not be able to access the in-memory databases of other processes.
+
 <a name="cookies"></a>
 ### クッキー
 

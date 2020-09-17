@@ -576,6 +576,13 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
                     ->orderBy('name', 'desc')
                     ->get();
 
+複数カラムのソートが必要なら、`orderBy`を必要な回数記述してください。
+
+    $users = DB::table('users')
+                    ->orderBy('name', 'desc')
+                    ->orderBy('email', 'asc')
+                    ->get();
+
 #### latest／oldest
 
 `latest`と`oldest`メソッドにより、データの結果を簡単に整列できます。デフォルトで、結果は`created_at`カラムによりソートされます。ソートキーとしてカラム名を渡すこともできます。
@@ -721,7 +728,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
 <a name="updating-json-columns"></a>
 ### JSONカラムの更新
 
-When updating a JSON column, you should use `->` syntax to access the appropriate key in the JSON object. This operation is supported on MySQL 5.7+ and PostgreSQL 9.5+:
+JSONカラムを更新するときは、JSONオブジェクトの適切なキーへアクセスするために、`->`記法を使う必要があります。この操作はMySQL5.7以上と、PostgreSQL9.5以上でサポートしています。
 
     $affected = DB::table('users')
                   ->where('id', 1)

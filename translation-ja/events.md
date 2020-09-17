@@ -65,9 +65,9 @@ Laravelアプリケーションに含まれている`EventServiceProvider`は、
     }
 
 <a name="queuable-anonymous-event-listeners"></a>
-#### Queueable Anonymous Event Listeners
+#### キュー投入可能な無名イベントリスナ
 
-When registering evnet listeners manually, you may wrap the listener Closure within the `Illuminate\Events\queueable` function to instruct Laravel to execute the listener using the [queue](/docs/{{version}}/queues):
+自分でイベントリスナを登録するとき、リスナが[キュー](/docs/{{version}}/queues)を使用して実行されることをLaravelへ指示するために、そのリスナを`Illuminate\Events\queueable`関数の中のクロージャでラップしてください。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;
@@ -85,13 +85,13 @@ When registering evnet listeners manually, you may wrap the listener Closure wit
         }));
     }
 
-Like queued jobs, you may use the `onConnection`, `onQueue`, and `delay` methods to customize the execution of the queued listener:
+キュー投入されたジョブと同様に、その投入されたリスナの実行をカスタマイズするために、`onConnection`、`onQueue`、`delay`メソッドが使用できます。
 
     Event::listen(queueable(function (PodcastProcessed $event) {
         //
     })->onConnection('redis')->onQueue('podcasts')->delay(now()->addSeconds(10)));
 
-If you would like to handle anonymous queued listener failures, you may provide a Closure to the `catch` method while defining the `queueable` listener:
+キュー投入された無名リスナの失敗を処理したい場合は、`queueable`リスナの定義時に`catch`メソッドを含めてください。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;
@@ -101,7 +101,7 @@ If you would like to handle anonymous queued listener failures, you may provide 
     Event::listen(queueable(function (PodcastProcessed $event) {
         //
     })->catch(function (PodcastProcessed $event, Throwable $e) {
-        // The queued listener failed...
+        // キュー済みリスナが失敗した
     }));
 
 #### ワイルドカードリスナ
@@ -497,13 +497,13 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         }
     }
 
-Alternatively, your subscriber's `subscribe` method may return an array of event to handler mappings. In this case, the event listener mappings will be registered for you automatically:
+もしくは、購読者の`subscribe`メソッドでイベント／ハンドラのマッピング配列を返してください。この場合、リスナのマッピングは自動的に登録されます。
 
     use Illuminate\Auth\Events\Login;
     use Illuminate\Auth\Events\Logout;
 
     /**
-     * Register the listeners for the subscriber.
+     * 購読者のリスナ登録
      *
      * @return array
      */

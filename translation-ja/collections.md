@@ -267,7 +267,7 @@
 <a name="method-chunkwhile"></a>
 #### `chunkWhile()` {#collection-method}
 
-The `chunkWhile` method breaks the collection into multiple, smaller collections based on the evaluation of the given callback:
+`chunkWhile`メソッドはコレクションを指定したコールバックの評価に基づいた複数の小さなコレクションへ分割します。
 
     $collection = collect(str_split('AABBCCCD'));
 

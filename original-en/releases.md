@@ -18,10 +18,6 @@ For LTS releases, such as Laravel 6, bug fixes are provided for 2 years and secu
 
 | Version | Release | Bug Fixes Until | Security Fixes Until |
 | --- | --- | --- | --- |
-| 5.5 (LTS) | August 30th, 2017 | August 30th, 2019 | August 30th, 2020 |
-| 5.6 | February 7th, 2018 | August 7th, 2018 | February 7th, 2019 |
-| 5.7 | September 4th, 2018 | March 4th, 2019 | September 4th, 2019 |
-| 5.8 | February 26th, 2019 | August 26th, 2019 | February 26th, 2020 |
 | 6 (LTS) | September 3rd, 2019 | September 3rd, 2021 | September 3rd, 2022 |
 | 7 | March 3rd, 2020 | September 10th, 2020 | March 3rd, 2021 |
 | 8 | September 8th, 2020 | March 8th, 2021 | September 8th, 2021 |
@@ -127,7 +123,7 @@ Laravel's re-written factories contain many more features that we think you will
 
 _Migration squashing was contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
 
-As you build your application, you may accumulate more and more migrations over time. This can lead to your migration directory becoming bloated with potentially hundreds of migrations. If you would like, you may now "squash" your migrations into a single SQL file. To get started, execute the `schema:dump` command:
+As you build your application, you may accumulate more and more migrations over time. This can lead to your migration directory becoming bloated with potentially hundreds of migrations. If you're using MySQL or PostgreSQL, you may now "squash" your migrations into a single SQL file. To get started, execute the `schema:dump` command:
 
     php artisan schema:dump
 
@@ -229,7 +225,7 @@ After placing the application in maintenance mode, you may navigate to the appli
 
 When accessing this hidden route, you will then be redirected to the `/` route of the application. Once the cookie has been issued to your browser, you will be able to browse the application normally as if it was not in maintenance mode.
 
-#### Pre-Rendering The Maintenace Mode View
+#### Pre-Rendering The Maintenance Mode View
 
 If you utilize the `php artisan down` command during deployment, your users may still occasionally encounter errors if they access the application while your Composer dependencies or other infrastructure components are updating. This occurs because a significant part of the Laravel framework must boot in order to determine your application is in maintenance mode and render the maintenance mode view using the templating engine.
 
@@ -265,7 +261,7 @@ To learn more about Blade components, please consult the [Blade documentation](/
 
 _Event listener improvements were contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
 
-Closure based event listeners may now be registered by only passing the Closure to the `Event::listen` method. Laravel will inspect the Closure to determine which type of event the listener handlers:
+Closure based event listeners may now be registered by only passing the Closure to the `Event::listen` method. Laravel will inspect the Closure to determine which type of event the listener handles:
 
     use App\Events\PodcastProcessed;
     use Illuminate\Support\Facades\Event;
@@ -339,3 +335,21 @@ The Artisan `serve` command has been improved with automatic reloading when envi
 ### Tailwind Pagination Views
 
 The Laravel paginator has been updated to use the [Tailwind CSS](https://tailwindcss.com) framework by default. Tailwind CSS is a highly customizable, low-level CSS framework that gives you all of the building blocks you need to build bespoke designs without any annoying opinionated styles you have to fight to override. Of course, Bootstrap 3 and 4 views remain available as well.
+
+### Routing Namespace Updates
+
+In previous releases of Laravel, the `RouteServiceProvider` contained a `$namespace` property. This property's value would automatically be prefixed onto controller route definitions and calls to the `action` helper / `URL::action` method. In Laravel 8.x, this property is `null` by default. This means that no automatic namespace prefixing will be done by Laravel. Therefore, in new Laravel 8.x applications, controller route definitions should be defined using standard PHP callable syntax:
+
+    use App\Http\Controllers\UserController;
+
+    Route::get('/users', [UserController::class, 'index']);
+
+Calls to the `action` related methods should use the same callable syntax:
+
+    action([UserController::class, 'index']);
+
+    return Redirect::action([UserController::class, 'index']);
+
+If you prefer Laravel 7.x style controller route prefixing, you may simply add the `$namespace` property into your application's `RouteServiceProvider`.
+
+> {note} This change only affects new Laravel 8.x applications. Applications upgrading from Laravel 7.x will still have the `$namespace` property in their `RouteServiceProvider`.

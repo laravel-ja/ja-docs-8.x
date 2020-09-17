@@ -215,15 +215,15 @@ APIに使用するリソースルートを宣言する場合、`create`や`edit`
 
     /photos/{photo}/comments/{comment}
 
-#### Scoping Nested Resources
+#### ネストしたリソースのスコープ
 
-Laravel's [implicit model binding](/docs/{{version}}/routing#implicit-model-binding-scoping) feature can automatically scope nested bindings such that the resolved child model is confirmed to belong to the parent model. By using the `scoped` method when defining your nested resource, you may enabling automatic scoping as well as instruct Laravel which field the child resource should be retrieved by:
+Laravelの[暗黙的なモデル結合](/docs/{{version}}/routing#implicit-model-binding-scoping)機能は、依存解決された子モデルが親モデルに属していることが確約されるように、ネストされたバインディングのスコープを自動的に設定します。ネストされたリソースを定義するときに、`scoped`メソッドを使用することで、自動スコープを有効にするだけでなく、子リソースのどのフィールドを獲得するかLaravelに指示できます。
 
     Route::resource('photos.comments', PhotoCommentController::class)->scoped([
         'comment' => 'slug',
     ]);
 
-This route will register a scoped nested resource that may be accessed with URIs like the following:
+このルートは次のようなURIでアクセスされる、スコープしたネストリソースを登録します。
 
     /photos/{photo}/comments/{comment:slug}
 

@@ -18,8 +18,8 @@
     - [明示的な結合](#explicit-binding)
 - [フォールバックルート](#fallback-routes)
 - [レート制限](#rate-limiting)
-    - [Defining Rate Limiters](#defining-rate-limiters)
-    - [Attaching Rate Limiters To Routes](#attaching-rate-limiters-to-routes)
+    - [レート制限の定義](#defining-rate-limiters)
+    - [レート制限をルートに付加する](#attaching-rate-limiters-to-routes)
 - [擬似フォームメソッド](#form-method-spoofing)
 - [現在のルートへのアクセス](#accessing-the-current-route)
 - [Cross-Origin Resource Sharing (CORS)](#cors)
@@ -251,7 +251,7 @@ Laravelのルーティングコンポーネントは、`/`を除くすべての�
 
 ルートグループは多くのルートで共通なミドルウェアや名前空間のようなルート属性をルートごとに定義するのではなく、一括して適用するための手法です。`Route::group`メソッドの最初の引数には、共通の属性を配列で指定します。
 
-グループをネストさせると、親のグループに対して属性をできるだけ賢く「マージ」します。ミドルウェアと`where`条件はマージし、名前、名前空間、プレフィックスは追加します。名前空間のデリミタと、URIプレフィックス中のスラッシュは、自動的で適切に追加されます。
+グループをネストさせると、親のグループに対して属性をできるだけ賢く「マージ」します。ミドルウェアと`where`条件はマージし、名前とプレフィックスは追加します。名前空間のデリミタとURIプレフィックス中のスラッシュは、自動的かつ適切に追加します。
 
 <a name="route-group-middleware"></a>
 ### ミドルウェア
@@ -317,7 +317,7 @@ Laravelはタイプヒントされた変数名とルートセグメント名が�
         return $user->email;
     });
 
-Since the `$user` variable is type-hinted as the `App\Models\User` Eloquent model and the variable name matches the `{user}` URI segment, Laravel will automatically inject the model instance that has an ID matching the corresponding value from the request URI. If a matching model instance is not found in the database, a 404 HTTP response will automatically be generated.
+`$user`変数が`App\Models\User` Eloquentモデルとしてタイプヒントされており、変数名が`{user}` URIセグメントと一致しているため、Laravelは、リクエストされたURIの対応する値に一致するIDを持つ、モデルインスタンスを自動的に注入します。一致するモデルインスタンスがデータベースへ存在しない場合、404 HTTPレスポンスが自動的に生成されます。
 
 #### キーのカスタマイズ
 
@@ -358,7 +358,7 @@ Since the `$user` variable is type-hinted as the `App\Models\User` Eloquent mode
 <a name="explicit-binding"></a>
 ### 明示的な結合
 
-To register an explicit binding, use the router's `model` method to specify the class for a given parameter. You should define your explicit model bindings at the beginning of the `boot` method of your `RouteServiceProvider` class:
+明示的に結合を登録するには、ルータの`model`メソッドで、渡されるパラメータに対するクラスを指定します。`RouteServiceProvider`クラスの`boot`メソッドの中の最初で明示的なモデル結合を定義してください。
 
     /**
      * ルートモデル結合、パターンフィルタなどの定義
@@ -378,7 +378,7 @@ To register an explicit binding, use the router's `model` method to specify the 
         //
     });
 
-Since we have bound all `{user}` parameters to the `App\Models\User` model, a `User` instance will be injected into the route. So, for example, a request to `profile/1` will inject the `User` instance from the database which has an ID of `1`.
+`{user}`パラメーターを`App\Models\User`モデルへ結合しているため、`User`インスタンスはルートへ注入されます。ですからたとえば、`profile/1`のリクエストでは、データベースからIDが`1`の`User`インスタンスが注入されます。
 
 一致するモデルインスタンスがデータベース上に見つからない場合、404 HTTPレスポンスが自動的に生成されます。
 
@@ -429,11 +429,11 @@ Since we have bound all `{user}` parameters to the `App\Models\User` model, a `U
 ## レート制限
 
 <a name="defining-rate-limiters"></a>
-### Defining Rate Limiters
+### レート制限の定義
 
-Laravel includes powerful and customizable rate limiting services that you may utilize to restrict the amount of traffic for a given route or group of routes. To get started, you should define rate limiter configurations that meet your application's needs. Typically, this may be done in your application's `RouteServiceProvider`.
+Laravelは指定ルートまたはルートグループのトラフィック量を制限するために利用できる、強力でカスタマイズ可能なレート制限サービスを用意しています。使い始めるには、アプリケーションの必要に適したレート制限の設定を定義する必要があります。通常、これはアプリケーションの`RouteServiceProvider`で行います。
 
-Rate limiters are defined using the `RateLimiter` facade's `for` method. The `for` method accepts a rate limiter name and a Closure that returns the limit configuration that should apply to routes that are assigned this rate limiter:
+レート宣言は、`RateLimiter`ファサードの`for`メソッドを使用して定義します。`for`メソッドはレートリミッター名と、このレートリミッターが割り当てられているルートに適用される制限設定を返すクロージャを引数に取ります。
 
     use Illuminate\Cache\RateLimiting\Limit;
     use Illuminate\Support\Facades\RateLimiter;
@@ -442,7 +442,7 @@ Rate limiters are defined using the `RateLimiter` facade's `for` method. The `fo
         return Limit::perMinute(1000);
     });
 
-If the incoming request exceeds the specified rate limit, a response with a 429 HTTP status code will be automatically returned by Laravel. If you would like to define your own response that should be returned by a rate limit, you may use the `response` method:
+受信リクエストが指定されたレート制限を超えると、Laravelは429HTTPステータスコードのレスポンスを自動的に返します。レート制限により返す独自のレスポンスを定義する場合は、`response`メソッドを使用します。
 
     RateLimiter::for('global', function (Request $request) {
         return Limit::perMinute(1000)->response(function () {
@@ -450,7 +450,7 @@ If the incoming request exceeds the specified rate limit, a response with a 429 
         });
     });
 
-Since rate limiter callbacks receive the incoming HTTP request instance, you may build the appropriate rate limit dynamically based on the incoming request or authenticated user:
+レート制限コールバックは受信HTTPリクエストインスタンスを引数に受けるため、受信リクエストまたは認証済みユーザーに基づいた適切なレート制限を動的に構築できます。
 
     RateLimiter::for('uploads', function (Request $request) {
         return $request->user()->vipCustomer()
@@ -458,9 +458,9 @@ Since rate limiter callbacks receive the incoming HTTP request instance, you may
                     : Limit::perMinute(100);
     });
 
-#### Segmenting Rate Limits
+#### 分割レート制限
 
-Sometimes you may wish to segment rate limits by some arbitrary value. For example, you may wish to allow users to access a given route 100 times per minute per IP address. To accomplish this, you may use the `by` method when building your rate limit:
+レート制限を任意の値で分割したい場合があります。たとえば、ユーザーが指定ルートへIPアドレスごとに1分あたり100回のアクセスを許可したいとします。これを行うには、レート制限の作成時に`by`メソッドを使用します。
 
     RateLimiter::for('uploads', function (Request $request) {
         return $request->user()->vipCustomer()
@@ -468,9 +468,9 @@ Sometimes you may wish to segment rate limits by some arbitrary value. For examp
                     : Limit::perMinute(100)->by($request->ip());
     });
 
-#### Multiple Rate Limits
+#### 複数のレート制限
 
-If needed, you may return an array of rate limits for a given rate limiter configuration. Each rate limit will be evaluated for the route based on the order they are placed within the array:
+必要であれば、指定するレート制限設定の配列を返せます。各レート制限は配列内で配置された順序に基づき、ルートに対して評価されます。
 
     RateLimiter::for('login', function (Request $request) {
         return [
@@ -480,9 +480,9 @@ If needed, you may return an array of rate limits for a given rate limiter confi
     });
 
 <a name="attaching-rate-limiters-to-routes"></a>
-### Attaching Rate Limiters To Routes
+### レート制限をルートに付加する
 
-Rate limiters may be attached to routes or route groups using the `throttle` [middleware](/docs/{{version}}/middleware). The throttle middleware accepts the name of the rate limiter you wish to assign to the route:
+レート制限は、`throttle`[ミドルウェア](/docs/{{version}}/middleware)を使用して、ルートまたはルートグループに割り付けます。throttleミドルウェアは、そのルートに割り当てるレート制限の名前を引数に取ります。
 
     Route::middleware(['throttle:uploads'])->group(function () {
         Route::post('/audio', function () {

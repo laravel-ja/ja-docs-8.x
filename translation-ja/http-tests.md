@@ -7,7 +7,7 @@
 - [セッション／認証](#session-and-authentication)
 - [JSON APIのテスト](#testing-json-apis)
 - [ファイルアップロードのテスト](#testing-file-uploads)
-- [Testing Views](#testing-views)
+- [ビューのテスト](#testing-views)
 - [利用可能なアサート](#available-assertions)
     - [レスポンスのアサート](#response-assertions)
     - [認証のアサート](#authentication-assertions)
@@ -294,9 +294,9 @@ JSONレスポンスの特定パスに、指定したデータが含まれてい�
     UploadedFile::fake()->create('document.pdf', $sizeInKilobytes, 'application/pdf');
 
 <a name="testing-views"></a>
-## Testing Views
+## ビューのテスト
 
-Laravel allows you to render a view in isolation without making a simulated HTTP request to the application. To accomplish this, you may use the `view` method within your test. The `view` method accepts the view name and an optional array of data. The method returns an instance of `Illuminate\Testing\TestView`, which offers several methods to conveniently make assertions about the view's contents:
+LaravelではアプリケーションへのHTTPリクエストをシミュレートしなくても、ビューを分離してレンダリングできます。そのためには、テストの中で`view`メソッドを使ってください。`view`メソッドはビュー名とオプションの配列を引数に取ります。メソッドは`Illuminate\Testing\TestView`インスタンスを返します。
 
     public function testWelcomeView()
     {
@@ -305,15 +305,15 @@ Laravel allows you to render a view in isolation without making a simulated HTTP
         $view->assertSee('Taylor');
     }
 
-The `TestView` object provides the following assertion methods: `assertSee`, `assertSeeInOrder`, `assertSeeText`, `assertSeeTextInOrder`, `assertDontSee`, and `assertDontSeeText`.
+`TestView`オブジェクトは、`assertSee`、`assertSeeInOrder`、`assertSeeText`、`assertSeeTextInOrder`、`assertDontSee`、`assertDontSeeText`のアサートメソッドを提供しています。
 
-If needed, you may get the raw, rendered view contents by casting the `TestView` instance to a string:
+必要であれば、`TestView`インスタンスを文字列へキャストすることで、ビューをレンダーした内容をそのまま取得できます。
 
     $contents = (string) $this->view('welcome');
 
-#### Sharing Errors
+#### エラーの共有
 
-Some views may depend on errors shared in the global error bag provided by Laravel. To hydrate the error bag with error messages, you may use the `withViewErrors` method:
+いくらかのビューは、Laravelが提供するグローバルエラーバッグで共有しているエラーに依存していることがあります。エラーバッグにエラーメッセージを追加するには、`withViewErrors`メソッドを使うことができます。
 
     $view = $this->withViewErrors([
         'name' => ['Please provide a valid name.']
@@ -321,9 +321,9 @@ Some views may depend on errors shared in the global error bag provided by Larav
 
     $view->assertSee('Please provide a valid name.');
 
-#### Rendering Raw Blade
+#### もとのBladeのレンダリング
 
-If necessary, you may use the `blade` method to evaluate and render a raw Blade string. Like the `view` method, the `blade` method returns an instance of `Illuminate\Testing\TestView`:
+必要であれば、もとのBlade文字列を評価しレンダーするため、`blade`メソッドが使用できます。`blade`メソッドは`Illuminate\Testing\TestView`インスタンスを返します。
 
     $view = $this->blade(
         '<x-component :name="$name" />',

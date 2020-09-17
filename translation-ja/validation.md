@@ -995,7 +995,7 @@ MIMEタイプと対応する拡張子の完全なリストは、[https://svn.apa
 
 フィールドが指定した正規表現と一致しないことをバリデートします。
 
-Internally, this rule uses the PHP `preg_match` function. The pattern specified should obey the same formatting required by `preg_match` and thus also include valid delimiters. For example: `'email' => 'not_regex:/^.+$/i'`.
+このルールは内部でPHPの`preg_match`関数を使用しています。パターンは有効なデリミタを使用していることも含め、`preg_match`が求めているフォーマットにしたがって指定する必要があります。たとえば：`'email' => 'not_regex:/^.+$/i'`
 
 **注目：** `regex`と`not_regex`パターンを使用する場合はルールをパイプ（縦棒）で区切らず、ルールの配列で指定する必要があります。とくに正規表現に縦棒を含んでいる場合に該当します。
 
@@ -1026,7 +1026,7 @@ Internally, this rule uses the PHP `preg_match` function. The pattern specified 
 
 フィールドが指定された正規表現にマッチすることをバリデートします。
 
-Internally, this rule uses the PHP `preg_match` function. The pattern specified should obey the same formatting required by `preg_match` and thus also include valid delimiters. For example: `'email' => 'regex:/^.+@.+$/i'`.
+このルールは内部でPHPの`preg_match`関数を使用しています。パターンは有効なデリミタを使用していることも含め、`preg_match`が求めているフォーマットにしたがって指定する必要があります。たとえば：`'email' => 'regex:/^.+@.+$/i'`
 
 **注目：** `regex`と`not_regex`パターンを使用する場合はルールをパイプ（縦棒）で区切らず、ルールの配列で指定する必要があります。とくに正規表現に縦棒を含んでいる場合に該当します。
 

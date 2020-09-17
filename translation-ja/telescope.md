@@ -133,7 +133,9 @@ Telescopeはデフォルトで、ダッシュボードを`/telescope`で表示�
 <a name="upgrading-telescope"></a>
 ## Telescopeのアップグレード
 
-Telescopを新しいバージョンへアップグレードするときは、Telescopeのアセットを必ず再リソース公開してください。
+新しいメジャーバージョンのTelescopeへアップグレードするときは、[アップグレードガイド](https://github.com/laravel/telescope/blob/master/UPGRADE.md)を注意深く読むことが重要です。
+
+また、Telescopを新しいバージョンへアップグレードするときは、Telescopeのアセットを必ず再リソース公開してください。
 
     php artisan telescope:publish
 

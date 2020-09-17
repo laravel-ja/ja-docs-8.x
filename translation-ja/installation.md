@@ -56,6 +56,8 @@ Laravelは[Composer](https://getcomposer.org)を依存パッケージの管理�
 
     laravel new blog
 
+> {tip} ログイン、ユーザー登録などの機能を予め組み込んでいるLaravelプロジェクトを生成したいのですか？[Laravel Jetstream](https://jetstream.laravel.com)を調べてみてください。
+
 #### Composer Create-Project
 
 ターミナルでComposerの`create-project`コマンドを実行し、Laravelをインストールする方法もあります。

@@ -2,20 +2,20 @@
 
 - [イントロダクション](#introduction)
 - [各テスト後のデータベースリセット](#resetting-the-database-after-each-test)
-- [Creating Factories](#creating-factories)
+- [ファクトリの生成](#creating-factories)
 - [ファクトリの記述](#writing-factories)
     - [ファクトリステート](#factory-states)
     - [ファクトリコールバック](#factory-callbacks)
 - [ファクトリの使用](#using-factories)
     - [モデルの生成](#creating-models)
     - [モデルの保存](#persisting-models)
-    - [Sequences](#sequences)
-- [Factory Relationships](#factory-relationships)
-    - [Relationships Within Definitions](#relationships-within-definition)
-    - [Has Many Relationships](#has-many-relationships)
-    - [Belongs To Relationships](#belongs-to-relationships)
-    - [Many To Many Relationships](#many-to-many-relationships)
-    - [Polymorphic Relationships](#polymorphic-relationships)
+    - [順序](#sequences)
+- [ファクトリのリレーション](#factory-relationships)
+    - [定義中のリレーション](#relationships-within-definition)
+    - [Has Manyリレーション](#has-many-relationships)
+    - [Belongs Toリレーション](#belongs-to-relationships)
+    - [Many To Manyリレーション](#many-to-many-relationships)
+    - [ポリモーフィックリレーション](#polymorphic-relationships)
 - [シーダの使用](#using-seeds)
 - [使用可能なアサーション](#available-assertions)
 
@@ -68,9 +68,9 @@ Laravelでは、データベースを駆動するアプリケーションのテ�
     }
 
 <a name="creating-factories"></a>
-## Creating Factories
+## ファクトリの生成
 
-When testing, you may need to insert a few records into your database before executing your test. Instead of manually specifying the value of each column when you create this test data, Laravel allows you to define a default set of attributes for each of your [Eloquent models](/docs/{{version}}/eloquent) using model factories.
+テスト時は実行前にデータベースへいくつかのレコードを挿入する必要があります。こうしたテストデータを制作する時に各カラムの値を自分で指定する代わりに、Laravelではモデルファクトリを使用し、各[Eloquentモデル](/docs/{{version}}/eloquent)のデフォルト属性セットを定義できます。
 
 ファクトリを生成するには、`make:factory` [Artisanコマンド](/docs/{{version}}/artisan)を使用します。
 
@@ -85,7 +85,7 @@ When testing, you may need to insert a few records into your database before exe
 <a name="writing-factories"></a>
 ## ファクトリの記述
 
-To get started, take a look at the `database/factories/UserFactory.php` file in your application. Out of the box, this file contains the following factory definition:
+To get started, take a look at the `database/factories/UserFactory.php` file in your application. Out of the box, this file contains the following factory definition:開始前にアプリケーション中の`database/factories/UserFactory.php`ファイルをご覧ください。始めから、このファイルは以下のファクトリ定義を含んでいます。
 
     namespace Database\Factories;
 
@@ -96,14 +96,14 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
     class UserFactory extends Factory
     {
         /**
-         * The name of the factory's corresponding model.
+         * ファクトリに対応するモデルの名前
          *
          * @var string
          */
         protected $model = User::class;
 
         /**
-         * Define the model's default state.
+         * モデルのデフォルト状態の定義
          *
          * @return array
          */
@@ -119,19 +119,19 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
         }
     }
 
-As you can see, in their most basic form, factories are classes that extend Laravel's base factory class and define a `model` property and `definition` method. The `definition` method returns the default set of attribute values that should be applied when creating a model using the factory.
+ご覧のとおり、もっとも基本的な形式のファクトリはLaravelの基本ファクトリクラスを拡張し、`model`プロパティと`definition`メソッドを定義するクラスです。`definition`メソッドは、ファクトリを使用してモデルを作成するときに適用する必要がある属性値のデフォルトのセットを返します。
 
-Via the `faker` property, factories have access to the [Faker](https://github.com/fzaninotto/Faker) PHP library, which allows you to conveniently generate various kinds of random data for testing.
+`faker`プロパティにより、ファクトリは[Faker](https://github.com/fzaninotto/Faker) PHPライブラリにアクセスできます。これによりテスト用のさまざまな種類のランダムデータを簡単に生成できます。
 
 > {tip} Fakerのローケルは、`config/app.php`設定ファイルの`faker_locale`オプションで指定できます。
 
 <a name="factory-states"></a>
 ### ファクトリステート
 
-State manipulation methods allow you to define discrete modifications that can be applied to your model factories in any combination. For example, your `User` model might have a `suspended` state that modifies one of its default attribute values. You may define your state transformations using the base factory's `state` method. You may name your state method anything you like. After all, it's just a typical PHP method:
+ステート操作メソッドにより、モデルファクトリのどんな組み合わせに対しても適用できる、個別の調整を定義できます。たとえば、`User`モデルは、デフォルト属性値の一つを変更する、`suspended`状態を持つとしましょう。`state`メソッドを使い、状態遷移を定義します。ステートメソッドには好きな名前が付けられます。典型的なPHPメソッドにすぎません。
 
     /**
-     * Indicate that the user is suspended.
+     * そのユーザーが資格保留(suspended)されていることを表す
      *
      * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
@@ -142,10 +142,10 @@ State manipulation methods allow you to define discrete modifications that can b
         ]);
     }
 
-If your state transformation requires access to the other attributes defined by the factory, you may pass a callback to the `state` method. The callback will receive the array of raw attributes defined for the factory:
+状態遷移がファクトリで定義した他の属性にアクセする必要がある場合は、`state`メソッドへコールバックを渡してください。そのコールバックはファクトリで定義したそのままの属性の配列を受け取ります。
 
     /**
-     * Indicate that the user is suspended.
+     * そのユーザーが資格保留(suspended)されていることを表す
      *
      * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
@@ -161,7 +161,7 @@ If your state transformation requires access to the other attributes defined by 
 <a name="factory-callbacks"></a>
 ### ファクトリコールバック
 
-Factory callbacks are registered using the `afterMaking` and `afterCreating` methods and allow you to perform additional tasks after making or creating a model. You should register these callbacks by defining a `configure` method on the factory class. This method will automatically be called by Laravel when the factory is instantiated:
+ファクトリコールバックは`afterMaking`と`afterCreating`メソッドを使用し登録し、モデルを作成、もしくは生成した後の追加タスクを実行できるようにします。これらのコールバックは、ファクトリクラスの`configure`メソッドを定義し登録します。このメソッドはファクトリがインスタンス化される時にLaravelが自動的に呼び出します。
 
     namespace Database\Factories;
 
@@ -172,24 +172,22 @@ Factory callbacks are registered using the `afterMaking` and `afterCreating` met
     class UserFactory extends Factory
     {
         /**
-         * The name of the factory's corresponding model.
+         * ファクトリに対応するモデルの名前
          *
          * @var string
          */
         protected $model = User::class;
 
         /**
-         * Configure the model factory.
+         * モデルファクトリの設定
          *
-         * @return void
+         * @return $this
          */
         public function configure()
         {
-            $this->afterMaking(function (User $user) {
+            return $this->afterMaking(function (User $user) {
                 //
-            });
-
-            $this->afterCreating(function (User $user) {
+            })->afterCreating(function (User $user) {
                 //
             });
         }
@@ -203,7 +201,19 @@ Factory callbacks are registered using the `afterMaking` and `afterCreating` met
 <a name="creating-models"></a>
 ### モデルの生成
 
-Once you have defined your factories, you may use the static `factory` method provided by the `HasFactory` trait on your Eloquent models in order to instantiate a factory instance for that model. Let's take a look at a few examples of creating models. First, we'll use the `make` method to create models without persisting them to the database:
+ファクトリを定義できたら、モデルのファクトリインスタンスをインスタンス化するため、Eloquentモデル上の`Illuminate\Database\Eloquent\Factories\HasFactory`トレイトが提供している静的`factory`メソッドを使います。
+
+    namespace App\Models;
+
+    use Illuminate\Database\Eloquent\Factories\HasFactory;
+    use Illuminate\Database\Eloquent\Model;
+
+    class User extends Model
+    {
+        use HasFactory;
+    }
+
+モデルの生成例をいくつか見てみましょう。データベースへ保存せずにモデルを生成する`make`メソッドを使ってみましょう。
 
     use App\Models\User;
 
@@ -219,7 +229,7 @@ You may create a collection of many models using the `count` method:
     // Create three App\Models\User instances...
     $users = User::factory()->count(3)->make();
 
-The `HasFactory` trait's `factory` method will use conventions to determine the proper factory for the model. Specifically, the method will look for a factory in the `Database\Factories` namespace that has a class name matching the model name and is suffixed with `Factory`. If these conventions do not apply to your particular application or factory, you may use the factory directly to create model instances. To create a new factory instance using the factory class, you should call the static `new` method on the factory:
+`HasFactory`トレイトの`factory`メソッドはモデルに対し正しいファクトリなのかを判定するために便利に使えます。具体的には、このメソッドは`Database\Factories`名前空間の中のモデル名と一致するクラス名を持ち、最後に`Factory`が付くファクトリを探します。この命名規則を特定のアプリケーションまたはファクトリで適用しない場合は、ファクトリを直接使用してモデルインスタンスを作成できます。ファクトリクラスを使用して新しいファクトリインスタンスを作成するには、ファクトリで静的な `new`メソッドを呼び出す必要があります。
 
     use Database\Factories\UserFactory;
 
@@ -227,7 +237,7 @@ The `HasFactory` trait's `factory` method will use conventions to determine the 
 
 #### ステートの適用
 
-You may also apply any of your [states](#factory-states) to the models. If you would like to apply multiple state transformations to the models, you may simply call state methods directly:
+こうしたモデルに対して[ステート](#factory-states)を適用することもできます。複数の状態遷移を適用したい場合は、シンプルにステートメソッドを直接呼び出します。
 
     $users = User::factory()->count(5)->suspended()->make();
 
@@ -239,7 +249,7 @@ You may also apply any of your [states](#factory-states) to the models. If you w
         'name' => 'Abigail Otwell',
     ]);
 
-Alternatively, the `state` method may be called directly on the factory instance to perform an inline state transformation:
+もしくは、インラインで状態遷移させるために、ファクトリインスタンスで直接`state`メソッドを呼び出します。
 
     $user = User::factory()->state([
         'name' => 'Abigail Otwell',
@@ -250,31 +260,31 @@ Alternatively, the `state` method may be called directly on the factory instance
 <a name="persisting-models"></a>
 ### モデルの保存
 
-The `create` method creates model instances and persists them to the database using Eloquent's `save` method:
+`create`メソッドはモデルインスタンスを生成するだけでなく、Eloquentの`save`メソッドを使用しデータベースへ保存します。
 
     use App\Models\User;
 
     public function testDatabase()
     {
-        // Create a single App\Models\User instance...
+        // 一つのApp\Models\Userインスタンスを作成
         $user = User::factory()->create();
 
-        // Create three App\Models\User instances...
+        // App\Models\Userインスタンスを３つ生成
         $users = User::factory()->count(3)->create();
 
         // モデルをテストで使用…
     }
 
-You may override attributes on the model by passing an array of attributes to the `create` method:
+`create`メソッドに配列で値を渡すことで、モデルの属性をオーバーライドできます。
 
     $user = User::factory()->create([
         'name' => 'Abigail',
     ]);
 
 <a name="sequences"></a>
-### Sequences
+### 順序
 
-Sometimes you may wish to alternate the value of a given model attribute for each created model. You may accomplish this by defining a state transformation as a `Sequence` instance. For example, we may wish to alternate the value of an `admin` column on a `User` model between `Y` and `N` for each created user:
+作成する各モデルごとに、指定するモデル属性の値を交互に指定したい場合もあります。それには状態遷移を`Sequence`インスタンスとして定義します。たとえば、`User`モデルの`admin`カラムの値をユーザーを生成するごとに`Y`と`N`の交互で切り替えたいとします。
 
     use App\Models\User;
     use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -287,20 +297,20 @@ Sometimes you may wish to alternate the value of a given model attribute for eac
                     ))
                     ->create();
 
-In this example, five users will be created with an `admin` value of `Y` and five users will be created with an `admin` value of `N`.
+この例では、`admin`値が`Y`の５ユーザーと`N`の５ユーザーが生成されます。
 
 <a name="factory-relationships"></a>
-## Factory Relationships
+## ファクトリのリレーション
 
 <a name="relationships-within-definition"></a>
-### Relationships Within Definitions
+### 定義中のリレーション
 
-You may attach relationships to models in your factory definitions. For example, if you would like to create a new `User` instance when creating a `Post`, you may do the following:
+ファクトリ定義の中でモデルへのリレーションを付加できます。例として`Post`作成時に新しい`User`インスタンスを作成したいとしましょう。以下のようになります。
 
     use App\Models\User;
 
     /**
-     * Define the model's default state.
+     * モデルのデフォルト状態の定義
      *
      * @return array
      */
@@ -313,10 +323,10 @@ You may attach relationships to models in your factory definitions. For example,
         ];
     }
 
-If the relationship's columns depend on the factory that defines it you may provide a callback which accepts the evaluated attribute array:
+リレーションのカラムが、それを定義するファクトリに依存している場合、評価済みの属性配列を引数に取るコールバックを指定できます。
 
     /**
-     * Define the model's default state.
+     * モデルのデフォルト状態の定義
      *
      * @return array
      */
@@ -333,9 +343,9 @@ If the relationship's columns depend on the factory that defines it you may prov
     }
 
 <a name="has-many-relationships"></a>
-### Has Many Relationships
+### Has Manyリレーション
 
-Next, let's explore building Eloquent model relationships using Laravel's fluent factory methods. First, let's assume our application has a `User` model and a `Post` model. Also, let's assume that the `User` model defines a `hasMany` relationship with `Post`. We can create a user that has three posts using the `has` method provided by the factory. The `has` method accepts a factory instance:
+次に、Laravelの読み書きしやすいファクトリメソッドを使用して、Eloquentモデルリレーションの構築を説明します。まず、アプリケーションに`User`と`Post`モデルがあると仮定しましょう。その`User`モデルは`Post`に対して`hasMany`リレーションを定義しているとも仮定しましょう。ファクトリが提供する`has`メソッドを使い、３ポストを持つユーザーを１件作ってみます。`has`メソッドはファクトリインスタンスを引数に取ります。
 
     use App\Models\Post;
     use App\Models\User;
@@ -344,13 +354,13 @@ Next, let's explore building Eloquent model relationships using Laravel's fluent
                 ->has(Post::factory()->count(3))
                 ->create();
 
-By convention, when passing a `Post` model to the `has` method, Laravel will assume that the `User` model must have a `posts` method that defines the relationship. If necessary, you may explicitly specify the name of the relationship that you would like to manipulate:
+規約により、`Post`モデルを`has`メソッドに渡すとき、Laravelは`User`モデルがリレーションを定義する`posts`メソッドを持っていると想定します。必要に応じ、操作したいリレーションの名前を明示的に指定できます。
 
     $users = User::factory()
                 ->has(Post::factory()->count(3), 'posts')
                 ->create();
 
-Of course, you may perform state manipulations on the related models. In addition, you may pass a Closure based state transformation if your state change requires access to the parent model:
+もちろん、関連するモデルに対し状態操作することもできます。加えて、状態の変更に親モデルへのアクセスが必要であるなら、クロージャベースで状態遷移を渡すこともできます。
 
     $users = User::factory()
                 ->has(
@@ -362,15 +372,15 @@ Of course, you may perform state manipulations on the related models. In additio
                 )
                 ->create();
 
-#### Using Magic Methods
+#### マジックメソッドの使用
 
-For convenience, you may use the factory's magic relationship methods to define relationships. For example, the following example will use convention to determine that the related models should be created via a `posts` relationship method on the `User` model:
+リレーションシップを定義するため便利なように、ファクトリのマジックリレーションメソッドを使用できます。たとえば以下の例では、関連するモデルが`User`モデル上の`posts`リレーションメソッドを介して作成されるべきであることを決定するように記法を使用します。
 
     $users = User::factory()
                 ->hasPosts(3)
                 ->create();
 
-When using magic methods to create factory relationships, you may pass an array of attributes to override on the related models:
+ファクトリリレーションを作成するためにマジックメソッドを使用する場合は、関連モデルをオーバーライドするために属性の配列を渡せます。
 
     $users = User::factory()
                 ->hasPosts(3, [
@@ -378,7 +388,7 @@ When using magic methods to create factory relationships, you may pass an array 
                 ])
                 ->create();
 
-You may provide a Closure based state transformation if your state change requires access to the parent model:
+状態の変更で親モデルにアクセスする必要があるなら、クロージャベースの状態遷移を渡せます。
 
     $users = User::factory()
                 ->hasPosts(3, function (array $attributes, User $user) {
@@ -387,9 +397,9 @@ You may provide a Closure based state transformation if your state change requir
                 ->create();
 
 <a name="belongs-to-relationships"></a>
-### Belongs To Relationships
+### Belongs Toリレーション
 
-Now that we have explored how to build "has many" relationships using factories, let's explore the inverse of the relationship. The `for` method may be used to define the model that factory created models belong to. For example, we can create three `Post` model instances that belong to a single user:
+今度はファクトリを使用した"has many"リレーションをどのように構築するか説明します。`for`メソッドは、ファクトリで作成されたモデルが属するモデルを定義するために使われます。たとえば、1人のユーザーに属する３つの`Post`モデルインスタンスを作成できます。
 
     use App\Models\Post;
     use App\Models\User;
@@ -401,9 +411,9 @@ Now that we have explored how to build "has many" relationships using factories,
                 ]))
                 ->create();
 
-#### Using Magic Methods
+#### マジックメソッドの使用
 
-For convenience, you may use the factory's magic relationship methods to define "belongs to" relationships. For example, the following example will use convention to determine that the three posts should belong to the `user` relationship on the `Post` model:
+"belongs to"リレーションを定義するのに便利なように、ファクトリのマジックリレーションメソッドを使用できます。たとえば次の例は記法を使用し、３つのポストが`Post`モデルの`user`リレーションに属することを決定します
 
     $posts = Post::factory()
                 ->count(3)
@@ -413,9 +423,9 @@ For convenience, you may use the factory's magic relationship methods to define 
                 ->create();
 
 <a name="many-to-many-relationships"></a>
-### Many To Many Relationships
+### Many To Manyリレーション
 
-Like [has many relationships](#has-many-relationships), "many to many" relationships may be created using the `has` method:
+[has manyリレーション](#has-many-relationships)と同様に、"many to many"リレーションは`has`メソッドを使用して作成できます。
 
     use App\Models\Role;
     use App\Models\User;
@@ -424,9 +434,9 @@ Like [has many relationships](#has-many-relationships), "many to many" relations
                 ->has(Role::factory()->count(3))
                 ->create();
 
-#### Pivot Table Attributes
+#### 中間テーブルの属性
 
-If you need to define attributes that should be set on the pivot / intermediate table linking the models, you may use the `hasAttached` method. This method accepts an array of pivot table attribute names and values as its second argument:
+モデルにリンクするピボット／中間テーブルへセットする属性を定義する必要がある場合は、`hasAttached`メソッドを使用します。このメソッドは第２引数としてピボットテーブルの属性名と値の配列を引数に取ります。
 
     use App\Models\Role;
     use App\Models\User;
@@ -438,7 +448,7 @@ If you need to define attributes that should be set on the pivot / intermediate 
                 )
                 ->create();
 
-You may provide a Closure based state transformation if your state change requires access to the related model:
+状態変化で関連モデルへアクセスする必要があれば、クロージャベースの状態遷移を指定できます。
 
     $users = User::factory()
                 ->hasAttached(
@@ -451,9 +461,9 @@ You may provide a Closure based state transformation if your state change requir
                 )
                 ->create();
 
-#### Using Magic Methods
+#### マジックメソッドの使用
 
-For convenience, you may use the factory's magic relationship methods to define many to many relationships. For example, the following example will use convention to determine that the related models should be created via a `roles` relationship method on the `User` model:
+ファクトリのマジックリレーションメソッドを使用して、多対多のリレーションを便利に定義できます。たとえば次の例では、関連するモデルが`User`モデル上の`roles`リレーションメソッドを介して作成されるべきだと決めるため記法を使用しています。
 
     $users = User::factory()
                 ->hasRoles(1, [
@@ -462,25 +472,25 @@ For convenience, you may use the factory's magic relationship methods to define 
                 ->create();
 
 <a name="polymorphic-relationships"></a>
-### Polymorphic Relationships
+### ポリモーフィックリレーション
 
-[Polymorphic relationships](/docs/{{version}}/eloquent-relationships#polymorphic-relationships) may also be created using factories. Polymorphic "morph many" relationships are created in the same way as typical "has many" relationships. For example, if a `Post` model has a `morphMany` relationship with a `Comment` model:
+[ポリモーフィックリレーション](/docs/{{version}}/eloquent-relationships#polymorphic-relationships)もファクトリを使って作成できます。ポリモーフィックな"morph many"リレーションは、典型的な "has many"リレーションと同じ方法で作成します。たとえば、`Post`モデルが`Comment`モデルと`morphMany`リレーションを持つとします。
 
     use App\Models\Post;
 
     $post = Post::factory()->hasComments(3)->create();
 
-#### Morph To Relationships
+#### Morph Toリレーション
 
-Magic methods may not be used to create `morphTo` relationships. Instead, the `for` method must be used directly and the name of the relationship must be explicitly provided. For example, imagine that the `Comment` model has a `commentable` method that defines a `morphTo` relationship. In this situation, we may create three comments that belong to a single post using the `for` method directly:
+マジックメソッドは`morphTo`リレーションを作成するために使用できません。代わりに`for`メソッドを直接使用し、リレーション名を明白に指定する必要があります。たとえば、`Comment`モデルが`morphTo`リレーションを定義する`commentable`メソッドを持っていると想像してください。この状況で、`for`メソッドを直接使用し１つのポストに所属する３コメントを作成してみましょう。
 
     $comments = Comment::factory()->count(3)->for(
         Post::factory(), 'commentable'
     )->create();
 
-#### Polymorphic Many To Many Relationships
+#### Polymorphic Many To Manyリレーション
 
-Polymorphic "many to many" relationships may be created just like non-polymorphic "many to many" relationships:
+ポリモーフィック"many to many"リレーションは、ポリモーフィックではない"many to many"と同様に作成できます。
 
     use App\Models\Tag;
     use App\Models\Video;
@@ -492,7 +502,7 @@ Polymorphic "many to many" relationships may be created just like non-polymorphi
                 )
                 ->create();
 
-Of course, the magic `has` method may also be used to create polymorphic "many to many" relationships:
+もちろん、マジック`has`メソッドも、ポリモーフィック"many to many"リレーションを作成するために使用できます。
 
     $users = Video::factory()
                 ->hasTags(3, ['public' => true])

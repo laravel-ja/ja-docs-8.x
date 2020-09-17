@@ -72,7 +72,7 @@ Passportサービスプロバイダはフレームワークに対し、自身の
 
 > {tip} 自動増分整数の代わりに、Passportの`Client`モデルの主キー値としてUUIDを使用したい場合は、[`uuids`オプション](#client-uuids)を使いPassportをインストールしてください。
 
-After running the `passport:install` command, add the `Laravel\Passport\HasApiTokens` trait to your `App\Models\User` model. This trait will provide a few helper methods to your model which allow you to inspect the authenticated user's token and scopes:
+`passport:install`コマンドを実行し終えたら、`Laravel\Passport\HasApiTokens`トレイトを`App\Models\User`モデルへ追加してください。このトレイトは認証済みユーザーのトークンとスコープを調べられるように、モデルへ数個のヘルパメソッドを提供します。
 
     <?php
 
@@ -836,28 +836,6 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 
     PASSPORT_PERSONAL_ACCESS_CLIENT_ID=client-id-value
     PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET=unhashed-client-secret-value
-
-次に、`AuthServiceProvider`の`boot`メソッドの中で、`Passport::personalAccessClientId`と`Passport::personalAccessClientSecret`を呼び出し、これらの値を登録します。
-
-    /**
-     * 全認証／認可の登録
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        $this->registerPolicies();
-
-        Passport::routes();
-
-        Passport::personalAccessClientId(
-            config('passport.personal_access_client.id')
-        );
-
-        Passport::personalAccessClientSecret(
-            config('passport.personal_access_client.secret')
-        );
-    }
 
 <a name="managing-personal-access-tokens"></a>
 ### パーソナルアクセストークンの管理

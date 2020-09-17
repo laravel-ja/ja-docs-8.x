@@ -210,7 +210,10 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
     $url = Storage::temporaryUrl(
         'file.jpg',
         now()->addMinutes(5),
-        ['ResponseContentType' => 'application/octet-stream']
+        [
+            'ResponseContentType' => 'application/octet-stream',
+            'ResponseContentDisposition' => 'attachment; filename=file2.jpg',
+        ]
     );
 
 #### URLホストカスタマイズ

@@ -62,7 +62,7 @@ Laravelはユニットテストも考慮して構築されています。実際�
 <a name="artisan-test-runner"></a>
 ### Artisanテストランナー
 
-In addition to the `phpunit` command, you may use the `test` Artisan command to run your tests. The Artisan test runner provides verbose test reports in order to ease development and debugging:
+テスト実行には`phpunit`コマンドに加え、`test` Artisanコマンドも使用できます。Artisanテストランナーは、開発とデバッグを容易にするため、詳細なテストレポートを提供します
 
     php artisan test
 

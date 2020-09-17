@@ -9,12 +9,12 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-シーダ（初期値設定）クラスを使用し、テストデーターをデーターベースに設定するシンプルな方法もLaravelには備わっています。全シーダクラスは`database/seeds`に保存します。シーダクラスには好きな名前を付けられます。しかし`UserSeeder`などのような分かりやすい規則に従ったほうが良いでしょう。デフォルトとして`DatabaseSeeder`クラスが定義されています。このクラスから`call`メソッドを使い他の初期値設定クラスを呼び出すことで、シーディングの順番をコントロールできます。
+シーダ（初期値設定）クラスを使用し、テストデーターをデーターベースに設定するシンプルな方法もLaravelには備わっています。全シーダクラスは`database/seeders`に保存します。シーダクラスには好きな名前を付けられます。しかし`UserSeeder`などのような分かりやすい規則に従ったほうが良いでしょう。デフォルトとして`DatabaseSeeder`クラスが定義されています。このクラスから`call`メソッドを使い他の初期値設定クラスを呼び出すことで、シーディングの順番をコントロールできます。
 
 <a name="writing-seeders"></a>
 ## シーダクラス定義
 
-シーダを生成するには、`make:seeder` [Artisanコマンド](/docs/{{version}}/artisan)を実行します。フレームワークが生成するシーダはすべて`database/seeds`ディレクトリに設置されます。
+シーダを生成するには、`make:seeder` [Artisanコマンド](/docs/{{version}}/artisan)を実行します。フレームワークが生成するシーダはすべて`database/seeders`ディレクトリに設置されます。
 
     php artisan make:seeder UserSeeder
 
@@ -36,7 +36,7 @@
     class DatabaseSeeder extends Seeder
     {
         /**
-         * データベース初期値設定の実行
+         * データベースに対するデータ設定の実行
          *
          * @return void
          */
@@ -55,14 +55,14 @@
 <a name="using-model-factories"></a>
 ### モデルファクトリの利用
 
-Of course, manually specifying the attributes for each model seed is cumbersome. Instead, you can use [model factories](/docs/{{version}}/database-testing#writing-factories) to conveniently generate large amounts of database records. First, review the [model factory documentation](/docs/{{version}}/database-testing#writing-factories) to learn how to define your factories.
+当然それぞれのモデルシーダで属性をいちいち指定するのは面倒です。代わりに大量のデータベースレコードを生成するのに便利な[モデルファクトリ](/docs/{{version}}/database-testing#writing-factories)が使用できます。最初に[モデルファクトリのドキュメント](/docs/{{version}}/database-testing#writing-factories)を読んで、どのように定義するのかを学んでください。
 
 例として50件のレコードを生成し、それぞれのユーザーへリレーションを付加してみましょう。
 
     use App\Models\User;
 
     /**
-     * データベース初期値設定の実行
+     * データベースに対するデータ設定の実行
      *
      * @return void
      */
@@ -80,7 +80,7 @@ Of course, manually specifying the attributes for each model seed is cumbersome.
 `DatabaseSeeder`クラスの中で追加のシーダクラスを呼び出す`call`メソッドが使えます。`call`メソッドを使うことで、圧倒されるぐらい大きな１ファイルを使う代わりに、データベースシーディングを複数のファイルへ分割できます。実行したいシーダクラス名を渡します。
 
     /**
-     * データベース初期値設定の実行
+     * データベースに対するデータ設定の実行
      *
      * @return void
      */

@@ -533,7 +533,7 @@ API構築時、Eloquentモデルと、アプリケーションユーザーに対
 
 条件によりロードする属性に付け加え、リレーションがモデルにロードされているかに基づいて、リソースレスポンスへリレーションを条件付きで含めることもできます。これにより、どのリレーションをモデルにロードさせるかをコントローラで決め、リソースが実際にロード済みの場合のみ、レスポンスへ含めることが簡単に実現できます。
 
-Ultimately, this makes it easier to avoid "N+1" query problems within your resources. The `whenLoaded` method may be used to conditionally load a relationship. In order to avoid unnecessarily loading relationships, this method accepts the name of the relationship instead of the relationship itself:
+究極的には、これによりリソースの中で「N＋１」クエリ問題を簡単に防ぐことができます。`whenLoaded`メソッドは、リレーションを条件付きでロードするために使われます。不必要なリレーションのロードを防ぐために、このメソッドはリレーションそのものの代わりに、リレーションの名前を引数に取ります
 
     /**
      * リソースを配列へ変換

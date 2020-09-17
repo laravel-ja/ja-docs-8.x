@@ -58,14 +58,16 @@
 <a name="redirecting-controller-actions"></a>
 ## コントローラアクションへのリダイレクト
 
-[コントローラアクション](/docs/{{version}}/controllers)へのリダイレクトを生成することもできます。そのためには、`action`メソッドへコントローラとアクションの名前を渡してください。Laravelの`RouteServiceProvider`でベースのコントローラ名前空間が指定されているため、コントローラへの完全な空間名を指定する必要はないことを覚えておきましょう。
+[コントローラアクション](/docs/{{version}}/controllers)へのリダイレクトを生成することもできます。そのためには、`action`メソッドへコントローラとアクションの名前を渡してください。
 
-    return redirect()->action('HomeController@index');
+    use App\Http\Controllers\HomeController;
+
+    return redirect()->action([HomeController::class, 'index']);
 
 コントローラルートがパラメータを必要としている場合、`action`メソッドの第２引数として渡してください。
 
     return redirect()->action(
-        'UserController@profile', ['id' => 1]
+        [UserController::class, 'profile'], ['id' => 1]
     );
 
 <a name="redirecting-with-flashed-session-data"></a>

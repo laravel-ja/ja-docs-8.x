@@ -8,7 +8,6 @@
     - [認証](#included-authenticating)
     - [認証済みユーザーの取得](#retrieving-the-authenticated-user)
     - [ルートの保護](#protecting-routes)
-    - [パスワード確認](#password-confirmation)
     - [認証回数制限](#login-throttling)
 - [手動のユーザー認証](#authenticating-users)
     - [継続ログイン](#remembering-users)
@@ -28,8 +27,6 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-> {tip} **さくっと始めたいですか？** 真新しくインストールしたLaravelアプリケーションに`laravel/ui` Composerパッケージをインストールし、`php artisan ui vue --auth`を実行してください。データベースをマイグレーションし、`http://your-app.test/register`かアプリケーションに割り付けた別のURLをブラウザでアクセスしましょう。これらのコマンドが、認証システム全体のスカフォールドの面倒を見ます。
-
 Laravelでは簡単に認証が実装できます。実のところ、ほぼすべて最初から設定済みです。認証の設定ファイルは`config/auth.php`に用意してあり、認証サービスの振る舞いを調整できるように、読みやすいコメント付きでたくさんのオプションが用意されています。
 
 Laravelの認証機能は「ガード」と「プロバイダ」を中心概念として構成されています。ガードは各リクエストごとに、どのようにユーザーを認証するかを定義します。たとえば、Laravelにはセッションストレージとクッキーを使いながら状態を維持する`session`ガードが用意されています。
@@ -38,12 +35,16 @@ Laravelの認証機能は「ガード」と「プロバイダ」を中心概念�
 
 混乱しても心配ありません。通常のアプリケーションでは、デフォルトの認証設定を変更する必要はありません。
 
+#### てっとり早く始める
+
+早速使い始めたいですか？真新しくインストールしたLaravelパッケージへ、[Laravel Jetstream](https://jetstream.laravel.com)をインストールしてください。データベースをマイグレーションしたら、`/register`へブラウザでアクセスするか、アプリケーションに割り付けた別のURLへアクセスしましょう。Jetstreamは認証システム全体のスカフォールディングを面倒見ます！
+
 <a name="introduction-database-considerations"></a>
 ### データベースの検討事項
 
-By default, Laravel includes an `App\Models\User` [Eloquent model](/docs/{{version}}/eloquent) in your `app/Models` directory. This model may be used with the default Eloquent authentication driver. If your application is not using Eloquent, you may use the `database` authentication driver which uses the Laravel query builder.
+Laravelはデフォルトで、`app/Models`ディレクトリの中に`App\Models\User` [Eloquentモデル](/docs/{{version}}/eloquent)を設置します。このモデルは、デフォルトのEloquent認証ドライバと共に使用します。アプリケーションでEloquentを使用しない場合は、Laravelのクエリビルダを使用する`database`認証ドライバを使用することになるでしょう。
 
-When building the database schema for the `App\Models\User` model, make sure the password column is at least 60 characters in length. Maintaining the default string column length of 255 characters would be a good choice.
+`App\Models\User`モデルのデータベーススキマーを構築するときは、パスワードカラムが最低でも６０文字確保してください。デフォルトの文字列カラム長である２５５文字のままにしておくのは、良い選択です。
 
 さらに`users`、もしくは同等の働きをするテーブルには、１００文字の`remember_token`文字列カラムも含めてください。このカラムはログイン時に、アプリケーションで"remember me"を選んだユーザーのトークンを保存しておくカラムとして使用されます。
 
@@ -53,90 +54,50 @@ When building the database schema for the `App\Models\User` model, make sure the
 <a name="included-routing"></a>
 ### ルート定義
 
-Laravelの`laravel/ui`パッケージは、認証に必要なルートとビューをすべてあっという間にスカフォールドするための、シンプルなコマンドを少々提供しています。
+Laravel'の`laravel/jetstream`パッケージは、簡単なコマンドで認証に必要なルートとビューを素早くすべてスカフォールドする方法を提供します。
 
-    composer require laravel/ui
+    composer require laravel/jetstream
 
-    php artisan ui vue --auth
+    // Livewireスタックを使用するJetstreamをインストールする
+    php artisan jetstream:install livewire
 
-このコマンドは新しくインストールしたアプリケーションでのみ実行すべきで、レイアウトビュー、登録ログインビューをインストールし、同時にすべての認証エンドポイントのルートも定義します。`HomeController`も、ログイン後に必要となる、アプリケーションのダッシュボードのために生成されます。
+    // Inertiaスタックを使用するJetstreamをインストールする
+    php artisan jetstream:install inertia
 
-`laravel/ui`パッケージはたくさんの事前に用意した認証コントローラも生成します。生成したコントローラは、`App\Http\Controllers\Auth`名前空間に位置づけられます。`RegisterController`は新しいユーザーの登録を処理します。`LoginController`は認証を処理します。`ForgotPasswordController`はパスワードリセットに使用するメールからのリンクを処理します。`ResetPasswordController`はパスワードリセットのロジック部分です。それぞれのコントローラは必要なメソッドを含んだトレイトを使用しています。大抵のアプリケーションではこれらのコントローラを変更する必要はまったくないでしょう。
+このコマンドは真新しくインストールしたアプリケーションで使用してください。認証の全エンドポイントに対するルートと同時に、レイアウトビュー、登録とログインビューをインストールします。ログイン後のリクエストを処理するため、アプリケーションのダッシュボードを`/dashboard`ルートとして生成します。
 
-> {tip} アプリケーションでユーザー登録が必要なければ、新しく作成された`RegisterController`を削除し、ルート定義を`Auth::routes(['register' => false]);`のように変更すれば、無効にできます。
+Jetstreamの詳細は、公式の[Jetstreamドキュメント](https://jetstream.laravel.com)を参照してください。
 
 #### 認証を含むアプリケーションの生成
 
-認証のスカフォールドを含む、真新しいアプリケーションを開始したい場合は、生成時に`--auth`ディレクティブを使用します。以下のコマンドで認証をインストールし、すべてのスカフォールドをコンパイルした新規アプリケーションを生成します。
+真新しいアプリケーションを開始し、認証のスカフォールドを含めたい場合は、アプリケーションの生成時にLaravelインストーラへ`--jet`ディレクティブを使ってください。このコマンドはアプリケーションへ認証スカフォールドを全部インストールし、コンパイルします。
 
-    laravel new blog --auth
+    laravel new kitetail --jet
 
 <a name="included-views"></a>
 ### ビュー
 
-前のセクションで説明したように、`laravel/ui`パッケージの`php artisan ui vue --auth`コマンドで、認証に必要なすべてのビューが`resources/views/auth`ディレクトリに生成されます。
+前セクションで述べた通り、`laravel/jetstream`パッケージの`php artisan jetstream:install`コマンドは、認証に必要なビューをすべて生成し、`resources/views/auth`ディレクトリへ設置します。
 
-`ui`コマンドはアプリケーションのベースレイアウトを含む、`resources/views/layouts`ディレクトリも生成します。これらのビューはすべてBootstrap CSSフレームワークを使用していますが、お好みに合わせて自由にカスタマイズしてください。
+Jetstreamはアプリケーションのベースレイアウトを含む`resources/views/layouts`ディレクトリも生成します。これらのビューはすべてTailwind CSSフレームワークを使用していますが、ご希望であれば自由にカスタマイズできます。
 
 <a name="included-authenticating"></a>
 ### 認証
 
-これで、認証コントローラを含め、必要なルートとビューの準備が整いました。アプリケーションに新しいユーザーを登録し、認証できるようになりました。ブラウザでアプリケーションへアクセスしてください。認証コントローラは（内部で使用しているトレイトにより）、既存ユーザーの認証と、新しいユーザーをデータベースへ保存するロジックをすでに備えています。
+これで含まれる認証コントローラへ用意したルートとビューが用意できました。アプリケーションへ新しいユーザーを登録して、認証する準備ができました。Jetstreamの認証コントローラには既存ユーザーの認証と新規ユーザーの保存のロジックが、すでに含まれています。
 
 #### パスのカスタマイズ
 
-ユーザーが認証に成功すると、`/home`のURIへリダイレクトします。認証後のリダイレクトパスをカスタマイズするには、`RouteServiceProvider`の中で`HOME`定数を定義してください。
+Wユーザーが認証に成功した場合、典型的には`/home`のURIへリダイレクトすると思います。`RouteServiceProvider`に`HOME`定数を定義することにより、認証後のリダイレクトパスをカスタマイズできます。
 
     public const HOME = '/home';
 
-ユーザー認証時に返されるレスポンスのより堅牢なカスタマイズが必要な場合のため、Laravelは`AuthenticatesUsers`トレイトに空の`authenticated(Request $request、$user)`メソッドを用意しています。このトレイトは、`laravel/ui`パッケージを使用するときにアプリケーションへインストールされる、`LoginController`クラスで使用されます。そのため、`LoginController`クラスで独自の`authenticated`メソッドを定義可能です。
-
-    /**
-     * ユーザーが認証された
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  mixed  $user
-     * @return mixed
-     */
-    protected function authenticated(Request $request, $user)
-    {
-        return response([
-            //
-        ]);
-    }
-
-#### ユーザー名のカスタマイズ
-
-デフォルトでLaravelは`email`フィールドを認証に利用します。これをカスタマイズしたい場合は、`LoginController`で`username`メソッドを定義してください。
-
-    public function username()
-    {
-        return 'username';
-    }
-
-#### ガードのカスタマイズ
-
-さらに、登録済みユーザーを認証するために使用する「ガード」をカスタマイズすることも可能です。`LoginController`、 `RegisterController`、`ResetPasswordController`で`guard`メソッドを定義してください。メソッドからガードインスタンスを返してください。
-
-    use Illuminate\Support\Facades\Auth;
-
-    protected function guard()
-    {
-        return Auth::guard('guard-name');
-    }
-
-#### バリデーション／保管域のカスタマイズ
-
-アプリケーションに新しいユーザーを登録する場合に入力してもらうフォームのフィールドを変更するか、データベースに新しいユーザーレコードを登録する方法をカスタマイズしたい場合は、`RegisterController`クラスを変更してください。このクラスはアプリケーションで新しいユーザーのバリデーションと作成に責任を持っています。
-
-`RegisterController`の`validator`メソッドはアプリケーションの新しいユーザーに対するバリデーションルールで構成されています。このメソッドはお気に召すまま自由に変更してください。
-
-The `create` method of the `RegisterController` is responsible for creating new `App\Models\User` records in your database using the [Eloquent ORM](/docs/{{version}}/eloquent). You are free to modify this method according to the needs of your database.
+Laravel Jetstreamを使う場合、Jetstreamのインストール処理は`HOME`の値を`/dashboard`へ変更します。
 
 <a name="retrieving-the-authenticated-user"></a>
 ### 認証済みユーザーの取得
 
-`Auth`ファサードを使えば認証済みユーザーへ簡単にアクセスできます。
+受信リクエストを処理しているとき、`Auth`ファサードにより認証済みユーザーへアクセスできます。
 
     use Illuminate\Support\Facades\Auth;
 
@@ -146,7 +107,7 @@ The `create` method of the `RegisterController` is responsible for creating new 
     // 現在認証されているユーザーのID取得
     $id = Auth::id();
 
-もしくは、ユーザーが認証済みであれば、`Illuminate\Http\Request`インスタンス経由で、ユーザーへアクセスすることもできます。コントローラメソッドでタイプヒントしたクラスは、自動的にインスタンスが依存注入されることを思い出してください。
+もしくは、ユーザーが一度認証したら、`Illuminate\Http\Request`インスタンスによりその認証済みユーザーへアクセスできます。コントローラのメソッドでタイプヒントされたクラスは、自動的に注入されることを思い出してください。`Illuminate\Http\Request`オブジェクトをタイプヒントすることにより、アプリケーションのどのコントローラでも認証ユーザーへ簡単にアクセスできます。
 
     <?php
 
@@ -220,28 +181,15 @@ The `create` method of the `RegisterController` is responsible for creating new 
         $this->middleware('auth:api');
     }
 
-<a name="password-confirmation"></a>
-### パスワード確認
-
-アプリケーションの特定の領域へアクセスを許す前に、パスワードの確認を要求したい場合もあります。たとえば、アプリケーションでユーザーが支払いの設定を変更する前に、この確認を行ったほうが良いでしょう。
-
-このためにLaravelは、`password.confirm`ミドルウェアを提供しています。`password.confirm`ミドルウェアを指定したルートはパスワード確認のスクリーンへリダイレクトされ、続けるには入力する必要があります。
-
-    Route::get('/settings/security', function () {
-        // ユーザーは続けるためにパスワードの入力が必要
-    })->middleware(['auth', 'password.confirm']);
-
-ユーザーがパスワード確認に成功すると、最初にアクセスしようとしていたルートへリダイレクトされます。デフォルトではパスワード確認後、そのユーザーは３時間パスワードを再確認する必要はありません。`auth.password_timeout`設定オプションを使用すれば、再確認までの時間をカスタマイズできます。
-
 <a name="login-throttling"></a>
 ### 認証回数制限
 
-Laravelの組み込み`LoginController`クラスを使用している場合、`Illuminate\Foundation\Auth\ThrottlesLogins`トレイトが最初からコントローラで取り込まれています。デフォルトでは何度も正しくログインできなかった後、一分間ログインできなくなります。制限はユーザーの名前／メールアドレスとIPアドレスで限定されます。
+Laravel Jetstreamの利用時、自動的にログインの試みは回数制限されます。何度かログイン情報の入力へ失敗すると、そのユーザーはデフォルトで一分間ログインできなくなります。制限はユーザーのユーザー名／メールアドレスとIPアドレスの組み合わせで制限されます。
 
 <a name="authenticating-users"></a>
 ## 自前のユーザー認証
 
-Laravelに含まれる、認証コントローラを使うよう強要しているわけではないことに留意してください。これらのコントローラを削除する選択肢を選ぶのなら、Laravel認証クラスを直接使用しユーザーの認証を管理する必要があります。心配ありません。それでも簡単です！
+Laravel Jetstreamが用意する認証コントローラを使う必要はないことに留意してください。このスカフォールドを使用しない選択をした場合、Laravelの認証クラスを直接使用し、ユーザーの認証管理を行う必要があります。心配ありません。それも簡単です！
 
 Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/facades)でアクセスできます。クラスの最初で`Auth`ファサードを確実にインポートしておきましょう。次に`attempt`メソッドを見てみましょう。
 
@@ -313,8 +261,6 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
         // このメンバーは継続ログインされる
     }
 
-> {tip} Laravelに用意されている、組み込み`LoginController`を使用する場合、このコントローラが使用しているトレイトにより、"remember"ユーザーを確実に処理するロジックが実装済みです。
-
 この機能を使用している時に、ユーザーが"remember me"クッキーを使用して認証されているかを判定するには、`viaRemember`メソッドを使用します。
 
     if (Auth::viaRemember()) {
@@ -326,7 +272,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
 
 #### Userインスタンスによる認証
 
-If you need to log an existing user instance into your application, you may call the `login` method with the user instance. The given object must be an implementation of the `Illuminate\Contracts\Auth\Authenticatable` [contract](/docs/{{version}}/contracts). The `App\Models\User` model included with Laravel already implements this interface:
+既存ユーザーインスタンスをアプリケーションへログインさせたい場合、そのユーザーインスタンスの`login`メソッドを呼び出します。指定オブジェクトは`Illuminate\Contracts\Auth\Authenticatable`[契約](/docs/{{version}}/contracts)を実装しておく必要があります。Laravelの`App\Models\User`モデルは、このインターフェイスを始めから実装しています。
 
     Auth::login($user);
 

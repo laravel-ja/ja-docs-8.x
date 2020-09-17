@@ -2,52 +2,48 @@
 
 - [バージョニング規約](#versioning-scheme)
 - [サポートポリシー](#support-policy)
-- [Laravel 8](#laravel-8)
+- [Laravel8](#laravel-8)
 
 <a name="versioning-scheme"></a>
 ## バージョニング規約
 
 Laravelとファーストパーティパッケージは、[セマンティックバージョニング](https://semver.org)にしたがっています。メジャーなフレームのリリースは、２月と８月の半年ごとにリリースされます。マイナーとパッチリリースはより細かく毎週リリースされます。マイナーとパッチリリースは、**決して**ブレーキングチェンジを含みません
 
-When referencing the Laravel framework or its components from your application or package, you should always use a version constraint such as `^8.0`, since major releases of Laravel do include breaking changes. However, we strive to always ensure you may update to a new major release in one day or less.
+皆さんのアプリケーションやパッケージからLaravelフレームワークかコンポーネントを参照する場合は、Laravelのメジャーリリースはブレーキングチェンジを含まないわけですから、`^8.0`のようにバージョンを常に指定してください。しかし、新しいメジャーリリースへ１日以内でアップデートできるように、私たちは常に努力しています。
 
 <a name="support-policy"></a>
 ## サポートポリシー
 
 Laravel6のようなLTSリリースでは、バグフィックスは２年間、セキュリティフィックスは３年間提供します。これらのリリースは長期間に渡るサポートとメンテナンスを提供します。 一般的なリリースでは、バグフィックスは６ヶ月、セキュリティフィックスは１年です。Lumenのようなその他の追加ライブラリでは、最新リリースのみでバグフィックスを受け付けています。また、[Laravelがサポートする](/docs/{{version}}/database#introduction)データベースのサポートについても確認してください。
 
-| バージョン | リリース | バグフィックス期限 | セキュリティフィックス期限 |
-| --- | --- | --- | --- |
-| 5.5 (LTS) | August 30th, 2017 | August 30th, 2019 | August 30th, 2020 |
-| 5.6 | February 7th, 2018 | August 7th, 2018 | February 7th, 2019 |
-| 5.7 | September 4th, 2018 | March 4th, 2019 | September 4th, 2019 |
-| 5.8 | February 26th, 2019 | August 26th, 2019 | February 26th, 2020 |
-| 6 (LTS) | ２０１９年９月３日 | ２０２１年９月３日 | ２０２２年９月３日 |
-| 7 | ２０２０年３月３日 | ２０２０年９月１０日 | ２０２１年３月３日 |
-| 8 | ２０２０年９月８日 | ２０２１年３月８日 | ２０２１年９月８日 |
+| バージョン | リリース           | バグフィックス期限   | セキュリティフィックス期限 |
+| ---------- | ------------------ | -------------------- | -------------------------- |
+| 6 (LTS)    | ２０１９年９月３日 | ２０２１年９月３日   | ２０２２年９月３日         |
+| 7          | ２０２０年３月３日 | ２０２０年９月１０日 | ２０２１年３月３日         |
+| 8          | ２０２０年９月８日 | ２０２１年３月８日   | ２０２１年９月８日         |
 
 <a name="laravel-8"></a>
-## Laravel 8
+## Laravel8
 
-Laravel 8 continues the improvements made in Laravel 7.x by introducing Laravel Jetstream, model factory classes, migration squashing, job batching, improved rate limiting, queue improvements, dynamic Blade components, Tailwind pagination views, time testing helpers, improvements to `artisan serve`, event listener improvements, and a variety of other bug fixes and usability improvements.
+Laravel8は、Laravel7.xで行われた向上に加え、以降の変更で構成されています。Laravel Jetstreamの導入、モデルファクトリクラスの導入、マイグレーションの圧縮の導入、ジョブバッチの導入、レート制限の向上、キューの向上、ダイナミックBladeコンポーネントの導入、Tailwindペジネーションビューの導入、時間テストヘルパの導入、`artisan serve`の向上、イベントリスナの向上、ならびに多くのバグフィックスとユーザービリティの向上です
 
 ### Laravel Jetstream
 
-_Laravel Jetstream was written by [Taylor Otwell](https://github.com/taylorotwell)_.
+_Laravel Jettreamは、[Taylor Otwell](https://github.com/taylorotwell)により書かれました_。
 
-[Laravel Jetstream](https://github.com/laravel/jetstream) is a beautifully designed application scaffolding for Laravel. Jetstream provides the perfect starting point for your next project and includes login, registration, email verification, two-factor authentication, session management, API support via Laravel Sanctum, and optional team management. Laravel Jetstream replaces and improves upon the legacy authentication UI scaffolding available for previous versions of Laravel.
+[Laravel Jetstream](https://github.com/laravel/jetstream)は、Laravelのために美しくデザインされたアプリケーションのスカフォールドです。Jetstreamは、ログイン、ユーザー登録、メール認証、二要素認証、セッション管理、Laravel SanctumによるのAPIサポート、およびオプションのチーム管理など、次のプロジェクトのための完璧なスタートポイントを提供します。Laravel Jetstreamは、以前のLaravelバージョンで利用可能であったレガシーな認証UIのスカフォールドに代わるものであり、改善されています。
 
-Jetstream is designed using [Tailwind CSS](https://tailwindcss.com) and offers your choice of [Livewire](https://laravel-livewire.com) or [Inertia](https://inertiajs.com) scaffolding.
+Jetstreamは[Tailwind CSS](https://tailwindcss.com)を使用してデザインされており、[Livewire](https://laravel-livewire.com)か[Inertia](https://inertiajs.com)のどちらかのスカフォールドを選択できます。
 
-### Models Directory
+### モデルディレクトリ
 
-By overwhelming community demand, the default Laravel application skeleton now contains an `app/Models` directory. We hope you enjoy this new home for your Eloquent models! All relevant generator commands have been updated to assume models exist within the `app/Models` directory if it exists. If the directory does not exist, the framework will assume your models should be placed within the `app` directory.
+コミュニティからの圧倒的な要望により、デフォルトのLaravelアプリケーションのスケルトンに`app/Models`ディレクトリが含まれるようになりました。Eloquentモデルの新しいホームをお楽しみください。関連するジェネレータコマンドはすべて、モデルが`app/Models`ディレクトリ内に存在する仮定のもとに更新されました。ディレクトリが存在しない場合、フレームワークはモデルが`app`ディレクトリ内にあると仮定します。
 
-### Model Factory Classes
+### モデルファクトリクラス
 
-_Model factory classes were contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_モデルファクトリクラスは、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_。
 
-Eloquent [model factories](/docs/{{version}}/database-testing#creating-factories) have been entirely re-written as class based factories and improved to have first-class relationship support. For example, the `UserFactory` included with Laravel is written like so:
+Eloquent[モデルファクトリ](/docs/{{version}}/data-testing#creating-factories)は、クラスベースのファクトリとして完全に書き直され、ファーストクラスのリレーションシップをサポートするように改良されました。たとえば、Laravelに含まれる`UserFactory`は次のように書かれています。
 
     <?php
 
@@ -60,14 +56,14 @@ Eloquent [model factories](/docs/{{version}}/database-testing#creating-factories
     class UserFactory extends Factory
     {
         /**
-         * The name of the factory's corresponding model.
+         * モデルに対応したファクトリの名前
          *
          * @var string
          */
         protected $model = User::class;
 
         /**
-         * Define the model's default state.
+         * モデルのデフォルト状態
          *
          * @return array
          */
@@ -83,18 +79,18 @@ Eloquent [model factories](/docs/{{version}}/database-testing#creating-factories
         }
     }
 
-Thanks to the new `HasFactory` trait available on generated models, the model factory may be used like so:
+生成されたモデルで利用できる新しい`HasFactory`トレイトのおかげで、モデルファクトリを以下のように利用できます。
 
     use App\Models\User;
 
     User::factory()->count(50)->create();
 
-Since model factories are now simple PHP classes, state transformations may be written as class methods. In addition, you may add any other helper classes to your Eloquent model factory as needed.
+モデルファクトリは現在、シンプルな PHP クラスになったため、状態遷移はクラスメソッドとして記述できます。さらに、必要に応じて他のヘルパクラスをEloquentモデルファクトリに追加できます。
 
-For example, your `User` model might have a `suspended` state that modifies one of its default attribute values. You may define your state transformations using the base factory's `state` method. You may name your state method anything you like. After all, it's just a typical PHP method:
+たとえば`User`モデルは、デフォルトの属性値の一つを変更する`suspended`状態を持っているとしましょう。ベースファクトリの`state`メソッドを使い、状態遷移を定義できます。ステートメソッドには好きな名前を付けてください。つまるところ、これは典型的なPHPのメソッドです。
 
     /**
-     * Indicate that the user is suspended.
+     * そのユーザーが利用停止であることを表す
      *
      * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
@@ -105,13 +101,13 @@ For example, your `User` model might have a `suspended` state that modifies one 
         ]);
     }
 
-After defining the state transformation method, we may use it like so:
+状態遷移メソッドを定義したら、以下のように使用します。
 
     use App\Models\User;
 
     User::factory()->count(5)->suspended()->create();
 
-As mentioned, Laravel 8's model factories contain first class support for relationships. So, assuming our `User` model has a `posts` relationship method, we may simply run the following code to generate a user with three posts:
+前述のとおり、Laravel8のモデルファクトリはリレーションのファーストクラスをサポートしています。ですから、`User`モデルに`posts`リレーションがあると仮定し、以下のコードを実行して、3つのポストを持つユーザーを生成できます。
 
     $users = User::factory()
                 ->hasPosts(3, [
@@ -119,30 +115,30 @@ As mentioned, Laravel 8's model factories contain first class support for relati
                 ])
                 ->create();
 
-To ease the upgrade process, the [laravel/legacy-factories](https://github.com/laravel/legacy-factories) package has been released to provide support for the previous iteration of model factories within Laravel 8.x.
+簡単にアップグレードできるよう、[laravel/legacy-factories](https://github.com/laravel/legacy-factories)パッケージがリリースされ、Laravel8.x内のモデルファクトリの以前の反復をサポートしています。
 
-Laravel's re-written factories contain many more features that we think you will love. To learn more about model factories, please consult the [database testing documentation](/docs/{{version}}/database-testing#creating-factories).
+リライトしたLaravelのファクトリは、皆さんに気に入ってもらえるような多くの機能が含まれています。モデルファクトリの詳細は、[データベーステストのドキュメント](/docs/{{version}}/databasetesting#creating-factories)を参照してください。
 
-### Migration Squashing
+### マイグレーションの圧縮
 
-_Migration squashing was contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_マイグレーションの圧縮は、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
 
-As you build your application, you may accumulate more and more migrations over time. This can lead to your migration directory becoming bloated with potentially hundreds of migrations. If you would like, you may now "squash" your migrations into a single SQL file. To get started, execute the `schema:dump` command:
+アプリケーションを構築するにつれ、時間の経過とともに段々多くのマイグレーションが溜まっていく可能性があります。これにより、マイグレーションディレクトリが数百ものマイグレーションで肥大化するかもしれません。MySQLもしくはPostgreSQLを使用している場合は、マイグレーションを１つのＳＱＬファイルに「圧縮」できます。利用するには、`schema：dump`コマンドを実行します：
 
     php artisan schema:dump
 
-    // Dump the current database schema and prune all existing migrations...
+    // 現在のデータベーススキーマを圧縮し、既存のマイグレーションを削除する
     php artisan schema:dump --prune
 
-When you execute this command, Laravel will write a "schema" file to your `database/schema` directory. Now, when you attempt to migrate your database and no other migrations have been executed, Laravel will execute the schema file's SQL first. After executing the schema file's commands, Laravel will execute any remaining migrations that were not part of the schema dump.
+このコマンドを実行すると、Laravelは「スキーマ」ファイルを`database/schema`ディレクトリに書き込みます。これにより、データベースをマイグレートしようとするときに他のマイグレーションは実行されず、Laravelは最初にスキーマファイルのＳＱＬを実行します。スキーマファイルのコマンドを実行した後、Laravelはスキーマダンプに圧縮されていない残りのマイグレーションを実行します。
 
-### Job Batching
+### ジョブバッチ
 
-_Job batching was contributed by [Taylor Otwell](https://github.com/taylorotwell) & [Mohamed Said](https://github.com/themsaid)_.
+_ジョブバッチは、[Taylor Otwell](https://github.com/taylorotwell)と[Mohamed Said](https://github.com/themsaid)が貢献しました。_.
 
-Laravel's job batching feature allows you to easily execute a batch of jobs and then perform some action when the batch of jobs has completed executing.
+Laravelのジョブバッチ処理機能を使用すると、バッチジョブを簡単に実行し、バッチの実行が完了したときに何らかのアクションを実行できます。
 
-The new `batch` method of the `Bus` facade may be used to dispatch a batch of jobs. Of course, batching is primarily useful when combined with completion callbacks. So, you may use the `then`, `catch`, and `finally` methods to define completion callbacks for the batch. Each of these callbacks will receive an `Illuminate\Bus\Batch` instance when they are invoked:
+`Bus`ファサードの新しい`batch`メソッドを使用して、バッチジョブをディスパッチできます。もちろん、バッチ処理は終了コールバックと合わせて使用すると、特に便利です。そのため、`then`、` catch`、`finally`メソッドにより、バッチの終了コールバックが定義できます。こうしたコールバックはそれぞれ呼び出し時に、`Illuminate\Bus\Batch`インスタンスを引数に受け取ります。
 
     use App\Jobs\ProcessPodcast;
     use App\Podcast;
@@ -157,24 +153,24 @@ The new `batch` method of the `Bus` facade may be used to dispatch a batch of jo
         new ProcessPodcast(Podcast::find(4)),
         new ProcessPodcast(Podcast::find(5)),
     ])->then(function (Batch $batch) {
-        // All jobs completed successfully...
+        // 全ジョブが実行成功して終了した
     })->catch(function (Batch $batch, Throwable $e) {
-        // First batch job failure detected...
+        // 最初にバッチジョブの失敗が検出された
     })->finally(function (Batch $batch) {
-        // The batch has finished executing...
+        // バッチの実行が終了した
     })->dispatch();
 
     return $batch->id;
 
-To learn more about job batching, please consult the [queue documentation](/docs/{{version}}/queues#job-batching).
+バッチジョブの詳細は、[キューのドキュメント](/docs/{{version}}/queues#job-batching)をお読みください。
 
-### Improved Rate Limiting
+### レート制限の向上
 
-_Rate limiting improvements were contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_レート制限の向上は、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
 
-Laravel's request rate limiter feature has been augmented with more flexibility and power, while still maintaining backwards compatibility with previous release's `throttle` middleware API.
+Laravelのリクエストレート制限機能は、以前のリリースの`throttle`ミドルウェアAPIとの下位互換性を維持しながら、柔軟性とパワーが強化されています。
 
-Rate limiters are defined using the `RateLimiter` facade's `for` method. The `for` method accepts a rate limiter name and a Closure that returns the limit configuration that should apply to routes that are assigned this rate limiter:
+レート制限は、`RateLimiter`ファサードの`for`メソッドを使い定義します。`for`メソッドの引数は、レート制限名と、このレート宣言を割り当てるルートに適用する制限設定を返すクロージャです。
 
     use Illuminate\Cache\RateLimiting\Limit;
     use Illuminate\Support\Facades\RateLimiter;
@@ -183,7 +179,7 @@ Rate limiters are defined using the `RateLimiter` facade's `for` method. The `fo
         return Limit::perMinute(1000);
     });
 
-Since rate limiter callbacks receive the incoming HTTP request instance, you may build the appropriate rate limit dynamically based on the incoming request or authenticated user:
+レート制限コールバックは、受信HTTPリクエストインスタンスを引数に受けるため、受信リクエストまたは認証済みユーザーに基づいた適切なレート制限を動的に構築できます。
 
     RateLimiter::for('uploads', function (Request $request) {
         return $request->user()->vipCustomer()
@@ -191,7 +187,7 @@ Since rate limiter callbacks receive the incoming HTTP request instance, you may
                     : Limit::perMinute(100);
     });
 
-Sometimes you may wish to segment rate limits by some arbitrary value. For example, you may wish to allow users to access a given route 100 times per minute per IP address. To accomplish this, you may use the `by` method when building your rate limit:
+レート制限を任意の値で分割したい場合があります。たとえば、ユーザーが特定のルートにIPアドレスに対し1分あたり１００回アクセスすることを許可したい場合です。それには、レート制限を作成するときに`by`メソッドを使用します。
 
     RateLimiter::for('uploads', function (Request $request) {
         return $request->user()->vipCustomer()
@@ -199,7 +195,7 @@ Sometimes you may wish to segment rate limits by some arbitrary value. For examp
                     : Limit::perMinute(100)->by($request->ip());
     });
 
-Rate limiters may be attached to routes or route groups using the `throttle` [middleware](/docs/{{version}}/middleware). The throttle middleware accepts the name of the rate limiter you wish to assign to the route:
+レート制限は、`throttle` [ミドルウェア](/docs/{{version}}/middleware)を使用してルートまたはルートグループに付加します。スロットルミドルウェアの引数は、ルートに割り付けるレート制限の名前です。
 
     Route::middleware(['throttle:uploads'])->group(function () {
         Route::post('/audio', function () {
@@ -211,61 +207,61 @@ Rate limiters may be attached to routes or route groups using the `throttle` [mi
         });
     });
 
-To learn more about rate limiting, please consult the [routing documentation](/docs/{{version}}/routing#rate-limiting).
+レート制限の詳細は、[ルーティングドキュメント](/docs/{{version}}/routing#rate-limiting)を参照してください。
 
-### Improved Maintenance Mode
+### メンテナンスモードの向上
 
-_Maintenance mode improvements were contributed by [Taylor Otwell](https://github.com/taylorotwell) with inspiration from [Spatie](https://spatie.be)_.
+_メンテナンスモードの向上は[Spatie](https://spatie.be)からインスピレーションを受け、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
 
-In previous releases of Laravel, the `php artisan down` maintenance mode feature may be bypassed using an "allow list" of IP addresses that were allowed to access the application. This feature has been removed in favor of a simpler "secret" / token solution.
+以前のLaravelリリースではアプリケーションへのアクセスを許可するIPアドレスの「許可リスト」を使用して、`php artisan down`メンテナンスモード機能をバイパスできました。この機能は、より単純な「秘密」/トークンによる解決法導入により削除しました。
 
-While in maintenance mode, you may use the `secret` option to specify a maintenance mode bypass token:
+While in maintenance mode, you may use the `secret` option to specify a maintenance mode bypass token:メンテナンスモードの間、`secret`オプションを使用してメンテナンスモードのバイパストークンを指定します。
 
     php artisan down --secret="1630542a-246b-4b66-afa1-dd72a4c43515"
 
-After placing the application in maintenance mode, you may navigate to the application URL matching this token and Laravel will issue a maintenance mode bypass cookie to your browser:
+アプリケーションをメンテナンスモードにした後、このトークンに一致するアプリケーションURLへ移行すると、LaravelはブラウザへメンテナンスモードのバイパスCookieを発行します。
 
     https://example.com/1630542a-246b-4b66-afa1-dd72a4c43515
 
-When accessing this hidden route, you will then be redirected to the `/` route of the application. Once the cookie has been issued to your browser, you will be able to browse the application normally as if it was not in maintenance mode.
+この隠しルートにアクセスすると、アプリケーションの`/`ルートへリダイレクトします。ブラウザにクッキーが発行されれば、メンテナンスモードではないときと同じように、アプリケーションを通常通り閲覧できます。
 
-#### Pre-Rendering The Maintenace Mode View
+#### メンテナンスモードビューの事前レンダリング
 
-If you utilize the `php artisan down` command during deployment, your users may still occasionally encounter errors if they access the application while your Composer dependencies or other infrastructure components are updating. This occurs because a significant part of the Laravel framework must boot in order to determine your application is in maintenance mode and render the maintenance mode view using the templating engine.
+デプロイ時、`php artisan down`コマンドを使用する場合、Composerの依存関係またはその他の基礎コンポーネントの更新中にユーザーがアプリケーションへアクセスすることで、エラーが発生する可能性があります。これはアプリケーションがメンテナンスモードであることを確認し、テンプレートエンジンを使用してメンテナンスモードビューを表示するためには、Laravelフレームワークの重要な部分が起動されている必要があるためです。
 
-For this reason, Laravel now allows you to pre-render a maintenance mode view that will be returned at the very beginning of the request cycle. This view is rendered before any of your application's dependencies have loaded. You may pre-render a template of your choice using the `down` command's `render` option:
+このためLaravelは、リクエストサイクルの最初に返されるメンテナンスモードビューを事前レンダリングできるようになりました。このビューは、アプリケーションの依存パッケージが読み込まれる前にレンダリングされます。`down`コマンドの` render`オプションを使用して、選択したテンプレートを事前レンダーできます：
 
     php artisan down --render="errors::503"
 
-### Closure Dispatch / Chain `catch`
+### ディスパッチクロージャと`catch`チェーン
 
-_Catch improvements were contributed by [Mohamed Said](https://github.com/themsaid)_.
+_Catchの向上は[Mohamed Said](https://github.com/themsaid)が貢献しました_.
 
-Using the new `catch` method, you may now provide a Closure that should be executed if a queued Closure fails to complete successfully after exhausting all of your queue's configured retry attempts:
+新しい`catch`メソッドを使用し、キュー設定の再試行をすべて使い果たした後に、キュー投入したクロージャが正常に完了しなかった場合に実行する必要があるクロージャを指定できます。
 
     use Throwable;
 
     dispatch(function () use ($podcast) {
         $podcast->publish();
     })->catch(function (Throwable $e) {
-        // This job has failed...
+        // このジョブは失敗した
     });
 
-### Dynamic Blade Components
+### 動的Bladeコンポーネント
 
-_Dynamic Blade components were contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_動的Bladeコンポーネントは、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
 
-Sometimes you may need to render a component but not know which component should be rendered until runtime. In this situation, you may now use Laravel's built-in `dynamic-component` component to render the component based on a runtime value or variable:
+コンポーネントをレンダーする必要があるが、実行時までどれをレンダーするかわからない場合があります。この状況では、Laravelに組み込まれている`dynamic-component`コンポーネントを使用して、ランタイム値や変数に基づきコンポーネントをレンダリングできます。
 
     <x-dynamic-component :component="$componentName" class="mt-4" />
 
-To learn more about Blade components, please consult the [Blade documentation](/docs/{{version}}/blade#components).
+Bladeコンポーネントの詳細は、[Bladeのドキュメント]（/docs/{{version}}/blade＃components）をご覧ください。
 
-### Event Listener Improvements
+### イベントリスナの向上
 
-_Event listener improvements were contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_イベントリスナの向上は、[Taylor Otwell](https://github.com/taylorotwell)[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
 
-Closure based event listeners may now be registered by only passing the Closure to the `Event::listen` method. Laravel will inspect the Closure to determine which type of event the listener handlers:
+クロージャベースのイベントリスナは、クロージャを`Event::listen`メソッドに渡すだけで登録できるようになりました。Laravelはクロージャを調べ、リスナが処理するイベントのタイプを判別します。
 
     use App\Events\PodcastProcessed;
     use Illuminate\Support\Facades\Event;
@@ -274,7 +270,7 @@ Closure based event listeners may now be registered by only passing the Closure 
         //
     });
 
-In addition, Closure based event listeners may now be marked as queueable using the `Illuminate\Events\queueable` function:
+さらに、クロージャベースのイベントリスナは、`Illuminate\Events\queueable`関数を使用して、キュー可能としてマークされるようになりました。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;
@@ -284,13 +280,13 @@ In addition, Closure based event listeners may now be marked as queueable using 
         //
     }));
 
-Like queued jobs, you may use the `onConnection`, `onQueue`, and `delay` methods to customize the execution of the queued listener:
+キュー投入するジョブと同様に、キューリスナの実行をカスタマイズする`onConnection`、`onQueue`、`delay`メソッドが使用できます。
 
     Event::listen(queueable(function (PodcastProcessed $event) {
         //
     })->onConnection('redis')->onQueue('podcasts')->delay(now()->addSeconds(10)));
 
-If you would like to handle anonymous queued listener failures, you may provide a Closure to the `catch` method while defining the `queueable` listener:
+匿名のキュー済みリスナの失敗を処理する場合は、 `queueable`リスナを定義するときに`catch`メソッドへクロージャを渡してください。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;
@@ -300,18 +296,18 @@ If you would like to handle anonymous queued listener failures, you may provide 
     Event::listen(queueable(function (PodcastProcessed $event) {
         //
     })->catch(function (PodcastProcessed $event, Throwable $e) {
-        // The queued listener failed...
+        // キュー済みリスナは失敗した
     }));
 
-### Time Testing Helpers
+### 時間テストのヘルパ
 
-_Time testing helpers were contributed by [Taylor Otwell](https://github.com/taylorotwell) with inspiration from Ruby on Rails_.
+_時間テストのヘルパはRuby on Railsからインスピレーションを受け、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
 
-When testing, you may occasionally need to modify the time returned by helpers such as `now` or `Illuminate\Support\Carbon::now()`. Laravel's base feature test class now includes helpers that allow you to manipulate the current time:
+テスト時、`now`や`Illuminate\SupportCarbon::now()`のようなヘルパが返す時間を変更する必要が起き得ます。Laravelの機能テストクラスのベースには、現時刻を操作できるヘルパを用意しています。
 
     public function testTimeCanBeManipulated()
     {
-        // Travel into the future...
+        // 未来へ時間移動する
         $this->travel(5)->milliseconds();
         $this->travel(5)->seconds();
         $this->travel(5)->minutes();
@@ -320,22 +316,40 @@ When testing, you may occasionally need to modify the time returned by helpers s
         $this->travel(5)->weeks();
         $this->travel(5)->years();
 
-        // Travel into the past...
+        // 過去へ時間移動する
         $this->travel(-5)->hours();
 
-        // Travel to an explicit time...
+        // 特定の時刻へ時間移動する
         $this->travelTo(now()->subHours(6));
 
-        // Return back to the present time...
+        // 現在時刻へ戻る
         $this->travelBack();
     }
 
-### Artisan `serve` Improvements
+### Artisan `serve`の向上
 
-_Artisan `serve` improvements were contributed by [Taylor Otwell](https://github.com/taylorotwell)_.
+_Artisan `serve`の向上は、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました。_.
 
-The Artisan `serve` command has been improved with automatic reloading when environment variable changes are detected within your local `.env` file. Previously, the command had to be manually stopped and restarted.
+Artisan `serve`コマンドは、ローカルの`.env`ファイル内で環境変数の変更が検出されたとき、自動でリロードするように改善されました。以前は、コマンドを手動で停止して再起動しなければなりませんでした。
 
-### Tailwind Pagination Views
+### Tailwindペジネーションビュー
 
-The Laravel paginator has been updated to use the [Tailwind CSS](https://tailwindcss.com) framework by default. Tailwind CSS is a highly customizable, low-level CSS framework that gives you all of the building blocks you need to build bespoke designs without any annoying opinionated styles you have to fight to override. Of course, Bootstrap 3 and 4 views remain available as well.
+Laravelのペジネータはデフォルトで[Tailwind CSS](https://tailwindcss.com)フレームワークを使用するように変更しました。Tailwind CSSは高度にカスタマイズできる低レベルなCSSフレームワークで、オーバーライドのために戦う必要のある煩わしい意見的なスタイルを使用せずに、お誂え向きのデザインを構築するために必要なすべてのビルディングブロックを提供してくれます。もちろん、Bootstrap３と４のビューも利用可能です。
+
+### ルートの名前空間の向上
+
+以前のリリースのLaravelでは、`RouteServiceProvider`は`$namespace`プロパティを持っていました。このプロパティの値は、コントローラのルート定義や`action`ヘルパ／`URL::action`メソッドの呼び出しに、自動でプレフィックスを付加していました。Laravel8.xでこのプロパティはデフォルトで`null`です。これは、Laravelは自動的に名前空間のプレフィクスを付けなくなったことを意味します。そのため、新しいLaravel8.xアプリケーションでは、コントローラルートの定義は標準的なPHPで呼び出し可能な構文を使って定義する必要があります。
+
+    use App\Http\Controllers\UserController;
+
+    Route::get('/users', [UserController::class, 'index']);
+
+`action`関係のメソッドの呼び出しも、同じく呼び出し可能な記法を使ってください。
+
+    action([UserController::class, 'index']);
+
+    return Redirect::action([UserController::class, 'index']);
+
+Laravel7.xスタイルのコントローラルートのプレフィックスが好みならば、アプリケーションの`RouteServiceProvider`の中に、`$namespace`プレフィックスをただ追加するだけです。
+
+> {note} この変更は新しいLaravel8.xアプリケーションでのみ影響します。Laravel7xからアップグレードしたアプリケーションは、`RouteServiceProvider`に`$namespace`プロパティを持ったままでしょう。

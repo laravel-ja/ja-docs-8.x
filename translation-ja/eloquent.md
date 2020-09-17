@@ -38,7 +38,7 @@ Eloquent ORMはLaravelに含まれている、美しくシンプルなアクテ�
 <a name="defining-models"></a>
 ## モデル定義
 
-To get started, let's create an Eloquent model. Models typically live in the `app\Models` directory, but you are free to place them anywhere that can be auto-loaded according to your `composer.json` file. All Eloquent models extend `Illuminate\Database\Eloquent\Model` class.
+開始するには、まずEloquentモデルを作成しましょう。通常モデルは`app\Models`ディレクトリ下に置きますが、`composer.json`ファイルでオートロードするように指定した場所であれば、どこでも自由に設置できます。すべてのEloquentモデルは、`Illuminate\Database\Eloquent\Model`を拡張する必要があります。
 
 モデルを作成する一番簡単な方法は`make:model` [Artisanコマンド](/docs/{{version}}/artisan)を使用することです。
 
@@ -432,7 +432,7 @@ Eloquentの`all`メソッドはモデルテーブルの全レコードを結果�
         }
     }
 
-In this example, we assign the `name` parameter from the incoming HTTP request to the `name` attribute of the `App\Models\Flight` model instance. When we call the `save` method, a record will be inserted into the database. The `created_at` and `updated_at` timestamps will automatically be set when the `save` method is called, so there is no need to set them manually.
+この例では、受信したHTTPリクエストの`name`パラメーターを`App\Models\Flight`モデルインスタンスの`name`属性に代入しています。`save`メソッドが呼ばれると新しいレコードがデータベースに挿入されます。`save`が呼び出された時に`created_at`と`updated_at`タイムスタンプは自動的に設定されますので、わざわざ設定する必要はありません。
 
 <a name="updates"></a>
 ### Updates
@@ -1001,7 +1001,7 @@ Eloquentイベントの定義とマップができたら、[イベントリス�
         }
     }
 
-If needed, you may utilize [queueable anonymous event listeners](/docs/{{version}}/events#queuable-anonymous-event-listeners) when registering model events. This will instruct Laravel to execute the model event listener using the [queue](/docs/{{version}}/queues):
+必要に応じて、モデルイベントを登録する際に[キュー投入可能な無名イベントリスナ](/docs/{{{version}}/events#queueable-anonymous-event-listeners)を利用できます。これは、[キュー](/docs/{{{version}}/queues)を使ってモデルイベントリスナを実行するようにLaravelに指示します。
 
     use function Illuminate\Events\queueable;
 
@@ -1109,7 +1109,7 @@ If needed, you may utilize [queueable anonymous event listeners](/docs/{{version
 <a name="muting-events"></a>
 ### イベントのミュート
 
-You may occasionally wish to temporarily "mute" all events fired by a model. You may achieve this using the `withoutEvents` method. The `withoutEvents` method accepts a Closure as its only argument. Any code executed within this Closure will not fire model events. For example, the following will fetch and delete an `App\Models\User` instance without firing any model events. Any value returned by the given Closure will be returned by the `withoutEvents` method:
+モデルが発行させたすべてのイベントを一時的に「ミュート」したい場合があります。`withoutEvents`メソッドで可能です。`withoutEvents`メソッドは引数として唯一クロージャを受け付けます。クロージャ内で実行するコードはモデルイベントを発行しません。たとえば、次の例はモデルイベントを発生せずに`App\Models\User`インスタンスを取得し削除します。指定したクロージャが返す値はすべて、`withoutEvents`メソッドがそのまま返します。
 
     use App\Models\User;
 
@@ -1119,9 +1119,9 @@ You may occasionally wish to temporarily "mute" all events fired by a model. You
         return User::find(2);
     });
 
-#### Saving A Single Model Without Events
+#### イベント無しに１つのモデルを保存
 
-Sometimes you may wish to "save" a given model without raising any events. You may accomplish this using the `saveQuietly` method:
+どんなイベントも発行させずに特定のモデルを「保存」したい場合もあるでしょう。`saveQuietly`メソッドを使ってください。
 
     $user = User::findOrFail(1);
 

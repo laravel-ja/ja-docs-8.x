@@ -165,14 +165,16 @@ Eloquentモデルの"ID"をルートパラメーターとしてリダイレク�
 <a name="redirecting-controller-actions"></a>
 ### コントローラアクションへのリダイレクト
 
-[コントローラアクション](/docs/{{version}}/controllers)に対するリダイレクトを生成することもできます。そのためには、コントローラとアクションの名前を`action`メソッドに渡してください。Laravelの`RouteServiceProvider`により、ベースのコントローラ名前空間が自動的に設定されるため、コントローラの完全名前空間名を指定する必要がないことを覚えておいてください。
+[コントローラアクション](/docs/{{version}}/controllers)に対するリダイレクトを生成することもできます。そのためには、コントローラとアクションの名前を`action`メソッドに渡してください。
 
-    return redirect()->action('HomeController@index');
+    use App\Http\Controllers\HomeController;
+
+    return redirect()->action([HomeController::class, 'index']);
 
 コントローラルートにパラメーターが必要ならば、`action`メソッドの第２引数として渡してください。
 
     return redirect()->action(
-        'UserController@profile', ['id' => 1]
+        [UserController::class, 'profile'], ['id' => 1]
     );
 
 <a name="redirecting-external-domains"></a>

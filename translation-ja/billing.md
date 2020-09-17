@@ -106,11 +106,11 @@ Cashierを使い始める前に、モデル定義に`Billable`トレイトを追
         use Billable;
     }
 
-Cashier assumes your Billable model will be the `App\Models\User` class that ships with Laravel. If you wish to change this you can specify a different model in your `.env` file:
+CashierはLaravelに含まれている`App\Models\User`クラスがBillableモデルであると仮定しています。これを変更する場合は、`.env`ファイルでモデルを指定してください
 
     CASHIER_MODEL=App\Models\User
 
-> {note} If you're using a model other than Laravel's supplied `App\Models\User` model, you'll need to publish and alter the [migrations](#installation) provided to match your alternative model's table name.
+> {note} Laravelの提供する`App\Models\User`モデル以外のモデルを使用する場合は、提供している[マイグレーション](#installation)をリソース公開し、モデルのテーブル名に一致するように変更する必要があります。
 
 <a name="api-keys"></a>
 ### APIキー
@@ -390,7 +390,7 @@ Billableモデルが自身のアカウントに付加されている支払いメ
 <a name="creating-subscriptions"></a>
 ### サブスクリプション作成
 
-To create a subscription, first retrieve an instance of your billable model, which typically will be an instance of `App\Models\User`. Once you have retrieved the model instance, you may use the `newSubscription` method to create the model's subscription:
+Tサブスクリプションを作成するには最初にbillableなモデルのインスタンスを取得しますが、通常は`App\Models\User`のインスタンスでしょう。モデルインスタンスが獲得できたら、モデルのサブスクリプションを作成するために、`newSubscription`メソッドを使います。
 
     $user = User::find(1);
 

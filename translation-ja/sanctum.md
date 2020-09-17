@@ -41,7 +41,7 @@ Laravel Sanctumは、2つの別個の問題を解決するために存在しま�
 
 Sanctumはこの機能の実現のためにトークンは一切使用しません。代わりにLaravelへ組み込まれているクッキーベースのセッション認証サービスを使用します。これにより、XSSによる認証情報リークに対する保護と同時に、CSRF保護・セッションの認証を提供しています。皆さんのSPAのフロントエンドから送信されるリクエストに対し、Sanctumはクッキーだけを使用して認証を確立しようとします。
 
-> {tip} APIトークン認証だけを使う場合、もしくはSPA認証だけを使う場合のどちらにもSanctumは適しています。Sanctumが２つの機能を提供しているからといって、両方共に使う必要はありません。
+> {tip} APIトークン認証だけを使う場合、もしくはSPA認証だけを使う場合のどちらにもSanctumは適しています。Sanctumが２つの機能を提供していても、両方共に使う必要はありません。
 
 <a name="installation"></a>
 ## インストール
@@ -197,7 +197,7 @@ Sanctumはこの機能の実現のためにトークンは一切使用しませ�
 
 このリクエスト中にLaravelは現在のCSRFトークンを持つ`XSRF-TOKEN`クッキーをセットします。このトークンは続くリクエストで`X-XSRF-TOKEN`ヘッダに渡さなければなりません。AxiosとAngular HttpClientは自動的にこれを処理します。
 
-CSRF保護の初期化後、通常Laravelでは`/login`であるルートへ`POST`リクエストを送る必要があります。この`login`ルートは、`laravel/ui` [認証スカフォールド](/docs/{{version}}/authentication#introduction)が提供しています。
+CSRF保護の初期化後、通常Laravelでは`/login`であるルートへ`POST`リクエストを送る必要があります。この`login`ルートは`laravel/jetstream`[認証スカフォールド](/docs/{{version}}/authentication#introduction)が提供しています。
 
 ログインリクエストに成功するとユーザーは認証され、Laravelのバックエンドがクライアントへ発行しているセッションクッキーにより、APIルートに対する以降のリクエストも自動的に認証されます。
 

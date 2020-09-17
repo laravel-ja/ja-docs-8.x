@@ -6,7 +6,6 @@
 - [ルート](#verification-routing)
     - [保護下のルート](#protecting-routes)
 - [ビュー](#verification-views)
-- [メール確認後](#after-verifying-emails)
 - [イベント](#events)
 
 <a name="introduction"></a>
@@ -14,10 +13,14 @@
 
 多くのWebアプリケーションはアプリケーション利用開始前に、ユーザーのメールアドレスを確認する必要があります。アプリケーションごとに再実装しなくても済むように、Laravelはメールを送信し、メールの確認リクエストを検証する便利なメソッドを用意しています。
 
+#### てっとり早く始める
+
+早速使い始めたいですか？真新しくインストールしたLaravelパッケージへ、[Laravel Jetstream](https://jetstream.laravel.com)をインストールしてください。データベースをマイグレーションしたら、`/register`へブラウザでアクセスするか、アプリケーションに割り付けた別のURLへアクセスしましょう。Jetstreamはメール確認を含め、認証システム全体のスカフォールディングを面倒見ます！
+
 <a name="model-preparation"></a>
 ## モデルの準備
 
-To get started, verify that your `App\Models\User` model implements the `Illuminate\Contracts\Auth\MustVerifyEmail` contract:
+使い始めるには、`App\Models\User`モデルが`Illuminate\Contracts\Auth\MustVerifyEmail`契約を実装していることを確認してください。
 
     <?php
 
@@ -48,9 +51,7 @@ To get started, verify that your `App\Models\User` model implements the `Illumin
 <a name="verification-routing"></a>
 ## ルート
 
-確認リンクを送信し、メールを確認するために必要なロジックを含む、`Auth\VerificationController`クラスをLaravelは用意しています。このコントローラに必要なルートを登録するには、`Auth::routes`メソッドに、`verify`オプションを渡してください。
-
-    Auth::routes(['verify' => true]);
+メール確認を行うのに必要なルートはすべて、[Laravel Jetstream](https://jetstream.laravel.com)に含まれています。Jetstreamのインストールのやり方は、公式[Jetstreamドキュメント](https://jetstream.laravel.com)をご覧ください。
 
 <a name="protecting-routes"></a>
 ### 保護下のルート
@@ -64,20 +65,7 @@ To get started, verify that your `App\Models\User` model implements the `Illumin
 <a name="verification-views"></a>
 ## ビュー
 
-メール確認に必要なビューは、`laravel/ui` Composerパッケージを使用して生成します。
-
-    composer require laravel/ui
-
-    php artisan ui vue --auth
-
-メール確認のビューは`resources/views/auth/verify.blade.php`として設置されます。アプリケーションの必要に合わせて自由にカスタマイズしてください。
-
-<a name="after-verifying-emails"></a>
-## メール確認後
-
-メールアドレスを確認後、ユーザーを自動的に`/home`ヘリダイレクトします。`VerificationController`の`redirectTo`メソッドかプロパティにより、確認後のリダイレクト先をカスタマイズできます。
-
-    protected $redirectTo = '/dashboard';
+メール確認を行うのに必要なビューはすべて、[Laravel Jetstream](https://jetstream.laravel.com)に含まれています。Jetstreamのインストールのやり方は、公式[Jetstreamドキュメント](https://jetstream.laravel.com)をご覧ください。
 
 <a name="events"></a>
 ## イベント

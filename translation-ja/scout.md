@@ -275,7 +275,7 @@ Eloquentモデルをバッチ処理するが、検索インデックスへモデ
 <a name="conditionally-searchable-model-instances"></a>
 ### 条件付き検索可能モデルインスタンス
 
-Sometimes you may need to only make a model searchable under certain conditions. For example, imagine you have `App\Models\Post` model that may be in one of two states: "draft" and "published". You may only want to allow "published" posts to be searchable. To accomplish this, you may define a `shouldBeSearchable` method on your model:
+特定の条件下でのみ、モデルを検索可能にする必要がある場合も起きるでしょう。たとえば、`App\Models\Post`モデルが、"draft"か"published"の２つのうち、どちらか１つの状態を取ると想像してください。「公開済み:published」のポストのみ検索可能にする必要があります。これを実現するには、モデルに`shouldBeSearchable`メソッドを定義してください。
 
     public function shouldBeSearchable()
     {

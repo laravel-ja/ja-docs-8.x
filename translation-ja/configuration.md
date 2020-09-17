@@ -136,33 +136,33 @@ null | (null) null
 
     php artisan down
 
-`down`コマンドには、`message`と`retry`オプションを付けることもできます。`message`の値はカスタムメッセージを表示、もしくはログするために使用し、`retry`の値はHTTPヘッダの`Retry-After`としてセットされます。
+`down`コマンドへ`retry`オプションを指定できます。これは、`Retry-After` HTTPヘッダ値を指定します。
 
-    php artisan down --message="Upgrading Database" --retry=60
+    php artisan down --retry=60
 
-#### Bypassing Maintenance Mode
+#### メンテナンスモードをバイパスする
 
-Even while in maintenance mode, you may use use the `secret` option to specify a maintenance mode bypass token:
+メンテナンスモード状態でも`secret`オプションを使い、メンテナンスモードパイパストークンを指定できます。
 
     php artisan down --secret="1630542a-246b-4b66-afa1-dd72a4c43515"
 
-After placing the application in maintenance mode, you may navigate to the application URL matching this token and Laravel will issue a maintenance mode bypass cookie to your browser:
+アプリケーションをメンテナンスモードにしたあとで、このトークンと同じURLによりブラウザでアプリケーションにアクセスすると、メンテナンスモードバイパスクッキーがそのブラウザへ発行されます。
 
     https://example.com/1630542a-246b-4b66-afa1-dd72a4c43515
 
-When accessing this hidden route, you will then be redirected to the `/` route of the application. Once the cookie has been issued to your browser, you will be able to browse the application normally as if it was not in maintenance mode.
+この隠しルートへアクセスすると、次にアプリケーションの`/`ルートへリダイレクトされます。ブラウザへこのクッキーが一度発行されると、メンテナンスモードでない状態と同様に、アプリケーションへ普通にブラウズできます。
 
-#### Pre-Rendering The Maintenace Mode View
+#### Viewメンテナンスモードビューの事前レンダリング
 
-If you utilize the `php artisan down` command during deployment, your users may still occasionally encounter errors if they access the application while your Composer dependencies or other infrastructure components are updating. This occurs because a significant part of the Laravel framework must boot in order to determine your application is in maintenance mode and render the maintenance mode view using the templating engine.
+開発時に`php artisan down`コマンドを使うと、Composerの依存パッケージやその他の基盤コンポーネントのアップデート中に、アプリケーションへユーザーがアクセスすると、エラーが発生することがあります。この理由は、アプリケーションがメンテナンスモードであると判断することやテンプレートエンジンによりメンテナンスモードビューをレンダーするには、Laravelフレームワークのかなりの部分が起動している必要があるからです。
 
-For this reason, Laravel allows you to pre-render a maintenance mode view that will be returned at the very beginning of the request cycle. This view is rendered before any of your application's dependencies have loaded. You may pre-render a template of your choice using the `down` command's `render` option:
+このため、Laravelはリクエストサイクルの最初に返されるメンテナンスモードビューを事前レンダーできます。このビューは、アプリケーションの依存関係が読み込まれる前にレンダーされます。`down`コマンドの`render`オプションで、選んだテンプレートを事前レンダーできます。
 
     php artisan down --render="errors::503"
 
-#### Redirecting Maintenance Mode Requests
+#### メンテナンスモードのリクエストのリダイレクト
 
-While in maintenance mode, Laravel will display the maintenance mode view for all application URLs the user attempts to access. If you wish, you may instruct Laravel to redirect all requests to a specific URL. This may be accomplished using the `redirect` option. For example, you may wish to redirect all requests to the `/` URI:
+URI:メンテナンスモード中、Laravelはユーザーがアクセスしてきたアプリケーションの全URLに対し、メンテナンスモードビューを表示します。お望みならば、全リクエストを特定のＵＲＬへリダイレクトすることも可能です。`redirect`オプションを使用してください。例として、全リクエストを`/`のＵＲＩへリダイレクトするとしましょう。
 
     php artisan down --redirect=/
 
