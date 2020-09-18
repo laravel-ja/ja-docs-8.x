@@ -19,8 +19,8 @@ Laravel6のようなLTSリリースでは、バグフィックスは２年間、
 | バージョン | リリース           | バグフィックス期限   | セキュリティフィックス期限 |
 | ---------- | ------------------ | -------------------- | -------------------------- |
 | 6 (LTS)    | ２０１９年９月３日 | ２０２１年９月３日   | ２０２２年９月３日         |
-| 7          | ２０２０年３月３日 | ２０２０年９月１０日 | ２０２１年３月３日         |
-| 8          | ２０２０年９月８日 | ２０２１年３月８日   | ２０２１年９月８日         |
+| 7 | ２０２０年３月３日 | ２０２０年１０月６日 | ２０２１年３月３１日 |
+| 8 | ２０２０年９月８日 | ２０２１年４月６日 | ２０２１年９月８日 |
 
 <a name="laravel-8"></a>
 ## Laravel8
@@ -143,7 +143,7 @@ Laravelのジョブバッチ処理機能を使用すると、バッチジョブ�
     use App\Jobs\ProcessPodcast;
     use App\Podcast;
     use Illuminate\Bus\Batch;
-    use Illuminate\Support\Facades\Batch;
+    use Illuminate\Support\Facades\Bus;
     use Throwable;
 
     $batch = Bus::batch([

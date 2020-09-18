@@ -178,10 +178,6 @@ Laravelの例外ハンドラはデフォルトで例外をHTTPレスポンスに
 
     abort(404);
 
-`abort`ヘルパは即座に例外を発生させ、その例外は例外ハンドラによりレンダーされることになります。オプションとしてレスポンスのテキストを指定することもできます。
-
-    abort(403, 'Unauthorized action.');
-
 <a name="custom-http-error-pages"></a>
 ### カスタムHTTPエラーページ
 

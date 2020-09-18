@@ -268,7 +268,7 @@ As an example, we will define a custom cast class that casts multiple model valu
 
     namespace App\Casts;
 
-    use App\Models\Address;
+    use App\Models\Address as AddressModel;
     use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
     use InvalidArgumentException;
 
@@ -285,7 +285,7 @@ As an example, we will define a custom cast class that casts multiple model valu
          */
         public function get($model, $key, $value, $attributes)
         {
-            return new Address(
+            return new AddressModel(
                 $attributes['address_line_one'],
                 $attributes['address_line_two']
             );
@@ -302,7 +302,7 @@ As an example, we will define a custom cast class that casts multiple model valu
          */
         public function set($model, $key, $value, $attributes)
         {
-            if (! $value instanceof Address) {
+            if (! $value instanceof AddressModel) {
                 throw new InvalidArgumentException('The given value is not an Address instance.');
             }
 
@@ -453,6 +453,12 @@ Once the cast is defined, you may access the `options` attribute and it will aut
     $user->options = $options;
 
     $user->save();
+
+To update a single field of a JSON attribute with a more terse syntax, you may use the `->` operator:
+
+    $user = App\Models\User::find(1);
+
+    $user->update(['options->key' => 'value']);
 
 <a name="date-casting"></a>
 ### Date Casting

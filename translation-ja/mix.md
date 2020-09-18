@@ -261,7 +261,7 @@ MixはReactをサポートするために、Babelプラグインを自動的に�
 
 この選択肢はとくにwebpackによる操作を必要としないレガシープロジェクトに便利です。
 
-> {tip} `mix.scripts()`のちょっとしたバリエーションとして`mix.babel()`があります。このメソッドは`scripts`と同じ使い方です。しかし、結合したファイルはBabelにより編集され、ES2015コードをすべてのブラウザーが理解できるバニラJavaScriptへ変換します。
+> {tip} `mix.scripts()`のちょっとしたバリエーションとして`mix.babel()`があります。このメソッドは`scripts`と同じ使い方です。しかし、結合したファイルはBabelにより編集され、ES2015コードをすべてのブラウザが理解できるバニラJavaScriptへ変換します。
 
 <a name="custom-webpack-configuration"></a>
 ### webpackカスタム設定

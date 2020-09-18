@@ -248,7 +248,7 @@ Homesteadでは自動的にホストを解決できるように、`mDNS`によ�
 
     192.168.10.10  homestead.test
 
-設定するIPアドレスには`Homestead.yaml`ファイルの中の値を確実に指定してください。ドメインを`hosts`ファイルへ追加したら、Webブラウザーでサイトにアクセスできます。
+設定するIPアドレスには`Homestead.yaml`ファイルの中の値を確実に指定してください。ドメインを`hosts`ファイルへ追加したら、Webブラウザでサイトにアクセスできます。
 
     http://homestead.test
 
@@ -677,7 +677,7 @@ Blackfireを有効にするためには、Homestead設定ファイルの"feature
             client_id: "client_id"
             client_token: "client_value"
 
-Blackfireサーバ設定項目とクライアント設定項目には、[ユーザーアカウントが必要です](https://blackfire.io/signup)。BlackfireはCLIツールやブラウザー拡張を含んだ、アプリケーションのプロファイルに使用するさまざまなオプションを用意しています。[詳細についてはBlackfireのドキュメント](https://blackfire.io/docs/cookbooks/index)をご覧ください。
+Blackfireサーバ設定項目とクライアント設定項目には、[ユーザーアカウントが必要です](https://blackfire.io/signup)。BlackfireはCLIツールやブラウザ拡張を含んだ、アプリケーションのプロファイルに使用するさまざまなオプションを用意しています。[詳細についてはBlackfireのドキュメント](https://blackfire.io/docs/cookbooks/index)をご覧ください。
 
 ### XHGuiを使用した、PHPパフォーマンスのプロファイリング
 

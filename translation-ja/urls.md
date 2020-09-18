@@ -171,3 +171,23 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
     }
 
 一度`locale`パラメータに対するデフォルト値をセットしたら、`route`ヘルパを使いURLを生成する時に、値を渡す必要はもうありません。
+
+#### URLのデフォルトとミドルウェアの優先度
+
+URLのデフォルト値を設定すると、Laravelの暗黙的なモデルバインディングの処理を妨げる可能性があります。したがって、URLのデフォルトをLaravel自身の`SubstituteBindings`ミドルウェアの前に実行するよう設定するため、[ミドルウェアの優先度を設定する](https://laravel.com/docs/{{version}}/middleware#sorting-middleware)必要があります。それには、アプリケーションのHTTPカーネルの`$middlewarePriority`プロパティ内にある`SubstituteBindings`ミドルウェアの前にミドルウェアを確実に設置してください。
+
+`$middlewarePriority`プロパティは`Illuminate\Foundation\Http\Kernel`ベースクラスで定義されています。変更するにはその定義をこのクラスからコピーし、アプリケーションのHTTPカーネルでオーバーライトしてください。
+
+    /**
+     * ミドルウェアの優先リスト
+     *
+     * この指定により、グローバルではないミドルウェアは常にこの順番になります。
+     *
+     * @var array
+     */
+    protected $middlewarePriority = [
+        // ...
+         \App\Http\MiddlewareSetDefaultLocaleForUrls::class,
+         \Illuminate\Routing\Middleware\SubstituteBindings::class,
+         // ...
+    ];

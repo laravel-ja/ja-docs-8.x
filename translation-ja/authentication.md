@@ -2,6 +2,7 @@
 
 - [イントロダクション](#introduction)
     - [データベースの検討事項](#introduction-database-considerations)
+    - [エコシステム概論](#ecosystem-overview)
 - [認証クイックスタート](#authentication-quickstart)
     - [ルーティング](#included-routing)
     - [ビュー](#included-views)
@@ -48,13 +49,60 @@ Laravelはデフォルトで、`app/Models`ディレクトリの中に`App\Model
 
 さらに`users`、もしくは同等の働きをするテーブルには、１００文字の`remember_token`文字列カラムも含めてください。このカラムはログイン時に、アプリケーションで"remember me"を選んだユーザーのトークンを保存しておくカラムとして使用されます。
 
+<a name="ecosystem-overview"></a>
+### エコシステム概論
+
+Laravelは、認証に関連するパッケージをいくつか提供しています。説明を続ける前にLaravelにおける一般的な認証のエコシステムを確認し、各パッケージの使用目的について説明します。
+
+最初に、認証の仕組みを考えましょう。Webブラウザを使用するとき、ユーザーはログインフォームを介してユーザー名とパスワードを入力します。この認証情報が正しい場合、アプリケーションは認証したユーザーに関する情報をユーザーの[セッション](/docs/{{version}}/session)に保存します。ブラウザへ発行されたCookieにはセッションIDが含まれているため、アプリケーションへの後続のリクエストでユーザーを正しいセッションに関連付けできます。セッションクッキーを受信すると、アプリケーションはセッションIDに基づいてセッションデータを取得し、認証情報がセッションに格納されていることに注意して、ユーザーを「認証済み」と見なします。
+
+APIへアクセスするためにリモートサービスが認証を必要とする場合、Webブラウザがないためクッキーを通常使用しません。代わりにリモートサービスは、リクエストごとにAPIトークンをAPIに送信します。アプリケーションは有効なAPIトークンのテーブルに照らし合わせ受信トークンを検証し、そのAPIトークンに関連付けられているユーザーが実行しているリクエストを「認証」できます。
+
+#### Laravel組み込みのブラウザ認証サービス
+
+Laravelは、通常`Auth`および`Session`ファサードを介してアクセスする組み込み認証とセッションサービスを用意しています。これらの機能はWebブラウザから開始されたリクエストにクッキーベースの認証を提供しています。ユーザーの認証情報を確認し、そのユーザーを認証するメソッドを提供しています。さらに、これらのサービスは適切なデータをユーザーのセッションに自動的に保存し、適切なセッションクッキーを発行します。こうしたサービスの使用方法は、このドキュメントに記載しています。
+
+**Jetstream / Fortify**
+
+このドキュメント中で説明するように、こうした認証サービスを自分で操作して、アプリケーション独自の認証レイヤーを構築できます。しかし、より迅速に開始できるよう、認証レイヤー全体の堅牢で最新のスカフォールドを提供する無料パッケージをリリースしました。[Laravel Jetstream]（https://jetstream.laravel.com）と[Laravel Fortify]（https://github.com/laravel/fortify）パッケージです。
+
+Laravel Fortifyは、Laravelのヘッドレス認証バックエンドであり、このドキュメントにある多くの機能を実装しています。Laravel Jetstreamは、[Tailwind CSS](https://tailwindcss.com)、[Laravel Livewire](https://laravel-livewire.com)、[Inertia.js](https://inertiajs.com)を使い、美しくモダンなUIでFortifyの認証サービスを利用および公開するUIです。Laravel Jetstreamは、ブラウザベースのクッキー認証の提供に加えAPIトークン認証を提供するため、Laravel Sanctumとの統合を組み込んでいます。LaravelのAPI認証サービスについては、以下で説明します。
+
+#### LaravelのAPI認証サービス
+
+Laravelは、APIトークンの管理とAPIトークンで行われたリクエストの認証を支援する2つのオプションパッケージを提供しています。[Passport](/docs/{{version}}/passport)と[Sanctum](/docs/{{version}}/sanctum)です。これらのライブラリとLaravelの組み込みCookieベースの認証ライブラリは互いに排他的でないことを注意してください。これらのライブラリは主にAPIトークン認証に重点を置いていますが、組み込みの認証サービスはクッキーベースのブラウザ認証に重点を置いています。多くのアプリケーションは、Laravelの組み込みクッキーベースの認証サービスと、LaravelのAPI認証パッケージのどちらか１つの、両方を使用するでしょう。
+
+**Passport**
+
+PassportはOAuth2認証プロバイダーであり、さまざまなタイプのトークンを発行できる多様なOAuth2「許可タイプ」を提供します。大まかに言えば、これはAPI認証の堅牢で複雑なパッケージです。ただ、ほとんどのアプリケーションはOAuth2仕様が提供する複雑な機能を必要としないため、ユーザーと開発者の両方が混乱する可能性があります。さらに、開発者はこれまで、Passportと同じようなOAuth2認証プロバイダーを使用してSPAアプリケーションまたはモバイルアプリケーションを認証する方法について混乱させられてきました。
+
+**Sanctum**
+
+OAuth2の複雑さと開発者の混乱に対応するため、WebブラウザからのファーストパーティWebリクエストと、トークンによるAPIリクエストの両方を処理できる、よりシンプルで合理化された認証パッケージの構築に着手しました。このゴールは、[Laravel Sanctum](/docs/{{version}}/sanctum)のリリースで達成できました。これは、APIに加えファーストパーティのWeb UIの提供、もしくはバックエンドのLaravelアプリケーションから独立して存在するシングルページアプリケーションやモバイルクライアントを提供するアプリケーション向きの推奨認証パッケージと考えてください。
+
+Laravel Sanctumは、アプリケーションの認証プロセス全体を管理できるハイブリッドWeb／API認証パッケージです。Sanctumベースのアプリケーションがリクエストを受信すると、まずSanctumはリクエストに認証済みセッションを参照するセッションクッキーが含まれているかどうかを判断するため、これが可能になります。Sanctumは、これまでに説明したLaravelの組み込み認証サービスを呼び出すことでこれを実現しますリクエストがセッションクッキーを介して認証されていない場合、SanctumはAPIトークンのリクエストを検査します。APIトークンが存在する場合、Sanctumはそのトークンを使用してリクエストを認証します。このプロセスの詳細については、Sanctumの["動作の仕組み"](/docs/{{version}}/sanctum#how-it-works)ドキュメントをご覧ください。
+
+Laravel Sanctumは、[Laravel Jetstream](https://jetstream.laravel.com)認証スカフォールドに含める選択をしたAPIパッケージです。なぜなら、Webアプリケーションの認証ニーズの大部分に最適であると考えているためです。
+
+#### まとめと選択方法
+
+要約すると、ブラウザを使用してアプリケーションにアクセスする場合、アプリケーションはLaravelの組み込み認証サービスを使用します。
+
+次に、アプリケーションがAPIを提供する場合は、[Passport](/docs/{{version}}/passport)または[Sanctum](/docs/{{version}}/sanctum)を選択してください。「スコープ」や「アビリティ」のサポートを含むAPI認証やSPA認証、モバイル認証のためのシンプルで完全なソリューションであるため、一般に、可能であればSanctumをお勧めします。
+
+アプリケーションがOAuth2仕様で提供されるすべての機能を絶対に必要とする場合、Passportを選択してください。。
+
+また、すぐに使い始めたい場合は、新しいLaravelアプリケーションをすばやく開始するための迅速な方法として、Laravelの優先認証スタックである組み込み認証サービスとLaravel Sanctumを始めから使用している、[Laravel Jetstream](https://jetstream.laravel.com)をおすすめします。
+
 <a name="authentication-quickstart"></a>
 ## 認証クイックスタート
+
+> {note} ドキュメントのこの部分では、[Laravel Jetstream](https://jetstream.laravel.com)パッケージを使用したユーザーの認証について説明します。これには、すぐに使い始めるのに役立つUIのスカフォールドが含まれています。Laravelの認証システムを直接統合したい場合は、[手動のユーザー認証](#authenticating-users)のドキュメントをご覧ください。
 
 <a name="included-routing"></a>
 ### ルート定義
 
-Laravel'の`laravel/jetstream`パッケージは、簡単なコマンドで認証に必要なルートとビューを素早くすべてスカフォールドする方法を提供します。
+Laravel'の`laravel/jetstream`パッケージは、簡単なコマンドで認証に必要なルートとビュー、バックエンドのロジックを素早くすべてスカフォールドする方法を提供します。
 
     composer require laravel/jetstream
 
@@ -66,25 +114,25 @@ Laravel'の`laravel/jetstream`パッケージは、簡単なコマンドで認�
 
 このコマンドは真新しくインストールしたアプリケーションで使用してください。認証の全エンドポイントに対するルートと同時に、レイアウトビュー、登録とログインビューをインストールします。ログイン後のリクエストを処理するため、アプリケーションのダッシュボードを`/dashboard`ルートとして生成します。
 
-Jetstreamの詳細は、公式の[Jetstreamドキュメント](https://jetstream.laravel.com)を参照してください。
-
 #### 認証を含むアプリケーションの生成
 
 真新しいアプリケーションを開始し、認証のスカフォールドを含めたい場合は、アプリケーションの生成時にLaravelインストーラへ`--jet`ディレクティブを使ってください。このコマンドはアプリケーションへ認証スカフォールドを全部インストールし、コンパイルします。
 
     laravel new kitetail --jet
 
+> {tip} Jetstreamの詳細は、公式[Jetstreamドキュメント](https://jetstream.laravel.com)をご覧ください。
+
 <a name="included-views"></a>
 ### ビュー
 
 前セクションで述べた通り、`laravel/jetstream`パッケージの`php artisan jetstream:install`コマンドは、認証に必要なビューをすべて生成し、`resources/views/auth`ディレクトリへ設置します。
 
-Jetstreamはアプリケーションのベースレイアウトを含む`resources/views/layouts`ディレクトリも生成します。これらのビューはすべてTailwind CSSフレームワークを使用していますが、ご希望であれば自由にカスタマイズできます。
+Jetstreamはアプリケーションのベースレイアウトを含む`resources/views/layouts`ディレクトリも生成します。これらのビューはすべて[Tailwind CSS](https://tailwindcss.com)フレームワークを使用していますが、ご希望であれば自由にカスタマイズできます。
 
 <a name="included-authenticating"></a>
 ### 認証
 
-これで含まれる認証コントローラへ用意したルートとビューが用意できました。アプリケーションへ新しいユーザーを登録して、認証する準備ができました。Jetstreamの認証コントローラには既存ユーザーの認証と新規ユーザーの保存のロジックが、すでに含まれています。
+これでアプリケーションが認証用にスカフォールドされたので、ユーザー登録して認証する準備ができました。Jetstreamの認証コントローラには既存のユーザーを認証してデータベースに新しいユーザーを保存するロジックがすでに含まれているため、ブラウザでアプリケーションにアクセスするだけです。
 
 #### パスのカスタマイズ
 
@@ -115,10 +163,10 @@ Laravel Jetstreamを使う場合、Jetstreamのインストール処理は`HOME`
 
     use Illuminate\Http\Request;
 
-    class ProfileController extends Controller
+    class FlightController extends Controller
     {
         /**
-         * ユーザープロフィールの更新
+         * 利用可能な全フライトの取得
          *
          * @param  Request  $request
          * @return Response
@@ -144,18 +192,11 @@ Laravel Jetstreamを使う場合、Jetstreamのインストール処理は`HOME`
 <a name="protecting-routes"></a>
 ### ルートの保護
 
-[ルートミドルウェア](/docs/{{version}}/middleware)は特定のルートに対し、認証済みユーザーのみアクセスを許すために使われます。Laravelには`Illuminate\Auth\Middleware\Authenticate`の中で定義されている`auth`ミドルウェアが最初から用意されています。このミドルウェアは、HTTPカーネルで登録済みのため、必要なのはルート定義でこのミドルウェアを指定するだけです。
+[ルートミドルウェア](/docs/{{version}}/middleware)は特定のルートに対し、認証済みユーザーのみアクセスを許すために使われます。Laravelには`Illuminate\Auth\Middleware\Authenticate`クラスの中で参照されている`auth`ミドルウェアを最初から用意しています。このミドルウェアは、HTTPカーネルで登録済みのため、必要なのはルート定義でこのミドルウェアを指定するだけです。
 
-    Route::get('profile', function() {
+    Route::get('flights', function () {
         // 認証済みのユーザーのみが入れる
     })->middleware('auth');
-
-[コントローラ](/docs/{{version}}/controllers)を使っていれば、ルート定義へ付加する代わりに、コントローラのコンストラクターで`middleware`メソッドを呼び出すことができます。
-
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
 
 #### 未認証ユーザーのリダイレクト
 
@@ -176,20 +217,21 @@ Laravel Jetstreamを使う場合、Jetstreamのインストール処理は`HOME`
 
 `auth`ミドルウェアをルートに対し指定するときに、そのユーザーに対し認証を実行するガードを指定することもできます。指定されたガードは、`auth.php`設定ファイルの`guards`配列のキーを指定します。
 
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
+    Route::get('flights', function () {
+        // 認証済みのユーザーのみが入れる
+    })->middleware('auth:api');
 
 <a name="login-throttling"></a>
 ### 認証回数制限
 
 Laravel Jetstreamの利用時、自動的にログインの試みは回数制限されます。何度かログイン情報の入力へ失敗すると、そのユーザーはデフォルトで一分間ログインできなくなります。制限はユーザーのユーザー名／メールアドレスとIPアドレスの組み合わせで制限されます。
 
+> {tip} ルートをレート制限する場合は、[レート制限のドキュメント](/docs/{{version}}/routing#rate-limiting)を確認してください。
+
 <a name="authenticating-users"></a>
 ## 自前のユーザー認証
 
-Laravel Jetstreamが用意する認証コントローラを使う必要はないことに留意してください。このスカフォールドを使用しない選択をした場合、Laravelの認証クラスを直接使用し、ユーザーの認証管理を行う必要があります。心配ありません。それも簡単です！
+Laravel Jetstreamが用意する認証スカフォールドを使う必要はないことに留意してください。このスカフォールドを使用しない選択をした場合、Laravelの認証クラスを直接使用し、ユーザーの認証管理を行う必要があります。心配ありません。それも簡単です！
 
 Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/facades)でアクセスできます。クラスの最初で`Auth`ファサードを確実にインポートしておきましょう。次に`attempt`メソッドを見てみましょう。
 
@@ -272,7 +314,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
 
 #### Userインスタンスによる認証
 
-既存ユーザーインスタンスをアプリケーションへログインさせたい場合、そのユーザーインスタンスの`login`メソッドを呼び出します。指定オブジェクトは`Illuminate\Contracts\Auth\Authenticatable`[契約](/docs/{{version}}/contracts)を実装しておく必要があります。Laravelの`App\Models\User`モデルは、このインターフェイスを始めから実装しています。
+既存ユーザーインスタンスをアプリケーションへログインさせたい場合、そのユーザーインスタンスの`login`メソッドを呼び出します。指定オブジェクトは`Illuminate\Contracts\Auth\Authenticatable`[契約](/docs/{{version}}/contracts)を実装しておく必要があります。Laravelの`App\Models\User`モデルは、このインターフェイスを始めから実装しています。この認証方法は、ユーザーがアプリケーションに登録した直後など、すでに有効なユーザーインスタンスがある場合に役立ちます。
 
     Auth::login($user);
 
@@ -309,7 +351,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
         // 認証済みのユーザーのみが入れる
     })->middleware('auth.basic');
 
-ミドルウェアをルートに指定すれば、ブラウザーからこのルートへアクセスされると自動的に認証が求められます。デフォルトでは、`auth.basic`ミドルウェアはユーザーを決める"username"としてユーザーの`email`カラムを使用します。
+ミドルウェアをルートに指定すれば、ブラウザからこのルートへアクセスされると自動的に認証が求められます。デフォルトでは、`auth.basic`ミドルウェアはユーザーを決める"username"としてユーザーの`email`カラムを使用します。
 
 #### FastCGIの注意
 

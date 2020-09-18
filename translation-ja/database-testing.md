@@ -229,11 +229,17 @@ You may create a collection of many models using the `count` method:
     // Create three App\Models\User instances...
     $users = User::factory()->count(3)->make();
 
-`HasFactory`トレイトの`factory`メソッドはモデルに対し正しいファクトリなのかを判定するために便利に使えます。具体的には、このメソッドは`Database\Factories`名前空間の中のモデル名と一致するクラス名を持ち、最後に`Factory`が付くファクトリを探します。この命名規則を特定のアプリケーションまたはファクトリで適用しない場合は、ファクトリを直接使用してモデルインスタンスを作成できます。ファクトリクラスを使用して新しいファクトリインスタンスを作成するには、ファクトリで静的な `new`メソッドを呼び出す必要があります。
+`HasFactory`トレイトの`factory`メソッドはモデルに対し正しいファクトリなのかを判定するために便利に使えます。具体的には、このメソッドは`Database\Factories`名前空間の中のモデル名と一致するクラス名を持ち、最後に`Factory`が付くファクトリを探します。この命名規則を特定のアプリケーションまたはファクトリで適用しない場合は、ファクトリを直接使用してモデルインスタンスを作成できます。ファクトリクラスを使用して新しいファクトリインスタンスを作成するには、ファクトリで静的な`new`メソッドを呼び出す必要があります
 
-    use Database\Factories\UserFactory;
-
-    $users = UserFactory::new()->count(3)->make();
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\Administration\FlightFactory::new();
+    }
 
 #### ステートの適用
 

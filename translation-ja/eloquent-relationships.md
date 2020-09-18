@@ -131,7 +131,7 @@ Eloquentは親の`id`カラム（もしくはカスタム`$primaryKey`）と一�
      */
     public function user()
     {
-        return $this->belongsTo('App\Models\User', 'foreign_key', 'other_key');
+        return $this->belongsTo('App\Models\User', 'foreign_key', 'owner_key');
     }
 
 <a name="one-to-many"></a>
@@ -221,7 +221,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
      */
     public function post()
     {
-        return $this->belongsTo('App\Models\Post', 'foreign_key', 'other_key');
+        return $this->belongsTo('App\Models\Post', 'foreign_key', 'owner_key');
     }
 
 <a name="many-to-many"></a>

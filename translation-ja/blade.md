@@ -517,6 +517,25 @@ HTMLフォームでは、`PUT`、`PATCH`、`DELETE`リクエストを作成で�
 
     <x-package-alert/>
 
+代わりに、 `componentNamespace`メソッドを使用して、規約によりコンポーネントクラスをオートロードすることも便利です。たとえば`Nightshade`パッケージには、`Package\Views\Components`名前空間内に存在する`Calendar`と`ColorPicker`コンポーネントがあるとしましょう。
+
+    use Illuminate\Support\Facades\Blade;
+
+    /**
+     * パッケージサービスの初期処理
+     */
+    public function boot()
+    {
+        Blade::componentNamespace('Nightshade\Views\Components', 'nightshade');
+    }
+
+これにより、`パッケージ名::`構文を使用してベンダーの名前空間でパッケージコンポーネントを使用できるようになります。
+
+    <x-nightshade::calendar />
+    <x-nightshade::color-picker />
+
+Bladeは、コンポーネント名をアッパーキャメルに変換し、このコンポーネントにリンクされているクラスを自動的に検出します。「ドット」記法により、サブディレクトリもサポートします。
+
 <a name="displaying-components"></a>
 ### コンポーネントの表示
 

@@ -229,7 +229,7 @@ For consistency with other features of Laravel, the `retryAfter` method and `ret
 
 The `timeoutAt` property of queued jobs, notifications, and listeners has been renamed to `retryUntil`. You should update the name of this property in the relevant classes in your application.
 
-<a name="#queue-allOnQueue-allOnConnection"></a>
+<a name="queue-allOnQueue-allOnConnection"></a>
 #### The `allOnQueue()` / `allOnConnection()` Methods
 
 **Likelihood Of Impact: High**
@@ -263,7 +263,7 @@ Next, the `failed.driver` configuration option within your `queue` configuration
 
 **Likelihood Of Impact: Optional**
 
-In previous releases of Laravel, the `RouteServiceProvider` class contained a `$namespace` property with a value of `App\Http\Controllers`. This value of this property was used to automatically prefix controller route declarations controller route URL generation such as when calling the `action` helper.
+In previous releases of Laravel, the `RouteServiceProvider` class contained a `$namespace` property with a value of `App\Http\Controllers`. This value of this property was used to automatically prefix controller route declarations and controller route URL generation such as when calling the `action` helper.
 
 In Laravel 8, this property is set to `null` by default. This allows your controller route declarations to use the standard PHP callable syntax, which provides better support for jumping to the controller class in many IDEs:
 
@@ -282,7 +282,16 @@ If you would like to continue using the original auto-prefixed controller routin
     class RouteServiceProvider extends ServiceProvider
     {
         /**
-         * This namespace is applied to your controller routes.
+         * The path to the "home" route for your application.
+         *
+         * This is used by Laravel authentication to redirect users after login.
+         *
+         * @var string
+         */
+        public const HOME = '/home';
+
+        /**
+         * If specified, this namespace is automatically applied to your controller routes.
          *
          * In addition, it is set as the URL generator's root namespace.
          *
@@ -308,7 +317,20 @@ If you would like to continue using the original auto-prefixed controller routin
                     ->middleware('api')
                     ->namespace($this->namespace)
                     ->group(base_path('routes/api.php'));
-        });
+            });
+        }
+
+        /**
+         * Configure the rate limiters for the application.
+         *
+         * @return void
+         */
+        protected function configureRateLimiting()
+        {
+            RateLimiter::for('api', function (Request $request) {
+                return Limit::perMinute(60);
+            });
+        }
     }
 
 ### Scheduling

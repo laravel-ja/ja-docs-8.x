@@ -33,6 +33,7 @@
     - [ジョブ失敗イベント](#failed-job-events)
     - [失敗したジョブの再試行](#retrying-failed-jobs)
     - [不明なモデルの無視](#ignoring-missing-models)
+- [キュー上のジョブのクリア](#clearing-jobs-from-queues)
 - [ジョブイベント](#job-events)
 
 <a name="introduction"></a>
@@ -708,7 +709,7 @@ To build a batchable job, you should [create a queueable job](#creating-jobs) as
     use App\Jobs\ProcessPodcast;
     use App\Podcast;
     use Illuminate\Bus\Batch;
-    use Illuminate\Support\Facades\Batch;
+    use Illuminate\Support\Facades\Bus;
     use Throwable;
 
     $batch = Bus::batch([
@@ -1222,6 +1223,19 @@ Eloquentモデルをジョブで取り扱う場合は自動的にキューへ積
      * @var bool
      */
     public $deleteWhenMissingModels = true;
+
+<a name="clearing-jobs-from-queues"></a>
+## キュー上のジョブのクリア
+
+デフォルト接続のデフォルトキューからすべてのジョブを削除したい場合は、`queue:clear` Artisanコマンドを使います。
+
+    php artisan queue:clear
+
+特定の接続やキューからジョブを削除したい場合は、`connection`引数や`queue`オプションも指定できます。
+
+    php artisan queue:clear redis --queue=emails
+
+> {note} キューからのジョブのクリアは、SQS、Redis、およびデータベースキュードライバーでのみ使用できます。さらに、SQSメッセージの削除プロセスには最大６０秒かかるため、コマンドでキューをクリアしてからSQSキューに送信したジョブが削除されるまで最大６０秒かかる可能性があります。
 
 <a name="job-events"></a>
 ## ジョブイベント

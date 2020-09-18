@@ -195,7 +195,9 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
 
     $url = Storage::url('file.jpg');
 
-> {note} `local`ドライバを使用する場合、一般公開するファイルはすべて、`storage/app/public`ディレクトリへ設置する必要があることを忘れないでください。さらに、`public/storage`から`storage/app/public`ディレクトリへ[シンボリックリンクを張る](#the-public-disk)必要もあります。
+`local`ドライバーを使用する場合、一般に公開するすべてのファイルは`storage/app/public`ディレクトリに配置する必要があります。さらに、`public/storage`から`storage/app/public`ディレクトリへ[シンボリックリンクを張る](#the-public-disk)必要もあります。
+
+> {note} `local`ドライバーを使用する場合、`url`の戻り値はURLエンコードされません。このため、有効なURLを作成する名前を使用してファイルを保存することをお勧めします。
 
 #### 一時的なURL
 

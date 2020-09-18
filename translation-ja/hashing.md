@@ -7,7 +7,7 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-LaravelのHash[ファサード](/docs/{{version}}/facades)は保存するユーザーパスワードに対し、安全なBcryptとArgon2ハッシュを提供します。Laravelアプリケーションに組み込まれている、`LoginController`と`RegisterController`を使用していれば、登録と認証で自動的にBcrypt使用します。
+Laravelの`Hash` [ファサード](/docs/{{version}}/facades)は、ユーザーパスワードを保存するための安全なBcryptおよびArgon2ハッシュを提供します。[Laravel Jetstream](https://jetstream.laravel.com)認証スカフォールドを使用している場合、デフォルトでユーザー登録と認証にBcryptが使用されます。
 
 > {tip} Bcryptは「ストレッチ回数」が調整できるのでパスワードのハッシュには良い選択肢です。つまりハードウェアのパワーを上げればハッシュの生成時間を早くすることができます。
 
@@ -71,7 +71,7 @@ Argon2アルゴリズムを使用する場合、`memory`と`time`、`threads`オ
 
 #### パスワードとハッシュ値の比較
 
-`check`メソッドにより指定した平文文字列と指定されたハッシュ値を比較確認できます。しかし[Laravelに含まれている](/docs/{{version}}/authentication)`LoginController`を使っている場合は、これを直接使用することはないでしょう。このコントローラがこのメソッドを自動的に呼び出します。
+`check`メソッドにより指定した平文文字列と指定されたハッシュ値を比較確認できます。
 
     if (Hash::check('plain-text', $hashedPassword)) {
         // パスワード一致

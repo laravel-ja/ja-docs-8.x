@@ -227,7 +227,6 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [dump](#method-dump)
 [env](#method-env)
 [event](#method-event)
-[factory](#method-factory)
 [filled](#method-filled)
 [info](#method-info)
 [logger](#method-logger)
@@ -2366,7 +2365,7 @@ The `action` function generates a URL for the given controller action:
 
     abort(403);
 
-例外のレスポンステキストと、カスタムヘッダを指定することもできます。
+また、ブラウザに送信する必要がある例外のメッセージとカスタムレスポンスヘッダを渡すこともできます。
 
     abort(403, 'Unauthorized.', $headers);
 

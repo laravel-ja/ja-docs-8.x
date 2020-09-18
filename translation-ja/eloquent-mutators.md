@@ -268,7 +268,7 @@ Laravelには多様な利便性のあるキャストタイプが用意されて�
 
     namespace App\Casts;
 
-    use App\Models\Address;
+    use App\Models\Address as AddressModel;
     use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
     use InvalidArgumentException;
 
@@ -285,7 +285,7 @@ Laravelには多様な利便性のあるキャストタイプが用意されて�
          */
         public function get($model, $key, $value, $attributes)
         {
-            return new Address(
+            return new AddressModel(
                 $attributes['address_line_one'],
                 $attributes['address_line_two']
             );
@@ -302,7 +302,7 @@ Laravelには多様な利便性のあるキャストタイプが用意されて�
          */
         public function set($model, $key, $value, $attributes)
         {
-            if (! $value instanceof Address) {
+            if (! $value instanceof AddressModel) {
                 throw new InvalidArgumentException('The given value is not an Address instance.');
             }
 
@@ -453,6 +453,12 @@ Laravelには多様な利便性のあるキャストタイプが用意されて�
     $user->options = $options;
 
     $user->save();
+
+より簡潔な構文でJSON属性のフィールドを１つ更新するには、`->`演算子が使用できます。
+
+    $user = App\Models\User::find(1);
+
+    $user->update(['options->key' => 'value']);
 
 <a name="date-casting"></a>
 ### 日付のキャスト
