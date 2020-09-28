@@ -13,7 +13,7 @@
 
 大抵のWebアプリケーションはパスワードをリセットする手段を提供しています。それぞれのアプリケーションで何度も実装する代わりに、Laravelはパスワードリマインダを送り、パスワードリセットを実行する便利な方法を提供しています。
 
-> {tip} さっそく始めたいですか？ [Laravel Jetstream](https://jetstream.laravel.com)を真新しいLaravelアプリケーションにインストールしてください。データベースをマイグレートしたら、ブラウザでアプリケーションの`/register`、もしくはアプリケーションに割り付けた他のURLに移動します。Jetstreamはパスワードのリセットを含め、認証システム全体のスカフォールドを受け持ちます。
+> {tip} さっそく始めたいですか？ [Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）を真新しいLaravelアプリケーションにインストールしてください。データベースをマイグレートしたら、ブラウザでアプリケーションの`/register`、もしくはアプリケーションに割り付けた他のURLに移動します。Jetstreamはパスワードのリセットを含め、認証システム全体のスカフォールドを受け持ちます。
 
 <a name="model-preparation"></a>
 ### モデルの検討事項
@@ -70,7 +70,7 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
 
 `sendResetLink`メソッドは「ステータス」スラッグを返します。このステータスはリクエストのステータスに関するユーザーフレンドリーなメッセージを翻訳して表示するために、Laravelの[多言語化](/docs/{{version}}/localization)ヘルパを使用します。パスワードリセットステータスの翻訳は、アプリケーションの `resources/lang/{lang}/passwords.php`言語ファイルにの内容で行われます。ステータススラグの可能な各値のエントリは、`passwords`言語ファイル内にあります。
 
-> {tip} パスワードのリセットを自前で実装する場合は、ビューのコンテンツとルートを自分で定義する必要があります。必要なすべての認証および検証ロジックを含むスカフォールドが必要な場合は、[Laravel Jetstream](https://jetstream.laravel.com)をチェックしてください。
+> {tip} パスワードのリセットを自前で実装する場合は、ビューのコンテンツとルートを自分で定義する必要があります。必要なすべての認証および検証ロジックを含むスカフォールドが必要な場合は、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）をチェックしてください。
 
 <a name="resetting-the-password"></a>
 ### パスワードリセット

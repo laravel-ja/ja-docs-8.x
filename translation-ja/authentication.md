@@ -38,7 +38,7 @@ Laravelの認証機能は「ガード」と「プロバイダ」を中心概念�
 
 #### てっとり早く始める
 
-早速使い始めたいですか？真新しくインストールしたLaravelパッケージへ、[Laravel Jetstream](https://jetstream.laravel.com)をインストールしてください。データベースをマイグレーションしたら、`/register`へブラウザでアクセスするか、アプリケーションに割り付けた別のURLへアクセスしましょう。Jetstreamは認証システム全体のスカフォールディングを面倒見ます！
+早速使い始めたいですか？真新しくインストールしたLaravelパッケージへ、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）をインストールしてください。データベースをマイグレーションしたら、`/register`へブラウザでアクセスするか、アプリケーションに割り付けた別のURLへアクセスしましょう。Jetstreamは認証システム全体のスカフォールディングを面倒見ます！
 
 <a name="introduction-database-considerations"></a>
 ### データベースの検討事項
@@ -64,7 +64,7 @@ Laravelは、通常`Auth`および`Session`ファサードを介してアクセ�
 
 **Jetstream / Fortify**
 
-このドキュメント中で説明するように、こうした認証サービスを自分で操作して、アプリケーション独自の認証レイヤーを構築できます。しかし、より迅速に開始できるよう、認証レイヤー全体の堅牢で最新のスカフォールドを提供する無料パッケージをリリースしました。[Laravel Jetstream]（https://jetstream.laravel.com）と[Laravel Fortify]（https://github.com/laravel/fortify）パッケージです。
+このドキュメント中で説明するように、こうした認証サービスを自分で操作して、アプリケーション独自の認証レイヤーを構築できます。しかし、より迅速に開始できるよう、認証レイヤー全体の堅牢で最新のスカフォールドを提供する無料パッケージをリリースしました。[Laravel Jetstream]（https://jetstream.laravel.com）（[和訳](/jetstream/1.0/ja/introduction.html)）と[Laravel Fortify]（https://github.com/laravel/fortify）パッケージです。
 
 Laravel Fortifyは、Laravelのヘッドレス認証バックエンドであり、このドキュメントにある多くの機能を実装しています。Laravel Jetstreamは、[Tailwind CSS](https://tailwindcss.com)、[Laravel Livewire](https://laravel-livewire.com)、[Inertia.js](https://inertiajs.com)を使い、美しくモダンなUIでFortifyの認証サービスを利用および公開するUIです。Laravel Jetstreamは、ブラウザベースのクッキー認証の提供に加えAPIトークン認証を提供するため、Laravel Sanctumとの統合を組み込んでいます。LaravelのAPI認証サービスについては、以下で説明します。
 
@@ -82,7 +82,7 @@ OAuth2の複雑さと開発者の混乱に対応するため、Webブラウザ�
 
 Laravel Sanctumは、アプリケーションの認証プロセス全体を管理できるハイブリッドWeb／API認証パッケージです。Sanctumベースのアプリケーションがリクエストを受信すると、まずSanctumはリクエストに認証済みセッションを参照するセッションクッキーが含まれているかどうかを判断するため、これが可能になります。Sanctumは、これまでに説明したLaravelの組み込み認証サービスを呼び出すことでこれを実現しますリクエストがセッションクッキーを介して認証されていない場合、SanctumはAPIトークンのリクエストを検査します。APIトークンが存在する場合、Sanctumはそのトークンを使用してリクエストを認証します。このプロセスの詳細については、Sanctumの["動作の仕組み"](/docs/{{version}}/sanctum#how-it-works)ドキュメントをご覧ください。
 
-Laravel Sanctumは、[Laravel Jetstream](https://jetstream.laravel.com)認証スカフォールドに含める選択をしたAPIパッケージです。なぜなら、Webアプリケーションの認証ニーズの大部分に最適であると考えているためです。
+Laravel Sanctumは、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）認証スカフォールドに含める選択をしたAPIパッケージです。なぜなら、Webアプリケーションの認証ニーズの大部分に最適であると考えているためです。
 
 #### まとめと選択方法
 
@@ -92,12 +92,12 @@ Laravel Sanctumは、[Laravel Jetstream](https://jetstream.laravel.com)認証ス
 
 アプリケーションがOAuth2仕様で提供されるすべての機能を絶対に必要とする場合、Passportを選択してください。。
 
-また、すぐに使い始めたい場合は、新しいLaravelアプリケーションをすばやく開始するための迅速な方法として、Laravelの優先認証スタックである組み込み認証サービスとLaravel Sanctumを始めから使用している、[Laravel Jetstream](https://jetstream.laravel.com)をおすすめします。
+また、すぐに使い始めたい場合は、新しいLaravelアプリケーションをすばやく開始するための迅速な方法として、Laravelの優先認証スタックである組み込み認証サービスとLaravel Sanctumを始めから使用している、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）をおすすめします。
 
 <a name="authentication-quickstart"></a>
 ## 認証クイックスタート
 
-> {note} ドキュメントのこの部分では、[Laravel Jetstream](https://jetstream.laravel.com)パッケージを使用したユーザーの認証について説明します。これには、すぐに使い始めるのに役立つUIのスカフォールドが含まれています。Laravelの認証システムを直接統合したい場合は、[手動のユーザー認証](#authenticating-users)のドキュメントをご覧ください。
+> {note} ドキュメントのこの部分では、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）パッケージを使用したユーザーの認証について説明します。これには、すぐに使い始めるのに役立つUIのスカフォールドが含まれています。Laravelの認証システムを直接統合したい場合は、[手動のユーザー認証](#authenticating-users)のドキュメントをご覧ください。
 
 <a name="included-routing"></a>
 ### ルート定義
@@ -120,7 +120,7 @@ Laravel'の`laravel/jetstream`パッケージは、簡単なコマンドで認�
 
     laravel new kitetail --jet
 
-> {tip} Jetstreamの詳細は、公式[Jetstreamドキュメント](https://jetstream.laravel.com)をご覧ください。
+> {tip} Jetstreamの詳細は、公式[Jetstreamドキュメント](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）をご覧ください。
 
 <a name="included-views"></a>
 ### ビュー

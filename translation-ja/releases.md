@@ -31,7 +31,7 @@ Laravel8は、Laravel7.xで行われた向上に加え、以降の変更で構�
 
 _Laravel Jettreamは、[Taylor Otwell](https://github.com/taylorotwell)により書かれました_。
 
-[Laravel Jetstream](https://github.com/laravel/jetstream)は、Laravelのために美しくデザインされたアプリケーションのスカフォールドです。Jetstreamは、ログイン、ユーザー登録、メール認証、二要素認証、セッション管理、Laravel SanctumによるのAPIサポート、およびオプションのチーム管理など、次のプロジェクトのための完璧なスタートポイントを提供します。Laravel Jetstreamは、以前のLaravelバージョンで利用可能であったレガシーな認証UIのスカフォールドに代わるものであり、改善されています。
+[Laravel Jetstream](https://github.com/laravel/jetstream)（[和訳](/jetstream/1.0/ja/introduction.html)）は、Laravelのために美しくデザインされたアプリケーションのスカフォールドです。Jetstreamは、ログイン、ユーザー登録、メール認証、二要素認証、セッション管理、Laravel SanctumによるのAPIサポート、およびオプションのチーム管理など、次のプロジェクトのための完璧なスタートポイントを提供します。Laravel Jetstreamは、以前のLaravelバージョンで利用可能であったレガシーな認証UIのスカフォールドに代わるものであり、改善されています。
 
 Jetstreamは[Tailwind CSS](https://tailwindcss.com)を使用してデザインされており、[Livewire](https://laravel-livewire.com)か[Inertia](https://inertiajs.com)のどちらかのスカフォールドを選択できます。
 

@@ -15,7 +15,7 @@
 
 多くのWebアプリケーションはアプリケーション利用開始前に、ユーザーのメールアドレスを確認する必要があります。アプリケーションごとに再実装しなくても済むように、Laravelはメールを送信し、メールの確認リクエストを検証する便利なメソッドを用意しています。
 
-> {tip} さっそく始めたいですか？ [Laravel Jetstream](https://jetstream.laravel.com)を新しいLaravelアプリケーションにインストールしてください。データベースをマイグレーションしたら、ブラウザで`/register`、もしくはアプリケーションに割り振った他のURLを閲覧します。Jetstreamはメール確認のサポートを含む、認証システム全体のスカフォールドの面倒を見ます！
+> {tip} さっそく始めたいですか？ [Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）を新しいLaravelアプリケーションにインストールしてください。データベースをマイグレーションしたら、ブラウザで`/register`、もしくはアプリケーションに割り振った他のURLを閲覧します。Jetstreamはメール確認のサポートを含む、認証システム全体のスカフォールドの面倒を見ます！
 
 <a name="model-preparation"></a>
 ### モデルの準備
@@ -39,7 +39,7 @@
 
 このインターフェイスがモデルに追加されると、新しく登録されたユーザーへメール確認リンクを含むメールが自動的に送信されます。`EventServiceProvider`を調べるとわかるように、Laravelははじめから`Illuminate\Auth\Events\Registered`イベントに指定した`SendEmailVerificationNotification`[リスナ](/docs/{{version}}/events)を用意しています。
 
-G[Laravel Jetstream](https://jetstream.laravel.com)を使用する代わりに、自前でユーザー登録をアプリケーションへ実装する場合は、ユーザーの登録成功後に`Illuminate\Auth\Events\Registered`イベントを確実に発行してください。
+[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）を使用する代わりに、自前でユーザー登録をアプリケーションへ実装する場合は、ユーザーの登録成功後に`Illuminate\Auth\Events\Registered`イベントを確実に発行してください。
 
     use Illuminate\Auth\Events\Registered;
 
@@ -68,7 +68,7 @@ G[Laravel Jetstream](https://jetstream.laravel.com)を使用する代わりに�
 
 メール確認通知を返すルートの名前は `verification.notice`にする必要があります。[Laravelが用意している](#protecting-routes)`verified`ミドルウェアは、ユーザーがメールアドレスを確認していない場合、このルート名に自動的にリダイレクトするため、ルートへ正確にこの名前を割り当てることが重要です。
 
-> {tip} 電子メール検証を自前で実装する場合、検証通知ビューの内容を自分で定義する必要があります。必要なすべての認証および検証ビューを含むスカフォールドが必要な場合は、[Laravel Jetstream](https://jetstream.laravel.com)をチェックしてください。
+> {tip} 電子メール検証を自前で実装する場合、検証通知ビューの内容を自分で定義する必要があります。必要なすべての認証および検証ビューを含むスカフォールドが必要な場合は、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）をチェックしてください。
 
 <a name="the-email-verification-handler"></a>
 ### メール確認のハンドラ

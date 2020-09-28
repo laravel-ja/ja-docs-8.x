@@ -7,7 +7,7 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelの`Hash` [ファサード](/docs/{{version}}/facades)は、ユーザーパスワードを保存するための安全なBcryptおよびArgon2ハッシュを提供します。[Laravel Jetstream](https://jetstream.laravel.com)認証スカフォールドを使用している場合、デフォルトでユーザー登録と認証にBcryptが使用されます。
+Laravelの`Hash` [ファサード](/docs/{{version}}/facades)は、ユーザーパスワードを保存するための安全なBcryptおよびArgon2ハッシュを提供します。[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）認証スカフォールドを使用している場合、デフォルトでユーザー登録と認証にBcryptが使用されます。
 
 > {tip} Bcryptは「ストレッチ回数」が調整できるのでパスワードのハッシュには良い選択肢です。つまりハードウェアのパワーを上げればハッシュの生成時間を早くすることができます。
 
