@@ -3,7 +3,6 @@
 - [イントロダクション](#introduction)
 - [Passportのアップグレード](#upgrading)
 - [インストール](#installation)
-    - [フロントエンド・クイックスタート](#frontend-quickstart)
     - [Passportのデプロイ](#deploying-passport)
     - [マイグレーションのカスタマイズ](#migration-customization)
 - [設定](#configuration)
@@ -141,42 +140,6 @@ Passportサービスプロバイダはフレームワークに対し、自身の
 `passport:install`コマンドは`--uuids`オプションを指定して実行できます。このフラグはPassportへ`Client`モデルの主キー値として自動増分整数の代わりにUUIDを使用することを指示します。`--uuids`オプションを付けて`passport:install`コマンドを実行したら、Passportのデフォルトマイグレーションの無効化に関して追加の指示が与えられます。
 
     php artisan passport:install --uuids
-
-<a name="frontend-quickstart"></a>
-### フロントエンド・クイックスタート
-
-> {note} パスポートVueコンポーネントを使用するには、[Vue](https://vuejs.org) JavaScriptフレームワークを使用する必要があります。コンポーネントはBootstrap CSSフレームワークを使用しています。皆さんがこれらのツールを使用しない場合でも、フロントエンド実装の参考として、これらのコンポーネントは役立つでしょう。
-
-パスポートは皆さんのユーザーへ、クライアントとパーソナルアクセストークンを作成するために使用するJSON APIを初めから提供しています。しかし、こうしたAPIに関連するフロントエンドをコーディングするには時間を要します。そこで、Passportは実装例、もしくは実装の開始地点として役立ててもらうため、[Vue](https://vuejs.org)コンポーネントも用意しています。
-
-Passport Vueコンポーネントをリソース公開するには、`vendor:publish` Artisanコマンドを使用します。
-
-    php artisan vendor:publish --tag=passport-components
-
-リソース公開されたコンポーネントは、`resources/js/components`ディレクトリへ設置されます。リソース公開したコンポーネントは、`resources/js/app.js`ファイルで登録してください。
-
-    Vue.component(
-        'passport-clients',
-        require('./components/passport/Clients.vue').default
-    );
-
-    Vue.component(
-        'passport-authorized-clients',
-        require('./components/passport/AuthorizedClients.vue').default
-    );
-
-    Vue.component(
-        'passport-personal-access-tokens',
-        require('./components/passport/PersonalAccessTokens.vue').default
-    );
-
-> {note} バージョン5.7.19以前のLaravelでは、コンポーネントを登録する時にコンソールエラーが出る時に、`.default`を追加します。この変更については、[Laravel Mix v4.0.0リリースノート](https://github.com/JeffreyWay/laravel-mix/releases/tag/v4.0.0)で説明がなされています。
-
-コンポーネントを登録したら、アセットを再コンパイルするため`npm run dev`を確実に実行してください。アセットの再コンパイルが済んだら、クライアントとパーソナルアクセストークンを作成し始めるために、アプリケーションのテンプレートへコンポーネントを指定しましょう。
-
-    <passport-clients></passport-clients>
-    <passport-authorized-clients></passport-authorized-clients>
-    <passport-personal-access-tokens></passport-personal-access-tokens>
 
 <a name="deploying-passport"></a>
 ### Passportのデプロイ
@@ -320,8 +283,6 @@ OAuth2で認可コードを使いこなせるかは、どの程度開発者がOA
 しかし、ユーザーにクライアントを管理してもらうダッシュボードを提供するために、PassportのJSON APIと皆さんのフロントエンドを結合する必要があります。以降から、クライアントを管理するためのAPIエンドポイントをすべて説明します。エンドポイントへのHTTPリクエスト作成をデモンストレートするため利便性を考慮し、[Axios](https://github.com/mzabriskie/axios)を使用していきましょう。
 
 JSON APIは`web`と`auth`ミドルウェアにより保護されています。そのため、みなさん自身のアプリケーションからのみ呼び出せます。外部ソースから呼び出すことはできません。
-
-> {tip} クライアント管理のフロントエンドを自分で実装したくなければ、[フロントエンド・クイックスタート](#frontend-quickstart)を使い、短時間で完全に機能するフロントエンドを用意できます。
 
 #### `GET /oauth/clients`
 
@@ -855,8 +816,6 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 Passportにはパーソナルアクセストークンを管理するためのJSON APIも含まれています。ユーザーにパーソナルアクセストークンを管理してもらうダッシュボードを提供するため、APIと皆さんのフロントエンドを結びつける必要があるでしょう。以降から、パーソナルアクセストークンを管理するためのAPIエンドポイントをすべて説明します。利便性を考慮し、エンドポイントへのHTTPリクエスト作成をデモンストレートするために、[Axios](https://github.com/mzabriskie/axios)を使用していきましょう。
 
 JSON APIは`web`と`auth`ミドルウェアにより保護されています。そのため、みなさん自身のアプリケーションからのみ呼び出せます。外部ソースから呼び出すことはできません。
-
-> {tip} パーソナルアクセストークンのフロントエンドを自分自身で実装したくない場合は、[フロントエンドクイックスタート](#frontend-quickstart)を使用して、短時間に完全な機能を持つフロントエンドを用意できます。
 
 #### `GET /oauth/scopes`
 

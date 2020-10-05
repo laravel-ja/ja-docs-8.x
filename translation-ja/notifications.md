@@ -15,6 +15,7 @@
     - [件名のカスタマイズ](#customizing-the-subject)
     - [Mailerのカスタマイズ](#customizing-the-mailer)
     - [テンプレートのカスタマイズ](#customizing-the-templates)
+    - [添付](#mail-attachments)
     - [メール通知のプレビュー](#previewing-mail-notifications)
 - [Markdownメール通知](#markdown-mail-notifications)
     - [メッセージ生成](#generating-the-message)
@@ -366,6 +367,63 @@ Laravelの各通知は、（通常、`app/Notifications`ディレクトリに設
 通知パッケージのリソースをリソース公開することにより、メール通知で使用されるHTMLと平文テキストのテンプレートを変更することが可能です。次のコマンドを実行した後、メール通知のテンプレートは`resources/views/vendor/notifications`ディレクトリ下に作成されます。
 
     php artisan vendor:publish --tag=laravel-notifications
+
+<a name="mail-attachments"></a>
+### 添付
+
+メール通知に添付ファイルを追加するには、メッセージを構築する時に`attach`メソッドを使用します。`attach`メソッドは第１引数にファイルの完全な（絶対）パスを取ります。
+
+    /**
+     * 通知のメール表現の取得
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->greeting('Hello!')
+                    ->attach('/path/to/file');
+    }
+
+メッセージにファイルを添付するとき、`attach`メソッドの第２引数として配列を渡し、表示名やMIMEタイプの指定もできます。
+
+    /**
+     * 通知のメール表現の取得
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->greeting('Hello!')
+                    ->attach('/path/to/file', [
+                        'as' => 'name.pdf',
+                        'mime' => 'application/pdf',
+                    ]);
+    }
+
+> {tip} Mailableオブジェクトにファイルを添付するのとは異なり、`attachFromStorage`を使用してストレージディスクからファイルを直接添付できません。ストレージディスク上のファイルへの絶対パスを指定して`attach`メソッドを使用する必要があります。もしくは、`toMail`メソッドから[mailable](/docs/{{version}}/mail#generating-mailables)を返すこともできます。
+
+#### 生データの添付
+
+生のバイト文字列を添付する場合は、`attachData`メソッドを使います。
+
+    /**
+     * 通知のメール表現の取得
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->greeting('Hello!')
+                    ->attachData($this->pdf, 'name.pdf', [
+                        'mime' => 'application/pdf',
+                    ]);
+    }
 
 <a name="previewing-mail-notifications"></a>
 ### メール通知のプレビュー

@@ -96,10 +96,6 @@
 <a name="running-seeders"></a>
 ## シーダの実行
 
-シーダクラスを書き上げたら、Composerのオートローダを再生成するために、`dump-autoload`コマンドを実行する必要があります。
-
-    composer dump-autoload
-
 データベースへ初期値を設定するために`db:seed` Artisanコマンドを使用します。デフォルトで`db:seed`コマンドは、他のシーダクラスを呼び出す`DatabaseSeeder`クラスを実行します。しかし特定のファイルを個別に実行したい場合は、`--class`オプションを使いシーダを指定してください。
 
     php artisan db:seed

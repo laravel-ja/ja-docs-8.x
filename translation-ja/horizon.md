@@ -10,6 +10,8 @@
 - [タグ](#tags)
 - [通知](#notifications)
 - [メトリックス](#metrics)
+- [失敗したジョブの削除](#deleting-failed-jobs)
+- [キューのジョブのクリア](#clearing-jobs-from-queues)
 
 <a name="introduction"></a>
 ## イントロダクション
@@ -65,7 +67,7 @@ Horizonでは３つのバランシング戦略が選択できます。`simple`�
 
 `balanceMaxShift`と`balanceCooldown`の設定値はいかに素早くHorizonをワーカの要求に合わせてスケールするかを決めるためのものです。上の例の場合、３秒毎に最大１つの新しいプロセスを生成するか、破棄します。アプリケーションの必要性を基にし、自由にこの値を調整してください。
 
-#### ジョブの整理
+#### ジョブのクリア
 
 `horizon`設定ファイルで、現在がどのくらいの長さなのか、それと失敗したジョブをどのくらい保持しているかを分数で設定できます。デフォルトでは、現在のジョブは１時間、失敗したジョブは１週間保持されます。
 
@@ -285,3 +287,21 @@ Horizonはジョブとキューの待ち時間とスループットの情報を�
     {
         $schedule->command('horizon:snapshot')->everyFiveMinutes();
     }
+
+<a name="deleting-failed-jobs"></a>
+## 失敗したジョブの削除
+
+失敗したジョブを削除する場合は、`horizon：forget`コマンドを使用します。`horizon：forget`コマンドは、失敗したジョブのIDを唯一の引数に取ります。
+
+    php artisan horizon:forget 5
+
+<a name="clearing-jobs-from-queues"></a>
+## キューのジョブのクリア
+
+デフォルトのキューからすべてのジョブを削除したい場合は、`horizon：clear`　Artisanコマンドを使用し削除します。
+
+    php artisan horizon:clear
+
+`queue`オプションでジョブを削除するキューを指定することも可能です。
+
+    php artisan horizon:clear --queue=emails

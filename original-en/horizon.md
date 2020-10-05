@@ -10,6 +10,8 @@
 - [Tags](#tags)
 - [Notifications](#notifications)
 - [Metrics](#metrics)
+- [Deleting Failed Jobs](#deleting-failed-jobs)
+- [Clearing Jobs From Queues](#clearing-jobs-from-queues)
 
 <a name="introduction"></a>
 ## Introduction
@@ -285,3 +287,21 @@ Horizon includes a metrics dashboard which provides information on your job and 
     {
         $schedule->command('horizon:snapshot')->everyFiveMinutes();
     }
+
+<a name="deleting-failed-jobs"></a>
+## Deleting Failed Jobs
+
+If you would like to delete a failed job, you may use the `horizon:forget` command. The `horizon:forget` command accepts the ID of the failed job as its only argument:
+
+    php artisan horizon:forget 5
+
+<a name="clearing-jobs-from-queues"></a>
+## Clearing Jobs From Queues
+
+If you would like to delete all jobs from the default queue, you may do so using the `horizon:clear` Artisan command:
+
+    php artisan horizon:clear
+
+You may also provide the `queue` option to delete jobs from a specific queue:
+
+    php artisan horizon:clear --queue=emails

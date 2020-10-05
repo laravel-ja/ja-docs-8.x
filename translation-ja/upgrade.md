@@ -59,7 +59,7 @@
 - [Horizon v5.0](https://github.com/laravel/horizon/blob/master/UPGRADE.md)
 - [Passport v10.0](https://github.com/laravel/passport/blob/master/UPGRADE.md)
 - [Socialite v5.0](https://github.com/laravel/socialite/blob/master/UPGRADE.md)
-- [Telescope v4.0](https://github.com/laravel/telescope/releases)
+- [Telescope v4.0](https://github.com/laravel/telescope/blob/master/UPGRADE.md)
 </div>
 
 さらに、Laravelインストーラを`composer create-project`とLaravel Jetstreamをサポートするためにアップデートしました。4.0より古いインストーラは２０２０年の１０月以降動作停止します。グローバルインストーラを`^4.0`へすぐにアップデートしてください。
@@ -240,6 +240,8 @@ Laravelの他の機能との整合性を保つため、キュー投入したジ�
         new OptimizePodcast,
         new ReleasePodcast
     ])->onConnection('redis')->onQueue('podcasts')->dispatch();
+
+この変更は、 `withChain`メソッドを使用するコードにのみ影響することに注意してください。グローバルな`dispatch()`ヘルパを使用している場合でも、`allOnQueue()`と`allOnConnection()`は引き続き使用できます。
 
 <a name="failed-jobs-table-batch-support"></a>
 #### 失敗したジョブテーブルのバッチサポート

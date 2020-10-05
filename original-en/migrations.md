@@ -60,7 +60,7 @@ When you execute this command, Laravel will write a "schema" file to your `datab
 
 You should commit your database schema file to source control so that other new developers on your team may quickly create your application's initial database structure.
 
-> {note} Migration squashing is only available for the MySQL, PostgreSQL, and SQLite databases.
+> {note} Migration squashing is only available for the MySQL, PostgreSQL, and SQLite databases. Of course, you may not use a MySQL / PostgreSQL database dump in combination with an in-memory SQLite database during testing.
 
 <a name="migration-structure"></a>
 ## Migration Structure
@@ -386,7 +386,7 @@ To rename a column, you may use the `renameColumn` method on the schema builder.
         $table->renameColumn('from', 'to');
     });
 
-> {note} Renaming any column in a table that also has a column of type `enum` is not currently supported.
+> {note} Renaming an `enum` column is not currently supported.
 
 <a name="dropping-columns"></a>
 ### Dropping Columns

@@ -42,6 +42,8 @@ LaravelアプリケーションはTinkerをデフォルトで含んでいます�
 
     composer require laravel/tinker
 
+> {tip} Laravelアプリケーションを操作する、グラフィカルなUIをお探しですか？[Tinkerwell](https://tinkerwell.app)をお試しください。
+
 #### 使用法
 
 TinkerによりコマンドラインでEloquent ORM、ジョブ、イベントなど、Laravelアプリケーション全体を操作できます。Tinker環境を利用するには、`tinker` Artisanコマンドを実行してください。

@@ -427,7 +427,7 @@ handleメソッドの中でレート制限をする代わりに、レート制�
 
 #### チェーンの失敗
 
-ジョブをチェーンするときに、そのチェーンの中のジョブが失敗した時に実行されるクロージャを`chain`メソッドに指定できます。指定コールバックはそのジョブの失敗を引き起こした例外のインスタンスを引数に取ります。
+ジョブをチェーンするときに、そのチェーンの中のジョブが失敗した時に実行されるクロージャを`catch`メソッドに指定できます。指定コールバックはそのジョブの失敗を引き起こした例外のインスタンスを引数に取ります。
 
     use Illuminate\Support\Facades\Bus;
     use Throwable;
@@ -1009,7 +1009,7 @@ Supervisorの設定ファイルは、通常`/etc/supervisor/conf.d`ディレク�
 
     [program:laravel-worker]
     process_name=%(program_name)s_%(process_num)02d
-    command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3
+    command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
     autostart=true
     autorestart=true
     user=forge
@@ -1206,6 +1206,8 @@ Supervisorの詳細情報は、[Supervisorドキュメント](http://supervisord
 
     php artisan queue:forget 5
 
+> {tip} [Horizon](/docs/{{version}}/horizon)を使用する場合は、`queue：forget`コマンドの代わりに、`horizon：forget`コマンドを使用して失敗したジョブを削除する必要があります。
+
 失敗したジョブを全部削除するには、`queue:flush`コマンドを使います。
 
     php artisan queue:flush
@@ -1226,6 +1228,8 @@ Eloquentモデルをジョブで取り扱う場合は自動的にキューへ積
 
 <a name="clearing-jobs-from-queues"></a>
 ## キュー上のジョブのクリア
+
+> {tip} [Horizon](/docs/{{version}}/horizon)を使用する場合は、`queue：clear`コマンドの代わりに、`horizon：clear`コマンドを使用してキューからジョブをクリアする必要があります。
 
 デフォルト接続のデフォルトキューからすべてのジョブを削除したい場合は、`queue:clear` Artisanコマンドを使います。
 

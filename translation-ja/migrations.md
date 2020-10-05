@@ -60,7 +60,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
 データベーススキーマはソース管理のコミットに含めるべきでしょう。それによりチームに入った別の新しい開発者がアプリケーションの初期データベース構造を簡単に生成できます。
 
-> {note} マイグレーションの圧縮はMySQL、PostgreSQL、SQLiteデータベースでのみ利用可能です。
+> {note} マイグレーションの圧縮はMySQL、PostgreSQL、SQLiteデータベースでのみ利用可能です。もちろんテスト時は、MySQL／PostgreSQLのデータベースダンプをSQLiteのインメモリーデータベースと組み合わせての使用はできません。
 
 <a name="migration-structure"></a>
 ## マイグレーション構造

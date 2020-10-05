@@ -10,6 +10,7 @@
 - [ファイル取得](#retrieving-files)
     - [ファイルのダウンロード](#downloading-files)
     - [ファイルURL](#file-urls)
+    - [ファイルパス](#file-paths)
     - [ファイルメタ情報](#file-metadata)
 - [ファイル保存](#storing-files)
     - [ファイルアップロード](#file-uploads)
@@ -228,6 +229,15 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
         'url' => env('APP_URL').'/storage',
         'visibility' => 'public',
     ],
+
+<a name="file-paths"></a>
+### ファイルパス
+
+`path`メソッドを使い、指定ファイルのパスを取得できます。`local`ドライバーを使用している場合、これはファイルの絶対パスを返します。`s3`ドライバーを使用している場合、このメソッドはS3バケット内におけるファイルの相対パスを返します。
+
+    use Illuminate\Support\Facades\Storage;
+
+    $path = Storage::path('file.jpg');
 
 <a name="file-metadata"></a>
 ### ファイルメタ情報

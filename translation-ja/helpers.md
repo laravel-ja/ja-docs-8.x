@@ -2653,7 +2653,7 @@ The `action` function generates a URL for the given controller action:
 `optional`関数は、第２引数にクロージャを受け付けます。クロージャは最初の引数がNULLでなかった場合に、呼び出されます。
 
     return optional(User::find($id), function ($user) {
-        return new DummyUser;
+        return $user->name;
     });
 
 <a name="method-policy"></a>

@@ -427,7 +427,7 @@ If you would like to specify the connection and queue that should be used for th
 
 #### Chain Failures
 
-When chaining jobs, you may use the `chain` method to specify a Closure that should be invoked if a job within the chain fails. The given callback will receive the exception instance that caused the job failure:
+When chaining jobs, you may use the `catch` method to specify a Closure that should be invoked if a job within the chain fails. The given callback will receive the exception instance that caused the job failure:
 
     use Illuminate\Support\Facades\Bus;
     use Throwable;
@@ -1009,7 +1009,7 @@ Supervisor configuration files are typically stored in the `/etc/supervisor/conf
 
     [program:laravel-worker]
     process_name=%(program_name)s_%(process_num)02d
-    command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3
+    command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
     autostart=true
     autorestart=true
     user=forge
@@ -1206,6 +1206,8 @@ If you would like to delete a failed job, you may use the `queue:forget` command
 
     php artisan queue:forget 5
 
+> {tip} When using [Horizon](/docs/{{version}}/horizon), you should use the `horizon:forget` command to delete a failed job instead of the `queue:forget` command.
+
 To delete all of your failed jobs, you may use the `queue:flush` command:
 
     php artisan queue:flush
@@ -1226,6 +1228,8 @@ For convenience, you may choose to automatically delete jobs with missing models
 
 <a name="clearing-jobs-from-queues"></a>
 ## Clearing Jobs From Queues
+
+> {tip} When using [Horizon](/docs/{{version}}/horizon), you should use the `horizon:clear` command to clear jobs from the queue instead of the `queue:clear` command.
 
 If you would like to delete all jobs from the default queue of the default connection, you may do so using the `queue:clear` Artisan command:
 

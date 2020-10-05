@@ -424,7 +424,7 @@ In some situations, it's useful to embed PHP code into your views. You can use t
 <a name="the-once-directive"></a>
 ### The `@once` Directive
 
-The `@once` directive allows you to define a portion of the template that will only be evaluate once per rendering cycle. This may be useful for pushing a given piece of JavaScript into the page's header using [stacks](#stacks). For example, if you are rendering a given [component](#components) within a loop, you may wish to only push the JavaScript to the header the the first time the component is rendered:
+The `@once` directive allows you to define a portion of the template that will only be evaluate once per rendering cycle. This may be useful for pushing a given piece of JavaScript into the page's header using [stacks](#stacks). For example, if you are rendering a given [component](#components) within a loop, you may wish to only push the JavaScript to the header the first time the component is rendered:
 
     @once
         @push('scripts')
@@ -725,6 +725,26 @@ The final, rendered HTML of the component will appear like the following:
     <div class="alert alert-error mb-4">
         <!-- Contents of the $message variable -->
     </div>
+
+#### Non-Class Attribute Merging
+
+When merging attributes that are not `class` attributes, the values provided to the `merge` method will be considered the "default" values of attribute which can be overwritten by the component's consumer. Unlike `class` attributes, non-class attributes are not appended to each other. For example, an `button` component may look like the following:
+
+    <button {{ $attributes->merge(['type' => 'button']) }}>
+        {{ $slot }}
+    </button>
+
+To render the button component with a custom `type`, it may be specified when consuming the component. If no type is specified, the `button` type will be used:
+
+    <x-button type="submit">
+        Submit
+    </x-button>
+
+The rendered HTML of the `button` component in this example would be:
+
+    <button type="submit">
+        Submit
+    </button>
 
 #### Filtering Attributes
 

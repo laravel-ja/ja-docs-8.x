@@ -63,6 +63,12 @@ Laravelは、アプリケーションに対するURL生成の手助けする、�
 
     // http://example.com/post/1
 
+ルート定義のパラメーターに対応していないその他の配列パラメーターは、URLのクエリ文字列に追加されます。
+
+    echo route('post.show', ['post' => 1, 'search' => 'rocket']);
+
+    // http://example.com/post/1?search=rocket
+
 [Eloquentモデル](/docs/{{version}}/eloquent)の主キーを使用するURLを生成することもよくあると思います。そのため、Eloquentモデルをパラメータ値として渡すことができます。`route`ヘルパは、そのモデルの主キーを自動的に取り出します。
 
     echo route('post.show', ['post' => $post]);
@@ -187,7 +193,7 @@ URLのデフォルト値を設定すると、Laravelの暗黙的なモデルバ�
      */
     protected $middlewarePriority = [
         // ...
-         \App\Http\MiddlewareSetDefaultLocaleForUrls::class,
+         \App\Http\Middleware\SetDefaultLocaleForUrls::class,
          \Illuminate\Routing\Middleware\SubstituteBindings::class,
          // ...
     ];

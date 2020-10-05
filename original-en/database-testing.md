@@ -128,21 +128,7 @@ Via the `faker` property, factories have access to the [Faker](https://github.co
 <a name="factory-states"></a>
 ### Factory States
 
-State manipulation methods allow you to define discrete modifications that can be applied to your model factories in any combination. For example, your `User` model might have a `suspended` state that modifies one of its default attribute values. You may define your state transformations using the base factory's `state` method. You may name your state method anything you like. After all, it's just a typical PHP method:
-
-    /**
-     * Indicate that the user is suspended.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    public function suspended()
-    {
-        return $this->state([
-            'account_status' => 'suspended',
-        ]);
-    }
-
-If your state transformation requires access to the other attributes defined by the factory, you may pass a callback to the `state` method. The callback will receive the array of raw attributes defined for the factory:
+State manipulation methods allow you to define discrete modifications that can be applied to your model factories in any combination. For example, your `User` model might have a `suspended` state that modifies one of its default attribute values. You may define your state transformations using the base factory's `state` method. You may name your state method anything you like. After all, it's just a typical PHP method. The provided state manipulation callback will receive the array of raw attributes defined for the factory and should return an array of attributes to modify:
 
     /**
      * Indicate that the user is suspended.
@@ -356,19 +342,19 @@ Next, let's explore building Eloquent model relationships using Laravel's fluent
     use App\Models\Post;
     use App\Models\User;
 
-    $users = User::factory()
+    $user = User::factory()
                 ->has(Post::factory()->count(3))
                 ->create();
 
 By convention, when passing a `Post` model to the `has` method, Laravel will assume that the `User` model must have a `posts` method that defines the relationship. If necessary, you may explicitly specify the name of the relationship that you would like to manipulate:
 
-    $users = User::factory()
+    $user = User::factory()
                 ->has(Post::factory()->count(3), 'posts')
                 ->create();
 
 Of course, you may perform state manipulations on the related models. In addition, you may pass a Closure based state transformation if your state change requires access to the parent model:
 
-    $users = User::factory()
+    $user = User::factory()
                 ->has(
                     Post::factory()
                             ->count(3)
@@ -382,13 +368,13 @@ Of course, you may perform state manipulations on the related models. In additio
 
 For convenience, you may use the factory's magic relationship methods to define relationships. For example, the following example will use convention to determine that the related models should be created via a `posts` relationship method on the `User` model:
 
-    $users = User::factory()
+    $user = User::factory()
                 ->hasPosts(3)
                 ->create();
 
 When using magic methods to create factory relationships, you may pass an array of attributes to override on the related models:
 
-    $users = User::factory()
+    $user = User::factory()
                 ->hasPosts(3, [
                     'published' => false,
                 ])
@@ -396,7 +382,7 @@ When using magic methods to create factory relationships, you may pass an array 
 
 You may provide a Closure based state transformation if your state change requires access to the parent model:
 
-    $users = User::factory()
+    $user = User::factory()
                 ->hasPosts(3, function (array $attributes, User $user) {
                     return ['user_type' => $user->type];
                 })

@@ -128,21 +128,7 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
 <a name="factory-states"></a>
 ### ファクトリステート
 
-ステート操作メソッドにより、モデルファクトリのどんな組み合わせに対しても適用できる、個別の調整を定義できます。たとえば、`User`モデルは、デフォルト属性値の一つを変更する、`suspended`状態を持つとしましょう。`state`メソッドを使い、状態遷移を定義します。ステートメソッドには好きな名前が付けられます。典型的なPHPメソッドにすぎません。
-
-    /**
-     * そのユーザーが資格保留(suspended)されていることを表す
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    public function suspended()
-    {
-        return $this->state([
-            'account_status' => 'suspended',
-        ]);
-    }
-
-状態遷移がファクトリで定義した他の属性にアクセする必要がある場合は、`state`メソッドへコールバックを渡してください。そのコールバックはファクトリで定義したそのままの属性の配列を受け取ります。
+ステート操作メソッドにより、モデルファクトリのどんな組み合わせに対しても適用できる、個別の調整を定義できます。たとえば、`User`モデルは、デフォルト属性値の一つを変更する、`suspended`状態を持つとしましょう。`state`メソッドを使い、状態遷移を定義します。ステートメソッドには好きな名前が付けられます。典型的なPHPメソッドにすぎません。指定する状態操作コールバックは、ファクトリに対し定義した属性そのままの配列を引数に取り、変更する属性の配列を返します。
 
     /**
      * そのユーザーが資格保留(suspended)されていることを表す
@@ -356,19 +342,19 @@ You may create a collection of many models using the `count` method:
     use App\Models\Post;
     use App\Models\User;
 
-    $users = User::factory()
+    $user = User::factory()
                 ->has(Post::factory()->count(3))
                 ->create();
 
 規約により、`Post`モデルを`has`メソッドに渡すとき、Laravelは`User`モデルがリレーションを定義する`posts`メソッドを持っていると想定します。必要に応じ、操作したいリレーションの名前を明示的に指定できます。
 
-    $users = User::factory()
+    $user = User::factory()
                 ->has(Post::factory()->count(3), 'posts')
                 ->create();
 
 もちろん、関連するモデルに対し状態操作することもできます。加えて、状態の変更に親モデルへのアクセスが必要であるなら、クロージャベースで状態遷移を渡すこともできます。
 
-    $users = User::factory()
+    $user = User::factory()
                 ->has(
                     Post::factory()
                             ->count(3)
@@ -382,13 +368,13 @@ You may create a collection of many models using the `count` method:
 
 リレーションシップを定義するため便利なように、ファクトリのマジックリレーションメソッドを使用できます。たとえば以下の例では、関連するモデルが`User`モデル上の`posts`リレーションメソッドを介して作成されるべきであることを決定するように記法を使用します。
 
-    $users = User::factory()
+    $user = User::factory()
                 ->hasPosts(3)
                 ->create();
 
 ファクトリリレーションを作成するためにマジックメソッドを使用する場合は、関連モデルをオーバーライドするために属性の配列を渡せます。
 
-    $users = User::factory()
+    $user = User::factory()
                 ->hasPosts(3, [
                     'published' => false,
                 ])
@@ -396,7 +382,7 @@ You may create a collection of many models using the `count` method:
 
 状態の変更で親モデルにアクセスする必要があるなら、クロージャベースの状態遷移を渡せます。
 
-    $users = User::factory()
+    $user = User::factory()
                 ->hasPosts(3, function (array $attributes, User $user) {
                     return ['user_type' => $user->type];
                 })

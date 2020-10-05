@@ -17,7 +17,11 @@
     - [ステートレスHTTP基本認証](#stateless-http-basic-authentication)
 - [ログアウト](#logging-out)
     - [他のデバイス上のセッションを無効化](#invalidating-sessions-on-other-devices)
-- [ソーシャル認証](https://github.com/laravel/socialite)
+- [パスワード確認](#password-confirmation)
+    - [設定](#password-confirmation-configuration)
+    - [ルート](#password-confirmation-routing)
+    - [ルート保護](#password-confirmation-protecting-routes)
+- [ソーシャル認証]](/docs/{{version}}/socialite)
 - [カスタムガードの追加](#adding-custom-guards)
     - [クロージャリクエストガード](#closure-request-guards)
 - [カスタムユーザープロバイダの追加](#adding-custom-user-providers)
@@ -66,7 +70,7 @@ Laravelは、通常`Auth`および`Session`ファサードを介してアクセ�
 
 このドキュメント中で説明するように、こうした認証サービスを自分で操作して、アプリケーション独自の認証レイヤーを構築できます。しかし、より迅速に開始できるよう、認証レイヤー全体の堅牢で最新のスカフォールドを提供する無料パッケージをリリースしました。[Laravel Jetstream]（https://jetstream.laravel.com）（[和訳](/jetstream/1.0/ja/introduction.html)）と[Laravel Fortify]（https://github.com/laravel/fortify）パッケージです。
 
-Laravel Fortifyは、Laravelのヘッドレス認証バックエンドであり、このドキュメントにある多くの機能を実装しています。Laravel Jetstreamは、[Tailwind CSS](https://tailwindcss.com)、[Laravel Livewire](https://laravel-livewire.com)、[Inertia.js](https://inertiajs.com)を使い、美しくモダンなUIでFortifyの認証サービスを利用および公開するUIです。Laravel Jetstreamは、ブラウザベースのクッキー認証の提供に加えAPIトークン認証を提供するため、Laravel Sanctumとの統合を組み込んでいます。LaravelのAPI認証サービスについては、以下で説明します。
+Laravel FortifyはLaravelのヘッドレス認証バックエンドです。クッキーベースの認証や２要素認証、メールバリデーションなど他の機能を含め、このドキュメントで多くの機能を説明しています。Laravel Jetstreamは、[Tailwind CSS](https://tailwindcss.com)、[Laravel Livewire](https://laravel-livewire.com)、[Inertia.js](https://inertiajs.com)を使い、美しくモダンなUIでFortifyの認証サービスを利用および公開するUIです。Laravel Jetstreamは、ブラウザベースのクッキー認証の提供に加えAPIトークン認証を提供するため、Laravel Sanctumとの統合を組み込んでいます。LaravelのAPI認証サービスについては、以下で説明します。
 
 #### LaravelのAPI認証サービス
 
@@ -88,7 +92,7 @@ Laravel Sanctumは、[Laravel Jetstream](https://jetstream.laravel.com)（[和�
 
 要約すると、ブラウザを使用してアプリケーションにアクセスする場合、アプリケーションはLaravelの組み込み認証サービスを使用します。
 
-次に、アプリケーションがAPIを提供する場合は、[Passport](/docs/{{version}}/passport)または[Sanctum](/docs/{{version}}/sanctum)を選択してください。「スコープ」や「アビリティ」のサポートを含むAPI認証やSPA認証、モバイル認証のためのシンプルで完全なソリューションであるため、一般に、可能であればSanctumをお勧めします。
+次に、アプリケーションがAPIを提供する場合は、[Passport](/docs/{{version}}/passport)または[Sanctum](/docs/{{version}}/sanctum)を選択してください。「スコープ」や「アビリティ」のサポートを含むAPI認証やSPA認証、モバイル認証のためのシンプルで完全なソリューションであるため、一般に、可能であればSanctumをおすすめします。
 
 アプリケーションがOAuth2仕様で提供されるすべての機能を絶対に必要とする場合、Passportを選択してください。。
 
@@ -424,6 +428,65 @@ PHP FastCGIを使用している場合、初期状態のままでHTTP基本認�
 `logoutOtherDevices`メソッドが起動すると、ユーザーの他のセッションはすべて無効になります。つまり、以前に認証済みのすべてのガードが「ログアウト」されます。
 
 > {note} `login`ルートに対するルート名をカスタマイズしながら、`AuthenticateSession`ミドルウェアを使用している場合は、アプリケーションの例外ハンドラにある`unauthenticated`メソッドをオーバーライドし、ログインページへユーザーを確実にリダイレクトしてください。
+
+<a name="password-confirmation"></a>
+## パスワード確認
+
+アプリケーションの構築時、あるアクションを実行する前にユーザーからパスワードを確認してもらう必要が起きるでしょう。Laravelはこの処理を簡単にできるミドルウェアを組み込んでいます。この機能を実装するには２つのルートを定義してください。１つはユーザーにパスワードの確認を求めるビューを表示するルート、もう1つはパスワードが有効であることを確認してユーザーを目的先にリダイレクトするルートです。
+
+> {tip} 以降のドキュメントでは、Laravelのパスワード確認機能を自分で直接統合する方法について説明しています。ただし、もっと早く始めたい場合は[Laravel Jetstream](https://jetstream.laravel.com)認証スキャフォールディングパッケージ（[ドキュメント和訳](/jetstream/1.0/ja/introduction.html)）でこの機能がサポートされています。
+
+<a name="password-confirmation-configuration"></a>
+### 設定
+
+ユーザーによるパスワード確認後、３時間パスワードの再確認は求められません。ただし、`auth`設定ファイル内の`password_timeout`設定値の値を変更し、ユーザーがパスワードの再入力を求められるまでの時間を設定できます。
+
+<a name="password-confirmation-routing"></a>
+### ルート
+
+#### パスワード確認フォーム
+
+はじめに、ユーザーへパスワードの確認を行うビューを表示するために必要なルートを定義します。
+
+    Route::get('/confirm-password', function () {
+        return view('auth.confirm-password');
+    })->middleware(['auth'])->name('password.confirm');
+
+ご想像のとおり、このルートが返すビューには、`password`フィールドを含むフォームが必要です。さらに、ユーザーがアプリケーションの保護領域に入っており、パスワードを確認する必要があることを説明するテキストをビュー内に含めてください。
+
+#### パスワードの確認
+
+次に、「パスワードの確認」ビューからのフォームリクエストを処理するルートを定義します。このルートは、パスワードを検証し、ユーザーを目的先にリダイレクトする責務を持っています。
+
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Hash;
+
+    Route::post('/confirm-password', function (Request $request) {
+        if (! Hash::check($request->password, $request->user()->password)) {
+            return back()->withErrors([
+                'password' => ['The provided password does not match our records.']
+            ]);
+        }
+
+        $request->session()->passwordConfirmed();
+
+        return redirect()->intended();
+    })->middleware(['auth', 'throttle:6,1'])->name('password.confirm');
+
+先へ進む前に、このルートをより詳しく調べましょう。まず、リクエストの`password`属性が、認証済みユーザーのパスワードと完全に一致するか判定されます。パスワードが有効な場合、ユーザーがパスワードを確認したことをLaravelのセッションに知らせる必要があります。`passwordConfirmed`メソッドは、ユーザーのセッションにタイムスタンプをセットします。このタイムスタンプを使用して、Laravelはユーザーが最後にパスワードを確認した日時を判別できます。最後に、ユーザーを目的先にリダイレクトします。
+
+<a name="password-confirmation-protecting-routes"></a>
+### ルート保護
+
+パスワードが最近確認されたことを確実にする必要があるアクションを実行するすべてのルートへ、`password.confirm`ミドルウェアを確実に割り当ててください。このミドルウェアはLaravelのデフォルトのインストールに含まれており、ユーザーの意図した宛先をセッションへ自動的に保存し、ユーザーがパスワードを確認した後にその場所へリダイレクトします。ユーザーが意図した宛先をセッションに保存した後、このミドルウェアはユーザーを`password.confirm`[名前付きルート](/docs/{{version}}/routing#named-routes)にリダイレクトします。
+
+    Route::get('/settings', function () {
+        // ...
+    })->middleware(['password.confirm']);
+
+    Route::post('/settings', function () {
+        // ...
+    })->middleware(['password.confirm']);
 
 <a name="adding-custom-guards"></a>
 ## カスタムガードの追加

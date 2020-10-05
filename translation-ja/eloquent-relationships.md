@@ -329,6 +329,8 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
 
     return $this->belongsToMany('App\Models\Role')->withTimestamps();
 
+> {note} ピボットテーブルでタイムスタンプを使用する場合、テーブルには `created_at`とʻupdated_at`の両方のタイムスタンプカラムが必要です。
+
 #### `pivot`属性の名前変更
 
 前述の通り、中間テーブルには`pivot`属性を使ってアクセスできます。その際、アプリケーションの目的をより良く反映するために`pivot`属性の名前を変更できます。
