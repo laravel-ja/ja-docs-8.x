@@ -64,7 +64,7 @@ SPAの認証のためにSanctumを活用しようと計画している場合は�
 
     'api' => [
         EnsureFrontendRequestsAreStateful::class,
-        'throttle:60,1',
+        'throttle:api',
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ],
 
@@ -88,7 +88,7 @@ APIリクエスト認証に使用するため、APIトークン／パーソナ�
 
     class User extends Authenticatable
     {
-        use HasApiTokens, Notifiable;
+        use HasApiTokens, HasFactory, Notifiable;
     }
 
 トークンを発行するには、`createToken`メソッドを使用します。この`createToken`メソッドは`Laravel\Sanctum\NewAccessToken`インスタンスを返します。APIトークンはデータベースへ格納される前に、SHA-256を使いハッシュされますが、`NewAccessToken`インスタンスの`plainTextToken`プロパティにより、平文の値へアクセスできます。トークンを生成したら、ユーザーへこの値をすぐに表示しなくてはなりません。
@@ -167,7 +167,7 @@ Sanctumはこの機能の実現のためにトークンは一切使用しませ�
 
     'api' => [
         EnsureFrontendRequestsAreStateful::class,
-        'throttle:60,1',
+        'throttle:api',
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ],
 

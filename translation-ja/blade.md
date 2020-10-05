@@ -666,11 +666,13 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
             // $data['attributes'];
             // $data['slot'];
 
-            return '<div>Component content</div>';
+            return '<div>Components content</div>';
         };
     }
 
 `componentName`は、HTMLタグ中で`x-`プレフィックスに続けて使用している名前と同じです。そのため、`<x-alert />`の`componentName`は`alert`となります。`attributes`要素はHTMLタグ中に現れるすべての属性を含みます。`slot`要素はそのコンポーネントのスロットの内容の`Illuminate\Support\HtmlString`インスタンスです。
+
+このクロージャは文字列を返す必要があります。返す文字列が既存のビューに対応している場合、そのビューをレンダーします。対応していない場合、返す文字列はインラインBladeビューとして評価します。
 
 #### 依存の追加
 

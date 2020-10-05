@@ -321,7 +321,7 @@ Some views may depend on errors shared in the global error bag provided by Larav
 
     $view->assertSee('Please provide a valid name.');
 
-#### Rendering Raw Blade
+#### Rendering Blade & Components
 
 If necessary, you may use the `blade` method to evaluate and render a raw Blade string. Like the `view` method, the `blade` method returns an instance of `Illuminate\Testing\TestView`:
 
@@ -329,6 +329,12 @@ If necessary, you may use the `blade` method to evaluate and render a raw Blade 
         '<x-component :name="$name" />',
         ['name' => 'Taylor']
     );
+
+    $view->assertSee('Taylor');
+
+You may use the `component` method to evaluate and render a blade component. Like the `view` method, the `component` method returns an instance of `Illuminate\Testing\TestView`:
+
+    $view = $this->component(Profile::class, ['name' => 'Taylor']);
 
     $view->assertSee('Taylor');
 

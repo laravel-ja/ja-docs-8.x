@@ -87,6 +87,9 @@ If you would like to install a different version of ChromeDriver than what is in
 
     # Install a given version of ChromeDriver for all supported OSs...
     php artisan dusk:chrome-driver --all
+    
+    # Install the version of ChromeDriver that matches the detected version of Chrome / Chromium for your OS...
+    php artisan dusk:chrome-driver --detect
 
 > {note} Dusk requires the `chromedriver` binaries to be executable. If you're having problems running Dusk, you should ensure the binaries are executable using the following command: `chmod -R 0755 vendor/laravel/dusk/bin/`.
 
@@ -208,7 +211,7 @@ To get started, let's write a test that verifies we can log into our application
          */
         public function testBasicExample()
         {
-            $user = factory(User::class)->create([
+            $user = User::factory()->create([
                 'email' => 'taylor@laravel.com',
             ]);
 

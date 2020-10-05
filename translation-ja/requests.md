@@ -233,6 +233,12 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
         //
     }
 
+`whenHas`メソッドはリクエストに値が存在する場合に、指定コールバックを実行します。
+
+    $request->whenHas('name', function ($input) {
+        //
+    });
+
 `hasAny`メソッドは、指定した値が存在している場合に`true`を返します。
 
     if ($request->hasAny(['name', 'email'])) {
@@ -244,6 +250,12 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
     if ($request->filled('name')) {
         //
     }
+
+`whenFilled`メソッドは、リクエストに値が存在し、かつ空ではない場合に、指定コールバックを実行します。
+
+    $request->whenFilled('name', function ($input) {
+        //
+    });
 
 指定したキーがリクエストに存在していないことを判定する場合は、`missing`メソッドを使います。
 

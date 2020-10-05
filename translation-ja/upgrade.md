@@ -362,6 +362,13 @@ Laravelの依存パッケージである`dragonmantank/cron-expression`が、`2.
 
 ### テスト
 
+<a name="decode-response-json-method"></a>
+#### `decodeResponseJson`メソッド
+
+**影響の可能性： 低い**
+
+`Illuminate\Testing\TestResponse`クラスに属する`decodeResponseJson`メソッドは、引数を取らなくなりました。代わりに`json`メソッドの使用を検討してください。
+
 <a name="assert-exact-json-method"></a>
 #### `assertExactJson`メソッド
 

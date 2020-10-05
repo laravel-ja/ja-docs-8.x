@@ -19,6 +19,7 @@
 - [プログラムによるコマンド実行](#programmatically-executing-commands)
     - [他のコマンドからの呼び出し](#calling-commands-from-other-commands)
 - [スタブのカスタマイズ](#stub-customization)
+- [イベント](#events)
 
 <a name="introduction"></a>
 ## イントロダクション
@@ -530,3 +531,8 @@ Artisanコンソールの`make`コマンドは、コントローラ、マイグ�
     php artisan stub:publish
 
 リソース公開されたスタブはアプリケーションのルート下の`stubs`ディレクトリの中に保存されます。そうしたスタブに加えた変更は、名前に対応するArtisan `make`コマンドを使用して生成するときに反映されます。
+
+<a name="events"></a>
+## イベント
+
+Artisanはコマンドの実行時に、`Illuminate\Console\Events\ArtisanStarting`、`Illuminate\Console\Events\CommandStarting`、`Illuminate\Console\Events\CommandFinished`の３イベントを発行します。`ArtisanStarting`イベントはArtisanが実行を開始するとすぐに発行されます。次に、コマンドが実行される直前に`CommandStarting`イベントが発行されます。 最後に、コマンドの実行が終了すると、`CommandFinished`イベントが発行されます。

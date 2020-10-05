@@ -924,7 +924,7 @@ Laravelには、キューに投入された新しいジョブを処理する、�
 
     php artisan queue:work --once
 
-`--max-jobs`オプションは指定した数のジョブを処理し、終了するようにワーカへ指示します。指定数のジョブを処理してからワーカは自動的に再起動するため、このオプションは[Supervisor](supervisor-configuration)と組み合わせて使用すると便利です。
+`--max-jobs`オプションは指定した数のジョブを処理し、終了するようにワーカへ指示します。指定数のジョブを処理してからワーカは自動的に再起動するため、このオプションは[Supervisor](#supervisor-configuration)と組み合わせて使用すると便利です。
 
     php artisan queue:work --max-jobs=1000
 
@@ -936,7 +936,7 @@ Laravelには、キューに投入された新しいジョブを処理する、�
 
 #### 指定秒数間、ジョブを処理する
 
-`--max-time`オプションは指定秒数の間、ジョブを処理し、終了するようにワーカへ指示するために使用します。指定時間ジョブを処理したあとで自動的にワーカが再起動するため、このオプションは[Supervisor](supervisor-configuration)と組み合わせて使用すると便利です。
+`--max-time`オプションは指定秒数の間、ジョブを処理し、終了するようにワーカへ指示するために使用します。指定時間ジョブを処理したあとで自動的にワーカが再起動するため、このオプションは[Supervisor](#supervisor-configuration)と組み合わせて使用すると便利です。
 
     // １時間ジョブを処理してから終了する
     php artisan queue:work --max-time=3600

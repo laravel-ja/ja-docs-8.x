@@ -12,6 +12,7 @@
     - [バッチ](#filtering-batches)
 - [タグ付け](#tagging)
 - [利用可能なワッチャー](#available-watchers)
+    - [Batchワッチャー](#batch-watcher)
     - [Cacheワッチャー](#cache-watcher)
     - [Commandワッチャー](#command-watcher)
     - [Dumpワッチャー](#dump-watcher)
@@ -27,6 +28,7 @@
     - [Redisワッチャー](#redis-watcher)
     - [Requestワッチャー](#request-watcher)
     - [Scheduleワッチャー](#schedule-watcher)
+    - [Viewワッチャー](#view-watcher)
 - [ユーザーアバターの表示](#displaying-user-avatars)
 
 <a name="introduction"></a>
@@ -254,6 +256,11 @@ Telescopeのワッチャーは、リクエストやコマンドが実行され�
         ...
     ],
 
+<a name="batch-watcher"></a>
+### Batchワッチャー
+
+batchワッチャーは、ジョブや接続の情報を含む、キュー投入されたバッチの情報を記録します。
+
 <a name="cache-watcher"></a>
 ### Cacheワッチャー
 
@@ -368,6 +375,11 @@ Requestワッチャーはアプリケーションにより処理された全リ�
 ### Scheduleワッチャー
 
 Scheduleワッチャーは、アプリケーションで実行された全スケジュール済みタスクのコマンドと出力を記録します。
+
+<a name="view-watcher"></a>
+### Viewワッチャー
+
+Viewワッチャーはビュー名、パス、データ、ビューをレンダリングしたときの「コンポーサ」を記録します。
 
 <a name="displaying-user-avatars"></a>
 ## ユーザーアバターの表示

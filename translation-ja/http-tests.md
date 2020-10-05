@@ -321,7 +321,7 @@ LaravelではアプリケーションへのHTTPリクエストをシミュレー
 
     $view->assertSee('Please provide a valid name.');
 
-#### もとのBladeのレンダリング
+#### Bladeとコンポーネントのレンダリング
 
 必要であれば、もとのBlade文字列を評価しレンダーするため、`blade`メソッドが使用できます。`blade`メソッドは`Illuminate\Testing\TestView`インスタンスを返します。
 
@@ -329,6 +329,12 @@ LaravelではアプリケーションへのHTTPリクエストをシミュレー
         '<x-component :name="$name" />',
         ['name' => 'Taylor']
     );
+
+    $view->assertSee('Taylor');
+
+`component`メソッドを使用して、Bladeコンポーネントを評価およびレンダーできます。`view`メソッドと同様に、`component`メソッドは`Illuminate\Testing\TestView`のインスタンスを返します。
+
+    $view = $this->component(Profile::class, ['name' => 'Taylor']);
 
     $view->assertSee('Taylor');
 

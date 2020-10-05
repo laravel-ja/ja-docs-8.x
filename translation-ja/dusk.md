@@ -88,6 +88,9 @@ Laravel Duskにデフォルトで含まれるChromeDriverとは別のバージ�
     # 全OSをサポートしている、指定バージョンのChromeDriverのインストール
     php artisan dusk:chrome-driver --all
 
+    # OSに合わせ検出したChrome／Chromiumのバージョンと一致するバージョンのChromeDriverをインストール
+    php artisan dusk:chrome-driver --detect
+
 > {note} Dusk実行には、実行可能な`chromedriver`バイナリが必要です。Dusk実行時に問題がある場合は、このバイナリを実行可能に確実にするために、`chmod -R 0755 vendor/laravel/dusk/bin`コマンドを実行してみてください。
 
 <a name="using-other-browsers"></a>
@@ -208,7 +211,7 @@ PHPUnitテストランナが通常受け付ける引数は、`dusk`コマンド�
          */
         public function testBasicExample()
         {
-            $user = factory(User::class)->create([
+            $user = User::factory()->create([
                 'email' => 'taylor@laravel.com',
             ]);
 

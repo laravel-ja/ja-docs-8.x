@@ -105,7 +105,7 @@ Redisブロードキャスタがイベントを発行すると、そのイベン
 
 RedisブロードキャスタとSocket.IOサーバをペアリングする場合、アプリケーションへSocket.IO JavaScriptクライアントライブラリをインクルードする必要があります。NPMパッケージマネージャにより、インストールできます。
 
-    npm install --save socket.io-client
+    npm install --save-dev socket.io-client
 
 次に、`socket.io`コネクタと`host`を指定し、Echoをインスタンス化します。
 
@@ -482,7 +482,7 @@ VueとAxiosを使用しない場合、JavaScriptアプリケーションで`X-So
 
 Laravel EchoはJavaScriptライブラリで、チャンネルの購読とLaravelによるイベントブロードキャストのリッスンを苦労なしに実現してくれます。EchoはNPMパッケージマネージャにより、インストールします。以降の例で、Pusherチャンネルブロードキャストを使用する予定のため、`pusher-js`パッケージもインストールしています。
 
-    npm install --save laravel-echo pusher-js
+    npm install --save-dev laravel-echo pusher-js
 
 Echoがインストールできたら、アプリケーションのJavaScriptで、真新しいEchoインスタンスを作成する準備が整いました。これを行うには、Laravelフレームワークに含まれている、`resources/js/bootstrap.js`ファイルの最後が、良いでしょう。
 

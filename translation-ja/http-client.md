@@ -181,6 +181,12 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 
     return Http::post(...)->throw()->json();
 
+例外が投げられる前に追加ロジックを実行したい場合、クロージャを`throw`メソッドに渡すことができます。クロージャが呼び出された後、その例外は自動的に投げられるため、クロージャ内から例外を再度投げる必要はありません。
+
+    return Http::post(...)->throw(function ($response, $e) {
+        //
+    })->json();
+
 <a name="guzzle-options"></a>
 ### Guzzleオプション
 

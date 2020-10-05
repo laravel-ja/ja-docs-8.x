@@ -137,6 +137,7 @@
 [pad](#method-pad)
 [partition](#method-partition)
 [pipe](#method-pipe)
+[pipeInto](#method-pipeinto)
 [pluck](#method-pluck)
 [pop](#method-pop)
 [prepend](#method-prepend)
@@ -1436,6 +1437,38 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
     });
 
     // 6
+
+<a name="method-pipeinto"></a>
+#### `pipeInto()` {#collection-method}
+
+`pipeInto`メソッドは、指定クラスの新しいインスタンスを生成し、コレクションをコンストラクターに渡します。
+
+    class ResourceCollection
+    {
+        /**
+         * コレクションインスタンス
+         */
+        public $collection;
+
+        /**
+         * 新しいResourceCollectionインスタンスの生成
+         *
+         * @param  Collection  $resource
+         * @return void
+         */
+        public function __construct(Collection $collection)
+        {
+            $this->collection = $collection;
+        }
+    }
+
+    $collection = collect([1, 2, 3]);
+
+    $resource = $collection->pipeInto(ResourceCollection::class);
+
+    $resource->collection->all();
+
+    // [1, 2, 3]
 
 <a name="method-pluck"></a>
 #### `pluck()` {#collection-method}
