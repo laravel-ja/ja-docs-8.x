@@ -113,13 +113,13 @@
 
 `laravel/legacy-factories`パッケージを使用する場合は、ファクトリクラスを変更する必要はありません。ただし、ファクトリをアップグレードする場合は、それらのクラスに`Database\Factories`名前空間を追加する必要があります。
 
-Next, in your `composer.json` file, remove `classmap` block from the `autoload` section and add the new namespaced class directory mappings:次に、`composer.json`ファイルで、`autoload`セクションから`classmap`ブロックを削除し、新しい名前空間クラス・ディレクトリマッピングを追加します。
+次に、`composer.json`ファイルで、`autoload`セクションから`classmap`ブロックを削除し、新しい名前空間クラス・ディレクトリマッピングを追加します。
 
     "autoload": {
         "psr-4": {
-            "App\": "app/",
-            "Database\Factories\": "database/factories/",
-            "Database\Seeders\": "database/seeders/"
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
 
