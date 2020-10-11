@@ -323,6 +323,26 @@ Laravelには多様な利便性のあるキャストタイプが用意されて�
 
 > {tip} 値オブジェクトを含むEloquentモデルをJSONが配列にシリアライズする場合は、値オブジェクトに`Illuminate\Contracts\Support\Arrayable`および` JsonSerializable`インターフェースを実装する必要があります。
 
+#### 配列／JSONシリアライズ化
+
+Eloquentモデルが`toArray`メソッドを使用し配列やJSONに変換される場合、カスタムキャスト値オブジェクトは、`Illuminate\Contracts\Support\Arrayable`および `JsonSerializable`インターフェースを実装しているならば、通常シリアル化されます。ただし、サードパーティライブラリが提供する値オブジェクトを使用する場合、こうしたインターフェイスをそのオブジェクトへ追加できないでしょう。
+
+そのため、カスタムキャストクラスが値オブジェクトのシリアル化の責務を担当するように指定できます。これには、カスタムクラスキャストが`Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes`インターフェイスを実装している必要があります。このインターフェースは、クラスに値オブジェクトのシリアル化された形式を返す`serialize`メソッドを持っている必要があることを示しています
+
+    /**
+     * 値のシリアライズ化した表現を取得
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
+     * @param  mixed  $value
+     * @param  array  $attributes
+     * @return mixed
+     */
+    public function serialize($model, string $key, $value, array $attributes)
+    {
+        return (string) $value;
+    }
+
 #### インバウンドキャスト
 
 モデルから属性を取得するときには何も実行せずに、モデルに保存するときだけ値を変換するカスタムキャストを書く必要があることも稀にあるでしょう。インバウンドのみのキャストの古典的な例は「ハッシュ」キャストです。インバウンドオンリーのカスタムキャストは`CastsInboundAttributes`インターフェイスを実装し、`set`メソッドを定義する必要だけがあります。

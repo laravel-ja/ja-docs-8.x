@@ -83,7 +83,7 @@ Passportサービスプロバイダはフレームワークに対し、自身の
 
     class User extends Authenticatable
     {
-        use HasApiTokens, Notifiable;
+        use HasApiTokens, HasFactory, Notifiable;
     }
 
 次に、`AuthServiceProvider`の`boot`メソッドから、`Passport::routes`メソッドを呼び出す必要があります。このメソッドはアクセストークンの発行、アクセストークンの失効、クライアントとパーソナルアクセストークンの管理のルートを登録します。

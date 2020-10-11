@@ -29,6 +29,12 @@ When using the scheduler, you only need to add the following Cron entry to your 
 
 This Cron will call the Laravel command scheduler every minute. When the `schedule:run` command is executed, Laravel will evaluate your scheduled tasks and runs the tasks that are due.
 
+### Starting The Scheduler Locally
+
+Typically, you would not add a scheduler Cron entry to your local development machine. Instead you may use the `schedule:work` Artisan command. This command will run in the foreground and invoke the scheduler every minute until you exit the command:
+
+    php artisan schedule:work
+
 <a name="defining-schedules"></a>
 ## Defining Schedules
 
@@ -122,13 +128,15 @@ Method  | Description
 `->daily();`  |  Run the task every day at midnight
 `->dailyAt('13:00');`  |  Run the task every day at 13:00
 `->twiceDaily(1, 13);`  |  Run the task daily at 1:00 & 13:00
-`->weekly();`  |  Run the task every sunday at 00:00
+`->weekly();`  |  Run the task every Sunday at 00:00
 `->weeklyOn(1, '8:00');`  |  Run the task every week on Monday at 8:00
 `->monthly();`  |  Run the task on the first day of every month at 00:00
 `->monthlyOn(4, '15:00');`  |  Run the task every month on the 4th at 15:00
+`->twiceMonthly(1, 16, '13:00');`  |  Run the task monthly on the 1st and 16th at 13:00
 `->lastDayOfMonth('15:00');` | Run the task on the last day of the month at 15:00
 `->quarterly();` |  Run the task on the first day of every quarter at 00:00
 `->yearly();`  |  Run the task on the first day of every year at 00:00
+`->yearlyOn(7, 7, '17:00');`  |  Run the task every year on July 7th at 17:00
 `->timezone('America/New_York');` | Set the timezone
 
 These methods may be combined with additional constraints to create even more finely tuned schedules that only run on certain days of the week. For example, to schedule a command to run weekly on Monday:
@@ -159,7 +167,8 @@ Method  | Description
 `->fridays();`  |  Limit the task to Friday
 `->saturdays();`  |  Limit the task to Saturday
 `->days(array|mixed);`  |  Limit the task to specific days
-`->between($start, $end);`  |  Limit the task to run between start and end times
+`->between($startTime, $endTime);`  |  Limit the task to run between start and end times
+`->unlessBetween($startTime, $endTime);`  |  Limit the task to not run between start and end times
 `->when(Closure);`  |  Limit the task based on a truth test
 `->environments($env);`  |  Limit the task to specific environments
 

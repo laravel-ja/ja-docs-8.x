@@ -42,7 +42,7 @@
          * 指定ユーザーのプロフィール表示
          *
          * @param  int  $id
-         * @return View
+         * @return \Illuminate\View\View
          */
         public function show($id)
         {
@@ -78,7 +78,7 @@
          * 指定ユーザーのプロフィール表示
          *
          * @param  int  $id
-         * @return View
+         * @return \Illuminate\View\View
          */
         public function __invoke($id)
         {

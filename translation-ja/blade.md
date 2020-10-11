@@ -748,6 +748,12 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
         Submit
     </button>
 
+`class`ではなく、属性に値を一緒に追加したい場合は、`prepends`メソッドを使用します。
+
+    <div {{ $attributes->merge(['data-controller' => $attributes->prepends('profile-controller')]) }}>
+        {{ $slot }}
+    </div>
+
 #### 属性のフィルタリング
 
 `filter`メソッドを使い、属性をフィルタリングできます。このメソッドはクロージャを引数に取り、属性バックの中へ残す属性に対し`true`を返してください。

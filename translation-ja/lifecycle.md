@@ -18,7 +18,7 @@
 
 アプリケーションに対するリクエストは、すべて`public/index.php`ファイルが入り口になります。Webサーバ(Apache/Nginx)の設定により、すべてのリクエストをこのファイルへ渡しています。`index.php`ファイルは、さほどコードを持っていません。フレームワークの残りをロードするための入り口にすぎません。
 
-`index.php`ファイルは、Composerが生成したオートローダーの定義をロードします。それから、`bootstrap/app.php`スクリプトから、Laravelアプリケーションのインスタンスを取得します。Laravel自身の最初のアクションは、アプリケーション／[サービスコンテナ](/docs/{{version}}/container)のインスタンスを生成することです。
+`index.php`ファイルは、Composerが生成したオートローダーの定義をロードします。それから、`bootstrap/app.php`から、Laravelアプリケーションのインスタンスを取得します。Laravel自身の最初のアクションは、アプリケーション／[サービスコンテナ](/docs/{{version}}/container)のインスタンスを生成することです。
 
 ### HTTP/Consoleカーネル
 

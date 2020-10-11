@@ -22,7 +22,7 @@ Laravelフレームワークを動作させるには多少のシステム要件�
 - PHP >= 7.3
 - BCMath PHP拡張
 - Ctype PHP拡張
-- Fileinfo PHP extension
+- Fileinfo PHP拡張
 - JSON PHP拡張
 - Mbstring PHP拡張
 - OpenSSL PHP拡張

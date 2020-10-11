@@ -694,6 +694,13 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
         ['id' => 2, 'email' => 'dayle@example.com'],
     ]);
 
+`upsert`メソッドは存在しない場合は行を挿入し、すでに存在する場合はその行を新しい値で更新します。メソッドの最初の引数は挿入か更新する値で、２つ目の引数は関連するテーブルのレコードを一意に識別するカラムです。第３で最後の引数はデータベースに一致するレコードがすでに存在している場合に、更新するカラムを指定します。
+
+    DB::table('flights')->upsert([
+        ['departure' => 'Oakland', 'destination' => 'San Diego', 'price' => 99],
+        ['departure' => 'Chicago', 'destination' => 'New York', 'price' => 150]
+    ], ['departure', 'destination'], ['price']);
+
 #### 自動増分ID
 
 テーブルが自動増分IDを持っている場合、`insertGetId`メソッドを使うとレコードを挿入し、そのレコードのIDを返してくれます。

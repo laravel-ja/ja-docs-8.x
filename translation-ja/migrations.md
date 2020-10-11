@@ -154,6 +154,8 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
     php artisan migrate:fresh --seed
 
+> {note} `migrate：fresh`コマンドは、プレフィックスに関係なく、すべてのデータベーステーブルを削除します。 このコマンドは、他のアプリケーションから共有されるデータベースを使用して開発する場合には注意して使用する必要があります。
+
 <a name="tables"></a>
 ## テーブル
 

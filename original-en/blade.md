@@ -670,7 +670,7 @@ Blade components also allow you to access the component name, attributes, and sl
         };
     }
 
-The `componentName` is equal to the name used in the HTML tag after the `x-` prefix. So `<x-alert />`'s `componentName` will be `alert`. The `attributes` element will contain all of the attributes that were present on the HTML tag. The `slot` element is a `Illuminate\Support\HtmlString` instance with the contents of the slot from the component.
+The `componentName` is equal to the name used in the HTML tag after the `x-` prefix. So `<x-alert />`'s `componentName` will be `alert`. The `attributes` element will contain all of the attributes that were present on the HTML tag. The `slot` element is an `Illuminate\Support\HtmlString` instance with the contents of the slot from the component.
 
 The Closure should return a string. If the returned string corresponds to an existing view, that view will be rendered; otherwise, the returned string will be evaluated as an inline Blade view.
 
@@ -747,6 +747,12 @@ The rendered HTML of the `button` component in this example would be:
     <button type="submit">
         Submit
     </button>
+
+If you would like an attribute other than `class` to have its values appended together, you may use the `prepends` method:
+
+    <div {{ $attributes->merge(['data-controller' => $attributes->prepends('profile-controller')]) }}>
+        {{ $slot }}
+    </div>
 
 #### Filtering Attributes
 
