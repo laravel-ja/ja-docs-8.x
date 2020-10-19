@@ -487,7 +487,7 @@ Polymorphic "many to many" relationships may be created just like non-polymorphi
     use App\Models\Tag;
     use App\Models\Video;
 
-    $users = Video::factory()
+    $videos = Video::factory()
                 ->hasAttached(
                     Tag::factory()->count(3),
                     ['public' => true]
@@ -496,7 +496,7 @@ Polymorphic "many to many" relationships may be created just like non-polymorphi
 
 Of course, the magic `has` method may also be used to create polymorphic "many to many" relationships:
 
-    $users = Video::factory()
+    $videos = Video::factory()
                 ->hasTags(3, ['public' => true])
                 ->create();
 
@@ -533,6 +533,27 @@ If you would like to use [database seeders](/docs/{{version}}/seeding) to popula
 
             // ...
         }
+    }
+
+Alternatively, you may instruct the `RefreshDatabase` trait to automatically seed the database before each test. You may accomplish this by defining a `$seed` property on your test class:
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Tests\TestCase;
+
+    class ExampleTest extends TestCase
+    {
+        /**
+         * Indicates whether the database should be seeded before each test.
+         *
+         * @var bool
+         */
+        protected $seed = true;
+        
+        // ...
     }
 
 <a name="available-assertions"></a>

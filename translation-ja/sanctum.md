@@ -60,10 +60,8 @@ Laravel SanctumはComposerでインストールします。
 
 SPAの認証のためにSanctumを活用しようと計画している場合は、`app/Http/Kernel.php`ファイル中の`api`ミドルウェアグループへ、Sanctumのミドルウェアを追加します。
 
-    use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
-
     'api' => [
-        EnsureFrontendRequestsAreStateful::class,
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         'throttle:api',
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ],

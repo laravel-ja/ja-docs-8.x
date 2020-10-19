@@ -10,7 +10,7 @@
 - [ジョブのディスパッチ](#dispatching-jobs)
     - [遅延ディスパッチ](#delayed-dispatching)
     - [同期ディスパッチ](#synchronous-dispatching)
-    - [ジョブのチェーン](#job-chaining)
+    - [ジョブチェーン](#job-chaining)
     - [キューと接続のカスタマイズ](#customizing-the-queue-and-connection)
     - [最大試行回数／タイムアウト値の指定](#max-job-attempts-and-timeout)
     - [レート制限](#rate-limiting)
@@ -740,13 +740,28 @@ Laravel HorizonやLaravel Telescopeなどの一部のツールは、バッチに
 
 #### バッチの接続とキュー
 
-If you would like to specify the connection and queue that should be used for the batched jobs, you may use the `onConnection` and `onQueue` methods:バッチのジョブに使用する接続とキューを指定する場合は、`onConnection`と`onQueue`メソッドを使用します。
+バッチのジョブに使用する接続とキューを指定する場合は、`onConnection`と`onQueue`メソッドを使用します。
 
     $batch = Bus::batch([
         // ...
     ])->then(function (Batch $batch) {
         // 全ジョブが成功して完了した
     })->onConnection('redis')->onQueue('podcasts')->dispatch();
+
+#### バッチ中のチェーン
+
+[チェーンジョブ](＃job-chaining)を配列内に記述することにより、バッチ内に一連のチェーンジョブを追加できます。例として、２つのジョブチェーンを並行して実行するとしましょう。２つのチェーンがバッチ処理されているため、バッチ完了の進行状況を全体として調べられます。
+
+    Bus::batch([
+        [
+            new ReleasePodcast(1);
+            new SendPodcastReleaseNotification(1);
+        ],
+        [
+            new ReleasePodcast(2);
+            new SendPodcastReleaseNotification(2);
+        ],
+    ])->dispatch();
 
 <a name="adding-jobs-to-batches"></a>
 ### バッチへのジョブ追加

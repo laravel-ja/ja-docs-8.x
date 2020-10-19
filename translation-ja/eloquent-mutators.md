@@ -425,9 +425,10 @@ Eloquentモデルが`toArray`メソッドを使用し配列やJSONに変換さ�
         /**
          * キャスト対象をキャストするときに使用するキャスタクラス名を取得
          *
+         * @param  array  $arguments
          * @return string
          */
-        public static function castUsing()
+        public static function castUsing(array $arguments)
         {
             return AddressCast::class;
         }

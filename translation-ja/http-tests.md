@@ -531,7 +531,7 @@ LaravelではアプリケーションへのHTTPリクエストをシミュレー
 
 レスポンスが特定のパスへ指定したデータを含んでいるかを宣言。
 
-    $response->assertJsonPath($path, array $data, $strict = false);
+    $response->assertJsonPath($path, array $data, $strict = true);
 
 <a name="assert-json-structure"></a>
 #### assertJsonStructure

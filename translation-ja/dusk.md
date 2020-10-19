@@ -837,6 +837,7 @@ Duskはアプリケーションに対する数多くのアサートを提供し�
 [assertDontSee](#assert-dont-see)
 [assertSeeIn](#assert-see-in)
 [assertDontSeeIn](#assert-dont-see-in)
+[assertScript](#assert-script)
 [assertSourceHas](#assert-source-has)
 [assertSourceMissing](#assert-source-missing)
 [assertSeeLink](#assert-see-link)
@@ -1075,6 +1076,14 @@ Duskはアプリケーションに対する数多くのアサートを提供し�
 指定したテキストが、セレクタに含まれていないことを宣言します。
 
     $browser->assertDontSeeIn($selector, $text);
+
+<a name="assert-script"></a>
+#### assertScript
+
+指定するJavaScript式の評価結果が指定値であることを宣言します。
+
+    $browser->assertScript('window.isLoaded')
+            ->assertScript('document.readyState', 'complete');
 
 <a name="assert-source-has"></a>
 #### assertSourceHas

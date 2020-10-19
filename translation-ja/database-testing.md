@@ -487,7 +487,7 @@ You may create a collection of many models using the `count` method:
     use App\Models\Tag;
     use App\Models\Video;
 
-    $users = Video::factory()
+    $videos = Video::factory()
                 ->hasAttached(
                     Tag::factory()->count(3),
                     ['public' => true]
@@ -496,7 +496,7 @@ You may create a collection of many models using the `count` method:
 
 もちろん、マジック`has`メソッドも、ポリモーフィック"many to many"リレーションを作成するために使用できます。
 
-    $users = Video::factory()
+    $videos = Video::factory()
                 ->hasTags(3, ['public' => true])
                 ->create();
 
@@ -533,6 +533,27 @@ You may create a collection of many models using the `count` method:
 
             // …
         }
+    }
+
+もしくは`RefreshDatabase`へ、各テストの直前でデータベースを自動的に初期値設定するよう指示することも可能です。テストクラスへ`$seed`プロパティを定義します。
+
+    <?php
+
+    namespace Tests\Feature;
+
+    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Tests\TestCase;
+
+    class ExampleTest extends TestCase
+    {
+        /**
+         * 各テストの前に、データベースへ初期値設定するかどうかを表す
+         *
+         * @var bool
+         */
+        protected $seed = true;
+
+        // ...
     }
 
 <a name="available-assertions"></a>
