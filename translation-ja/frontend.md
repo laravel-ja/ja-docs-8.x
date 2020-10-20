@@ -64,7 +64,7 @@ Laravelのフロントエンドスカフォールドを含んでいる`webpack.m
 
     npm run dev
 
-デフォルトでLaravelの`webpack.mix.js`ファイルは、SASSと`resources/js/app.js`ファイルをコンパイルするように指示しています。`app.js`ファイルの中で、Vueコンポーネントを登録してください。もしくは、他のフーレムワークが好みであれば、自分のJavaScriptアプリケーションの設定を行えます。コンパイル済みのJavaScriptは通常、`public/js`ディレクトリへ出力されます。
+デフォルトでLaravelの`webpack.mix.js`ファイルは、SASSと`resources/js/app.js`ファイルをコンパイルするように指示しています。`app.js`ファイルの中で、Vueコンポーネントを登録してください。もしくは、他のフレームワークが好みであれば、自分のJavaScriptアプリケーションの設定を行えます。コンパイル済みのJavaScriptは通常、`public/js`ディレクトリへ出力されます。
 
 > {tip} `app.js`ファイルは、Vue、Axios、jQuery、その他のJavaScript依存パッケージを起動し、設定する`resources/js/bootstrap.js`ファイルをロードします。JacaScript依存パッケージを追加した場合、このファイルの中で設定してください。
 
