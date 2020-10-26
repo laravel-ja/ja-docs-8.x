@@ -121,6 +121,7 @@ Bladeビューに渡されたデータは、波括弧で変数を囲うことで
 
     The current UNIX timestamp is {{ time() }}.
 
+<a name="displaying-unescaped-data"></a>
 #### エスケープしないデータの表示
 
 デフォルトでブレードの`{{ }}`文はXSS攻撃を防ぐために、PHPの`htmlspecialchars`関数を自動的に通されます。しかしデータをエスケープしたくない場合は、以下の構文を使ってください。
@@ -129,6 +130,7 @@ Bladeビューに渡されたデータは、波括弧で変数を囲うことで
 
 > {note} アプリケーションでユーザーの入力内容をechoする場合は注意が必要です。ユーザーの入力を表示するときは、常に二重の波括弧の記法でHTMLエンティティにエスケープすべきです。
 
+<a name="rendering-json"></a>
 #### JSONのレンダー
 
 JavaScriptの変数を初期化するために、配列をビューに渡してJSONとして描画できます。
@@ -147,6 +149,7 @@ JavaScriptの変数を初期化するために、配列をビューに渡してJ
 
 > {note} 既存の変数をJSONとしてレンダーするには、`@json`ディレクティブだけを使用してください。正規表現ベースのBladeテンプレートに、複雑な正規表現をディレクティブで渡すと、予期しない不良動作の原因になります。
 
+<a name="html-entity-encoding"></a>
 #### HTMLエンティティエンコーディング
 
 Blade（およびLaravelの`e`ヘルパ）はデフォルトで、HTMLエンティティをdouble encodeします。double encodeを無効にするには、`AppServiceProvider`の`boot`メソッドで、`Blade::withoutDoubleEncoding`メソッドを呼び出してください。
@@ -190,6 +193,7 @@ Blade（およびLaravelの`e`ヘルパ）はデフォルトで、HTMLエンテ�
     <!-- HTML出力 -->
     @json()
 
+<a name="the-at-verbatim-directive"></a>
 #### `@verbatim`ディレクティブ
 
 テンプレートの広い箇所でJavaScript変数を表示する場合は、HTMLを`@verbatim`ディレクティブで囲めば、各Blade echo文の先頭に`@`記号を付ける必要はなくなります。
@@ -234,6 +238,7 @@ Blade（およびLaravelの`e`ヘルパ）はデフォルトで、HTMLエンテ�
         // $recordsが「空」だ
     @endempty
 
+<a name="authentication-directives"></a>
 #### 認証ディレクティブ
 
 `@auth`と`@guest`ディレクティブは、現在のユーザーが認証されているか、もしくはゲストであるかを簡単に判定するために使用します。
@@ -256,6 +261,7 @@ Blade（およびLaravelの`e`ヘルパ）はデフォルトで、HTMLエンテ�
         // ユーザーは認証されていない
     @endguest
 
+<a name="section-directives"></a>
 #### セクションディレクティブ
 
 セクションがコンテンツを持っているかを判定したい場合は、`@hasSection`ディレクティブを使用します。
@@ -276,6 +282,7 @@ Blade（およびLaravelの`e`ヘルパ）はデフォルトで、HTMLエンテ�
         </div>
     @endif
 
+<a name="environment-directives"></a>
 #### 環境ディレクティブ
 
 アプリケーションが実働環境("production")で実行されているかを調べるには、`@production`ディレクティブを使います。
@@ -497,6 +504,7 @@ HTMLフォームでは、`PUT`、`PATCH`、`DELETE`リクエストを作成で�
 
 `make:component`コマンドは、コンポーネントのためのビューテンプレートも生成します。このビューは`resources/views/components`ディレクトリに生成されます。
 
+<a name="manually-registering-package-components"></a>
 #### パッケージコンポーネントの登録
 
 アプリケーションのために書いたコンポーネントは、自動的に`app/View/Components`と`resources/views/components`ディレクトリの中で見つけられます。
@@ -610,6 +618,7 @@ HTML属性を使い、Bladeコンポーネントへデータを渡すことが�
         {{ $message }}
     </div>
 
+<a name="casing"></a>
 #### キャスト
 
 コンポーネントのコンストラクタ引数はキャメルケース（`camelCase`）を使用し、HTML属性の中で引数名を参照するときはケバブケース（`kebab-case`）を使用します。たとえば、以下のようなコンポーネントコンストラクタがあったとしましょう。
@@ -629,6 +638,7 @@ HTML属性を使い、Bladeコンポーネントへデータを渡すことが�
 
     <x-alert alert-type="danger" />
 
+<a name="component-methods"></a>
 #### コンポーネントメソッド
 
 コンポーネントテンプレートではパブリックな変数が使えるのに加え、コンポーネントの全パブリックメソッドも実行可能です。たとえば、コンポーネントに`isSelected`メソッドがあると想像してください。
@@ -650,6 +660,7 @@ HTML属性を使い、Bladeコンポーネントへデータを渡すことが�
         {{ $label }}
     </option>
 
+<a name="using-attributes-slots-inside-the-class"></a>
 #### クラス内での属性／スロットの使用
 
 Bladeコンポーネントはクラスのrenderメソッドの中からコンポーネント名、属性、スロットへアクセスできます。しかし、このデータにアクセスするにはコンポーネントの`render`メソッドからクロージャを返す必要があります。クロージャは唯一の引数として`$data`配列を受け取ります。
@@ -674,6 +685,7 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
 
 このクロージャは文字列を返す必要があります。返す文字列が既存のビューに対応している場合、そのビューをレンダーします。対応していない場合、返す文字列はインラインBladeビューとして評価します。
 
+<a name="additional-dependencies"></a>
 #### 依存の追加
 
 コンポーネントがLaravelの[サービスコンテナ](/docs/{{version}}/container)からの依存注入を必要としているなら、コンポーネントのデータ属性の前に依存をリストしておけば、コンテナにより自動的に注入されます。
@@ -710,6 +722,7 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
 
 > {note} コンポーネントでの`@env`ディレクティブの使用は、今のところサポートしていません。
 
+<a name="default-merged-attributes"></a>
 #### デフォルト／属性のマージ
 
 属性にデフォルト値を指定、またはコンポーネントの属性へ追加の値をマージする必要も時に起きます。これには属性バッグの`merge`メソッドを使用します。
@@ -728,6 +741,7 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
         <!-- ここには$message変数の内容がレンダーされる -->
     </div>
 
+<a name="non-class-attribute-merging"></a>
 #### 非クラス属性のマージ
 
 `class`ではない属性をマージする場合、`merge`メソッドに渡される値は、コンポーネントの利用者により上書きされる可能性がある、属性の「デフォルト」値と見なします。`class`属性とは異なり、非クラス属性は互いに追加されません。たとえば、`button`コンポーネントは次のようになります。
@@ -754,6 +768,7 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
         {{ $slot }}
     </div>
 
+<a name="filtering-attributes"></a>
 #### 属性のフィルタリング
 
 `filter`メソッドを使い、属性をフィルタリングできます。このメソッドはクロージャを引数に取り、属性バックの中へ残す属性に対し`true`を返してください。
@@ -805,6 +820,7 @@ Bladeコンポーネントはクラスのrenderメソッドの中からコンポ
         <strong>あーーー！</strong> なんか変だ！
     </x-alert>
 
+<a name="scoped-slots"></a>
 #### スコープ付きスロット
 
 VueのようなJavaScriptフレームワークを使用している方は「スコープ付きスロット」に慣れていると思います。これは、スロットの中でコンポーネントのデータやメソッドへアクセスできる機構です。同様の振る舞いはLaravelでも、コンポーネントでpublicメソッドやプロパティを定義すれば可能です。`component`変数によりスロットの中でコンポーネントへアクセスします。
@@ -836,6 +852,7 @@ VueのようなJavaScriptフレームワークを使用している方は「ス�
         blade;
     }
 
+<a name="generating-inline-view-components"></a>
 #### インラインビューコンポーネントの生成
 
 インラインビューをレンダーするコンポーネントを生成するには、`make:component`コマンド実行時に`inline`オプションを使用します。
@@ -853,6 +870,7 @@ VueのようなJavaScriptフレームワークを使用している方は「ス�
 
     <x-inputs.button/>
 
+<a name="data-properties-attributes"></a>
 #### データプロパティ／属性
 
 無名コンポーネントには関連するクラスがないため、どのデータが変数を通じてコンポーネントへ渡され、どの属性がコンポーネントの[属性バッグ](#managing-attributes)に入れられるのかの違いに迷うと思います。
@@ -909,6 +927,7 @@ Bladeの`@include`ディレクディブを使えば、ビューの中から簡�
 
 > {note} Bladeビューの中では`__DIR__`や`__FILE__`を使わないでください。キャッシュされたコンパイル済みのビューのパスが返されるからです。
 
+<a name="aliasing-includes"></a>
 #### サブビューのエイリアス
 
 Bladeのサブビューがサブディレクトリへ設置されている場合でも簡潔にアクセスできるよう、エイリアスを使用できます。たとえば、以下の内容のBladeサブビューが、`resources/views/includes/input.blade.php`へ保存されていると想像してください。

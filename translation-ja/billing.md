@@ -73,6 +73,7 @@ Laravel Cashierは[Stripe](https://stripe.com)によるサブスクリプショ�
 
 > {note} Stripeの全イベントをCashierで確実に処理するために、[CashierのWebhook処理の準備](#handling-stripe-webhooks)を行なってください。
 
+<a name="database-migrations"></a>
 #### データベースマイグレーション
 
 CashierサービスプロバーダでCashierのデータベースマイグレーションを登録しています。ですから、パッケージをインストールしたら、データベースのマイグレーションを忘れず実行してください。Cashierマイグレーションは`users`テーブルにいくつものカラムを追加し、顧客のサブスクリプションをすべて保持するために新しい`subscriptions`テーブルを作成します。
@@ -213,6 +214,7 @@ BillableなエンティティがすでにStripeの顧客である場合に顧客
 
 Stripeでサブスクリプションを生成するか「一度だけ」の課金を実行するためには、支払い方法を登録し、IDを取得する必要があります。サブスクリプションのための支払いメソッドか、一回だけの課金ためかによりアプローチが異なるため、以下で両方共にみていきましょう。
 
+<a name="payment-methods-for-subscriptions"></a>
 #### サブスクリプションの支払い方法
 
 将来の仕様に備えて、顧客のクレジットカードを登録する場合、顧客の支払いメソッドの詳細を安全に集めるためにStripe Setup Intents APIを使う必要があります。"Setup Intent（意図）"は、Stripeに対し顧客の支払いメソッドを登録する意図を示しています。Cashierの`Billable`トレイトは、新しいSetup Intentを簡単に作成できる`createSetupIntent`を含んでいます。顧客の支払いメソッドの詳細情報を集めるフォームをレンダーしたいルートやコントローラから、このメソッドを呼び出してください。
@@ -272,6 +274,7 @@ Stripeによりカードが検証されたら、顧客に付け加えた`setupIn
 
 > {tip} Setup Intentsと顧客支払いの詳細情報の収集に関するより詳しい情報は、[Stripeが提供している概要](https://stripe.com/docs/payments/save-and-reuse#php)をご覧ください。
 
+<a name="payment-methods-for-single-charges"></a>
 #### 一回のみの課金に対する支払い方法
 
 顧客の支払いメソッドに対し一回のみの課金を作成する場合、ワンタイムの支払いメソッド識別子を使う必要があるだけで済みます。Stripeの制限により、保存されている顧客のデフォルト支払い方法は使用できません。Stripe.jsライブラリを使用し、顧客に支払い方法の詳細を入力してもらえるようにする必要があります。例として、以降のフォームを考えてみましょう。
@@ -404,6 +407,7 @@ Tサブスクリプションを作成するには最初にbillableなモデル�
 
 > {note} サブスクリプションの`create()`へ支払いメソッド識別子を直接渡すと、ユーザーの保存済み支払いメソッドへ自動的に追加します。
 
+<a name="subscription-quantities"></a>
 #### 注文数
 
 サブスクリプションの作成時に注文数を指定する場合は、`quantity`メソッドを使います。
@@ -412,6 +416,7 @@ Tサブスクリプションを作成するには最初にbillableなモデル�
          ->quantity(5)
          ->create($paymentMethod);
 
+<a name="additional-details"></a>
 #### 詳細情報の指定
 
 ユーザーとサブスクリプションに関する詳細情報を追加したい場合は、`create`メソッドの第２引数と第３引数へ渡すことができます。
@@ -424,6 +429,7 @@ Tサブスクリプションを作成するには最初にbillableなモデル�
 
 Stripeがサポートしている追加のフィールドについてのさらなる情報は、Stripeの[顧客の作成](https://stripe.com/docs/api#create_customer)と[サブスクリプションの作成](https://stripe.com/docs/api/subscriptions/create)ドキュメントを確認してください。
 
+<a name="coupons"></a>
 #### クーポン
 
 サブスクリプションの作成時に、クーポンを適用したい場合は、`withCoupon`メソッドを使用してください。
@@ -432,6 +438,7 @@ Stripeがサポートしている追加のフィールドについてのさら�
          ->withCoupon('code')
          ->create($paymentMethod);
 
+<a name="adding-subscriptions"></a>
 #### サブスクリプションの追加
 
 デフォルトの支払い方法を設定済みユーザーへサブスクリプションを追加する場合は、`newSubscription`メソッド使用時に`add`メソッドが使えます。
@@ -487,6 +494,7 @@ Stripeがサポートしている追加のフィールドについてのさら�
 
 > {note} ユーザーが同じ名前のサブスクリプションを２つ持っている場合、最新のサブスクリプションが常に `subscription`メソッドによって返されます。たとえば、ユーザーが`default`という名前の２サブスクリプションレコードを持っているとします。しかし、サブスクリプションの１つは古い期限切れのサブスクリプションであり、もう１つは現在のアクティブなサブスクリプションであるとしましょう。最新のサブスクリプションは常に返されますが、一方の古いサブスクリプションは履歴確認のためにデータベースに保持されます。
 
+<a name="cancelled-subscription-status"></a>
 #### キャンセルしたサブスクリプションの状態
 
 ユーザーが一度アクティブな購入者になってから、サブスクリプションをキャンセルしたことを調べるには、`cancelled`メソッドを使用します。
@@ -507,6 +515,7 @@ Stripeがサポートしている追加のフィールドについてのさら�
         //
     }
 
+<a name="subscription-scopes"></a>
 #### サブスクリプションスコープ
 
 特定状態のサブスクリプションをデータベースから簡単にクエリできるよう、ほとんどのサブスクリプション状態はクエリスコープとしても利用できます。
@@ -591,6 +600,7 @@ Stripeがサポートしている追加のフィールドについてのさら�
 
     $user->subscription('default')->swapAndInvoice('provider-price-id');
 
+<a name="prorations"></a>
 #### 按分課金
 
 デフォルトでStripeはプランの変更時に按分課金(日割り計算：prorate)を行います。`noProrate`メソッドは按分課金を行わずにサブスクリプションの更新を指定するために使用します。
@@ -680,6 +690,7 @@ Stripeがサポートしている追加のフィールドについてのさら�
 
 > {note} サブスクリプションの最後のプランは削除できません。その代わりにサブスクリプションをシンプルにキャンセルしてください。
 
+<a name="swapping"></a>
 ### プラン切り替え
 
 複数のサブスクリプションに紐付いているプランを変更することもできます。たとえば、`chat-plan`アドオンを含む`basic-plan`サブスクリプションを利用していて、`pro-plan`プランにアップグレードしたいとします。
@@ -707,12 +718,14 @@ Stripeがサポートしている追加のフィールドについてのさら�
             ->findItemOrFail('basic-plan')
             ->swap('pro-plan');
 
+<a name="proration"></a>
 #### 按分課金
 
 Stripeはサブスクリプションのプランを追加または削除する場合、デフォルトで料金を按分課金(日割り計算：prorate)します。按分課金を行わずにプランを調整する場合は、`noProrate`メソッドをプラン操作へチェーンしてください。
 
     $user->subscription('default')->noProrate()->removePlan('chat-plan');
 
+<a name="swapping-quantities"></a>
 #### 注文数
 
 個々のサブスクリプションプランの購入数を更新する場合は、[既存の購入数メソッド](＃subscription-quantity)をつかい、メソッドの追加の引数としてプラン名を渡してください。
@@ -727,6 +740,7 @@ Stripeはサブスクリプションのプランを追加または削除する�
 
 > {note} サブスクリプションに複数のプランを設定している場合、`Subscription`モデルの`stripe_plan`および`quantity`属性は`null`になります。個々のプランにアクセスするには、`Subscription`モデルで利用可能な`items`リレーションを使用する必要があります。
 
+<a name="subscription-items"></a>
 #### サブスクリプションアイテム
 
 サブスクリプションに複数のプランがある場合、データベースの`subscription_items`テーブルに複数のサブスクリプション「アイテム」が保存されます。サブスクリプションの`items`リレーションを介してこれらにアクセスできます：
@@ -766,6 +780,7 @@ Stripeはサブスクリプションのプランを追加または削除する�
 
 > {note} `taxRates`メソッドはサブスクリプション料金にのみ適用されます。Cashierを使用して「1回限り」の請求を行う場合は、その時点で税率を手動で指定する必要があります。
 
+<a name="syncing-tax-rates"></a>
 #### 税率の同期
 
 `taxRates`メソッドが返すハードコードされた税率IDを変更しても、ユーザーの既存サブスクリプションの税率設定は同じままです。返された`taxTaxRates`値で既存サブスクリプションの税率を更新する場合は、ユーザーのサブスクリプションインスタンスに対し、`syncTaxRates`メソッドを呼び出す必要があります。
@@ -774,6 +789,7 @@ Stripeはサブスクリプションのプランを追加または削除する�
 
 これはサブスクリプションアイテムの税率も同期するため、`planTaxRates`メソッドも適切に変更してください。
 
+<a name="tax-exemption"></a>
 #### 非課税
 
 キャッシャーは、Stripe APIを呼び出して顧客が非課税かを判断するメソッドも提供します。`isNotTaxExempt`および`isTaxExempt`、`reverseChargeApplies`メソッドはBillableモデルで使用できます。
@@ -868,6 +884,7 @@ Stripeはサブスクリプションのプランを追加または削除する�
         //
     }
 
+<a name="defining-trial-days-in-stripe-cashier"></a>
 #### Stripe／Cashierで使用期間を定義する
 
 Stripeダッシュボードによりプランで受け入れる試用日数を定義するか、Cashierを使用して常に明示的に引数で渡すか選んでください。Stripeでプランの試用日数を定義することを選択する場合、過去にサブスクリプションを購入した顧客の新規サブスクリプションも含め、新規サブスクリプションは明示的に`trialDays(0)`を呼び出さない限り、常に試用期間を受け取ることに注意してください。
@@ -944,6 +961,7 @@ StripeはWebフックにより、アプリケーションへさまざまなイ�
 
 > {note} Cashierに含まれる、[Webフック署名の確認](/docs/{{version}}/billing#verifying-webhook-signatures)ミドルウェアを使用し、受信リクエストを確実に保護してください。
 
+<a name="webhooks-csrf-protection"></a>
 #### WebフックとCSRF保護
 
 StripeのWebフックでは、Laravelの [CSRFバリデーション](/docs/{{version}}/csrf)をバイパスする必要があるため、`VerifyCsrfToken`ミドルウェアのURIを例外としてリストしておくか、ルート定義を`web`ミドルウェアグループのリストから外しておきましょう。
@@ -1077,6 +1095,7 @@ Stripeでの課金を払い戻す必要がある場合は、`refund`メソッド
 
     $invoice = $user->findInvoice($invoiceId);
 
+<a name="displaying-invoice-information"></a>
 #### インボイス情報の表示
 
 顧客へインボイスを一覧表示するとき、そのインボイスに関連する情報を表示するために、インボイスのヘルパメソッドを表示に利用できます。ユーザーが簡単にダウンロードできるよう、テーブルで全インボイスを一覧表示する例を見てください。
@@ -1156,6 +1175,7 @@ Stripeでの課金を払い戻す必要がある場合は、`refund`メソッド
 
 SCA規制は支払いの確認と処理を行うため、頻繁に追加の検証を要求しています。これが起きるとCashierは`PaymentActionRequired`例外を投げ、この追加の検証が必要であるとあなたに知らせます。この例外をどのように処理するかは、[失敗した支払いの処理方法のセクション](#handling-failed-payments)をお読みください。
 
+<a name="incomplete-and-past-due-state"></a>
 #### 不十分と期日超過の状態
 
 支払いが追加の確認を必要とする場合そのサブクリプションは、`stripe_status`データベースカラムにより表される`incomplete`か`past_due`状態になります。Cashierは支払いの確認が完了するとすぐに、Webhookによりその顧客のサブスクリプションを自動的に有効にします。

@@ -58,6 +58,7 @@ Laravelに含まれている`config/app.php`ファイルを開けば、`provider
 
 このサービスプロバイダでは`register`メソッドだけが定義されています。そして、サービスコンテナに`Riak\Connection`の実装を定義しています。サービスコンテナがどのように動作するのかまだ理解できていなければ、ドキュメントで調べてください。
 
+<a name="the-bindings-and-singletons-properties"></a>
 #### `bindings`と`singletons`プロパティ
 
 サービスプロバイダでシンプルな結合をたくさん登録しているのであれば、各コンテナ結合を自力で登録する代わりに、`bindings` と`singletons`プロパティを使いたくなるでしょう。フレームワークにより、サービスプロバイダがロードされる時点で、これらのプロパティがチェックされ、結合を登録します。
@@ -121,6 +122,7 @@ Laravelに含まれている`config/app.php`ファイルを開けば、`provider
         }
     }
 
+<a name="boot-method-dependency-injection"></a>
 #### bootメソッドの依存注入
 
 サービスプロバイダの`boot`メソッドでは、依存をタイプヒントで指定できます。[サービスコンテナ](/docs/{{version}}/container)が、必要な依存を自動的に注入します。

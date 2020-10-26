@@ -47,6 +47,7 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
 
 ディスカバリー用にパッケージを設定したら、Laravelはサービスプロバイダとファサードをインストール時に自動的に登録します。皆さんのパッケージユーザーに、便利なインストール体験をもたらします。
 
+<a name="opting-out-of-package-discovery"></a>
 ### パッケージディスカバリーの不使用
 
 パッケージを利用する場合に、パッケージディスカバリーを使用したくない場合は、アプリケーションの`composer.json`ファイルの`extra`セクションに、使用しないパッケージをリストしてください。
@@ -102,6 +103,7 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
 
 > {note} 設定ファイル中でクロージャを定義してはいけません。パッケージ使用者が`config:cache` Artisanコマンドを使用している場合に、正しくシリアライズできません。
 
+<a name="default-package-configuration"></a>
 #### デフォルトパッケージ設定
 
 もしくは、アプリケーションへリソース公開したコピーと、自身のパッケージの設定ファイルをマージすることもできます。これにより、ユーザーはリソース公開された設定のコピーの中で、実際にオーバーライドしたいオプションのみを定義すればよくなります。設定をマージする場合は、サービスプロバイダの`register`メソッドの中で、`mergeConfigFrom`メソッドを使用します。
@@ -171,6 +173,7 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
 
     echo trans('courier::messages.welcome');
 
+<a name="publishing-translations"></a>
 #### 翻訳のリソース公開
 
 パッケージの翻訳をアプリケーションの`resources/lang/vendor`ディレクトリへリソース公開したい場合は、サービスプロバイダの`publishes`メソッドを使用します。`publishes`メソッドはパッケージパスとリソース公開したい場所の配列を引数に取ります。たとえば、`courier`パッケージの言語ファイルをリソース公開する場合は、次のようになります。
@@ -212,10 +215,12 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
         return view('courier::admin');
     });
 
+<a name="overriding-package-views"></a>
 #### パッケージビューのオーバーライド
 
 `loadViewsFrom`メソッドを使用する場合、Laravelはビューの２つの場所を実際には登録します。一つはアプリケーションの`resources/views/vendor`ディレクトリで、もう一つは皆さんが指定したディレクトリです。では、`courier`の例を使って確認しましょう。Laravelは最初に`resources/views/vendor/courier`の中に、カスタムバージョンのビューが開発者により用意されていないかチェックします。カスタムビューが用意されていなければ、次に`loadViewsFrom`の呼び出しで指定した、パッケージビューディレクトリを探します。この仕組みのおかげで、パッケージのビューがエンドユーザーにより簡単にカスタマイズ／オーバーライドできるようになっています。
 
+<a name="publishing-views"></a>
 #### ビューのリソース公開
 
 パッケージのビューを`resources/views/vendor`ディレクトリでリソース公開したい場合は、サービスプロバイダの`publishes`メソッドを使ってください。`publishes`メソッドはパッケージのビューパスと、リソース公開場所の配列を引数に取ります。
@@ -260,6 +265,7 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
 
     <x-courier-button />
 
+<a name="anonymous-components"></a>
 #### 無名コンポーネント
 
 パッケージが無名コンポーネントを持っている場合、"views"ディレクトリ（`loadViewsFrom`で指定している場所）の`components`ディレクトリの中へ設置する必要があります。すると、パッケージのビュー名前空間を先頭に付けたコンポーネント名でレンダーできます。

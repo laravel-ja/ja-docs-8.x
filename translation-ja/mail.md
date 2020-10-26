@@ -40,6 +40,7 @@ MailgunとPostmarkなど、APIベースドライバはシンプルでSMTPサー�
 
     composer require guzzlehttp/guzzle
 
+<a name="mailgun-driver"></a>
 #### Mailgunドライバ
 
 Mailgunドライバを使用する場合、最初にGuzzleをインストールしてください。それから`config/mail.php`設定ファイル中の`default`オプションを`mailgun`に設定してください。次に`config/services.php`設定ファイルが以下のオプションを含んでいるか確認してください。
@@ -57,6 +58,7 @@ Mailgunドライバを使用する場合、最初にGuzzleをインストール�
         'endpoint' => 'api.eu.mailgun.net',
     ],
 
+<a name="postmark-driver"></a>
 #### Postmarkドライバ
 
 Postmarkドライバを使用する場合は、ComposerでPostmarkのSwiftMailerトランスポータをインストールしてください。
@@ -69,6 +71,7 @@ Postmarkドライバを使用する場合は、ComposerでPostmarkのSwiftMailer
         'token' => 'your-postmark-token',
     ],
 
+<a name="ses-driver"></a>
 #### SESドライバ
 
 Amazon SESドライバを使う場合、Amazon AWS SDK for PHPをインストールしてください。`composer.json`ファイルの`require`セクションに以下の行を追加し、`composer update`コマンドを実行します。
@@ -115,6 +118,7 @@ Laravelではアプリケーションが送信する、各種メールタイプ�
 <a name="configuring-the-sender"></a>
 ### Senderの設定
 
+<a name="using-the-from-method"></a>
 #### `from`メソッドの使用
 
 最初に、メールの送信者の設定を見てみましょう。言い換えれば、"from"により、メールを送信する人を指定します。送信者の設定には２つの方法があります。最初にmailableクラスの`build`メソッドの中で、`from`メソッドを使う方法です。
@@ -130,6 +134,7 @@ Laravelではアプリケーションが送信する、各種メールタイプ�
                     ->view('emails.orders.shipped');
     }
 
+<a name="using-a-global-from-address"></a>
 #### グローバル`from`アドレスの使用
 
 もし、アプリケーションで同じ"from"アドレスを全メールで使用するのであれば、生成する全mailableクラスで`from`メソッドを呼び出すのは面倒です。代わりに、グローバルな"from"アドレスを`config/mail.php`設定ファイルで指定しましょう。このアドレスは、mailableクラスの中で、"from"アドレスが指定されなかった場合に使用されます。
@@ -157,6 +162,7 @@ mailableクラスの`build`メソッドの中で、メールの中身をレン�
 
 > {tip} メール用テンプレートをすべて設置する、`resources/views/emails`ディレクトリを作成することができます。しかし、`resources/views`ディレクトリの中であれば、好きな場所へ自由に設置できます。
 
+<a name="plain-text-emails"></a>
 #### 平文テキストメール
 
 平文テキスト版のメールを定義したいときは、`text`メソッドを使います。`view`メソッドと同様に、`text`メソッドは、メールの内容をレンダーするために使用する、テンプレート名を引数に取ります。メッセージのHTML版と平文テキスト版の両方を定義することも可能です。
@@ -175,6 +181,7 @@ mailableクラスの`build`メソッドの中で、メールの中身をレン�
 <a name="view-data"></a>
 ### ビューデータ
 
+<a name="via-public-properties"></a>
 #### publicプロパティ使用
 
 通常、メールのHTMLをレンダーする時には、ビューへ使用するデータを渡します。ビューでデータを使用できるようにするには、２つの方法があります。まず、mailableクラスで定義したpublicプロパティは、ビューで自動的に利用できます。そのため、たとえばmailableクラスのコンストラクタへデータを渡し、そのデータをクラス上のプロパティとして定義できます。
@@ -227,6 +234,7 @@ mailableクラスの`build`メソッドの中で、メールの中身をレン�
         Price: {{ $order->price }}
     </div>
 
+<a name="via-the-with-method"></a>
 #### `with`メソッド使用
 
 メールのデータフォーマットをテンプレートへ渡す前にカスタマイズしたい場合は、`with`メソッドを使いデータをビューへ渡すことができます。通常、この場合もデータをmailableクラスのコンストラクタで渡すことになるでしょう。しかし、自動的にテンプレートで使用可能にならないように、`protected`か`private`プロパティへデータをセットしてください。それから、テンプレートで使用したいデータの配列を引数として、`with`メソッドを呼び出してください。
@@ -315,6 +323,7 @@ mailableクラスの`build`メソッドの中で、メールの中身をレン�
                     ]);
     }
 
+<a name="attaching-files-from-disk"></a>
 #### ディスクからのファイル添付
 
 [ファイルシステムのディスク](/docs/{{version}}/filesystem)へファイルを保存してあり、それをメールに添付する場合は`attachFromStorage`メソッドを使用します。
@@ -358,6 +367,7 @@ mailableクラスの`build`メソッドの中で、メールの中身をレン�
                    ->attachFromStorageDisk('s3', '/path/to/file');
     }
 
+<a name="raw-data-attachments"></a>
 #### Rawデータ添付
 
 `attachData`メソッドは添付内容のバイト文字列をそのまま添付する場合に使用します。たとえば、メモリ中でPDFを生成し、それをディスクへ書き出さずにメールへ添付したい場合にこのメソッドを使用できます。`attachData`メソッドはrawデータバイトを最初の引数に取り、ファイル名を第２引数に、オプションの配列を第３引数に取ります。
@@ -388,6 +398,7 @@ mailableクラスの`build`メソッドの中で、メールの中身をレン�
 
 > {note} `$message`変数は平文メッセージでは使用できません。平文メッセージではインライン添付が利用できないためです。
 
+<a name="embedding-raw-data-attachments"></a>
 #### 添付Rawデータの埋め込み
 
 メールテンプレートへ埋め込むrawデータ文字列をあらかじめ用意してある場合は、`$message`変数の`embedData`メソッドを使ってください。
@@ -463,6 +474,7 @@ Markdown MailableではBladeコンポーネントとMarkdown記法が利用で�
 
 > {tip} Markdownメールを書く場合は、過剰なインデントを付けないでください。Markdownは段付をコードブロックとしてパースします。
 
+<a name="button-component"></a>
 #### Buttonコンポーネント
 
 ボタンコンポーネントは中央寄せのボタンリンクをレンダーします。このコンポーネントは引数として、`url`とオプションの`color`を受け取ります。サポートしている色は`primary`、`success`、`error`です。メッセージに好きなだけのボタンコンポーネントを追加できます。
@@ -471,6 +483,7 @@ Markdown MailableではBladeコンポーネントとMarkdown記法が利用で�
     注文の確認
     @endcomponent
 
+<a name="panel-component"></a>
 #### Panelコンポーネント
 
 パネルコンポーネントは、メッセージの他の部分とは少し異なった背景色のパネルの中に、指定されたテキストブロックをレンダーします。これにより、指定するテキストに注目を集められます。
@@ -479,6 +492,7 @@ Markdown MailableではBladeコンポーネントとMarkdown記法が利用で�
     ここはパネルの内容です。
     @endcomponent
 
+<a name="table-component"></a>
 #### Tableコンポーネント
 
 テーブルコンポーネントは、MarkdownテーブルをHTMLテーブルへ変換します。このコンポーネントはMarkdownテーブルを内容として受け入れます。デフォルトのMarkdownテーブルの記法を使った、文字寄せをサポートしています。
@@ -499,6 +513,7 @@ Markdown MailableではBladeコンポーネントとMarkdown記法が利用で�
 
 このコマンドにより、`resources/views/vendor/mail`ディレクトリ下に、Markdownメールコンポーネントがリソース公開されます。`mail`ディレクトリ下に、`html`と`markdown`ディレクトリがあります。各ディレクトリは名前が示す形式で、利用できる全コンポーネントを持っています。これらのコンポーネントはお好きなように、自由にカスタマイズしてください。
 
+<a name="customizing-the-css"></a>
 #### CSSのカスタマイズ
 
 コンポーネントをエクスポートすると、`resources/views/vendor/mail/html/themes`ディレクトリに`default.css`ファイルができます。このファイル中のCSSをカスタマイズすれば、Markdownメールメッセージ変換後のHTML形式の中に、インラインCSSとして自動的に取り込まれます。
@@ -550,6 +565,7 @@ LaravelのMarkdownコンポーネントの完全に新しいテーマを作成�
         ->bcc($evenMoreUsers)
         ->send(new OrderShipped($order));
 
+<a name="looping-over-recipients"></a>
 #### 受信者の繰り返し処理
 
 受信者／メールアドレスの配列を繰り返し処理することにより、受信者のリストに対してMailableを送信する必要が起きることもあるでしょう。`to`メソッドはMailableの受信者リストへメールアドレスを追加するため、常にMailableインスタンスを受信者ごとに再生成する必要があります。
@@ -558,6 +574,7 @@ LaravelのMarkdownコンポーネントの完全に新しいテーマを作成�
         Mail::to($recipient)->send(new OrderShipped($order));
     }
 
+<a name="sending-mail-via-a-specific-mailer"></a>
 #### 特定のメーラーでメールを送信
 
 Laravelは`mail`設定ファイルの`default`メーラーとして設定されているメーラーをデフォルトで使用します。しかし、特定のメール設定を使用してメッセージを送るために`mailer`メソッドが使用できます。
@@ -569,6 +586,7 @@ Laravelは`mail`設定ファイルの`default`メーラーとして設定され�
 <a name="queueing-mail"></a>
 ### キュー使用メール
 
+<a name="queueing-a-mail-message"></a>
 #### メールメッセージのキューイング
 
 メールメッセージを送ることにより、アプリケーションのレスポンス時間が極端に長くなり得るため、多くの開発者はメールメッセージをバックグランドで送信するためにキューイングすることを選びます。Laravelの[統一されたキューAPI](/docs/{{version}}/queues)を使うことで、簡単に実現できます。メールメッセージをキューへ送るには、`Mail`ファサードへ、受取人の指定の後に、`queue`メソッドを使います。
@@ -580,6 +598,7 @@ Laravelは`mail`設定ファイルの`default`メーラーとして設定され�
 
 このメソッドはバックグラウンドでメールを送信するため、自動的にジョブをキューに投入する面倒を見ます。この機能を使用する前に[キューの設定](/docs/{{version}}/queues)を行う必要があります。
 
+<a name="delayed-message-queueing"></a>
 #### 遅延メッセージキュー
 
 メッセージを投入するキューを指定したい場合、`laterOn`メソッドを使用します。最初の引数に、`later`メソッドは、メッセージを送信する時間を示す`DateTime`インスタンスを受け取ります。
@@ -591,6 +610,7 @@ Laravelは`mail`設定ファイルの`default`メーラーとして設定され�
         ->bcc($evenMoreUsers)
         ->later($when, new OrderShipped($order));
 
+<a name="pushing-to-specific-queues"></a>
 #### 特定のキューに投入
 
 `make:mail`コマンドにより生成されたmailableクラスにはすべて、`Illuminate\Bus\Queueable`トレイトが使用されています。接続とキュー名を指定する、`onQueue`と`onConnection`メソッドをすべてのmailableクラスインスタンスで呼び出せます。
@@ -604,6 +624,7 @@ Laravelは`mail`設定ファイルの`default`メーラーとして設定され�
         ->bcc($evenMoreUsers)
         ->queue($message);
 
+<a name="queueing-by-default"></a>
 #### デフォルトとしてキュー投入
 
 いつもMailableクラスをキューへ投入したければ、クラスへ`ShouldQueue`契約を実装してください。それで、メール送信時に`send`メソッドを呼びだせば、そのMailableクラスは契約が実装されていますので、いつもキューイングされます。
@@ -646,6 +667,7 @@ Laravelでは、現在のデフォルト言語とは別のローケルで、mail
         new OrderShipped($order)
     );
 
+<a name="user-preferred-locales"></a>
 ### ユーザー希望のローケル
 
 ユーザーの希望するローケルをアプリケーションで保存しておくことは良くあります。モデルで`HasLocalePreference`契約を実装すると、メール送信時にこの保存してあるローケルを使用するように、Laravelへ指示できます。
@@ -674,10 +696,12 @@ Laravelでは、現在のデフォルト言語とは別のローケルで、mail
 
 メールを送信するアプリケーションを開発している間は、実際のメールアドレスにメールを送信したくはありません。Laravelはメールメッセージを実際に送信することをローカルでの開発期間の間、「無効」にするさまざまな方法を用意しています。
 
+<a name="log-driver"></a>
 #### Logドライバ
 
 メールを送信する代わりに、`log`メールドライバで、すべてのメールメッセージを確認のためにログファイルへ書き込こめます。アプリケーションの設定に関する詳細は、[設定のドキュメント](/docs/{{version}}/configuration#environment-configuration)を確認してください。
 
+<a name="universal-to"></a>
 #### 全メールの送信先指定
 
 Laravelが提供するもう一つの解決策は、フレームワークが送信する全メールの共通受け取り先を設定する方法です。この方法を使うと送信メッセージに指定した実際のアドレスの代わりに、アプリケーションが送る全メールを特定のアドレスに送信します。この方法を使用する場合、`config/mail.php`設定ファイルで`to`オプションを指定します。
@@ -687,6 +711,7 @@ Laravelが提供するもう一つの解決策は、フレームワークが送�
         'name' => 'Example'
     ],
 
+<a name="mailtrap"></a>
 #### Mailtrap
 
 最後の方法は[Mailtrap](https://mailtrap.io)のようなサービスを使い、`smtp`ドライバで本当のメールクライアントにより内容を確認できる「ダミー」のメールボックスへメールメッセージを送る方法です。このアプローチの利点は最終的なメールをMailtrapのメッセージビュアーで実際に確認できることです。

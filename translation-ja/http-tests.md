@@ -240,7 +240,7 @@ JSONレスポンスの特定パスに、指定したデータが含まれてい�
 
             $response
                 ->assertStatus(201)
-                ->assertJsonPath('team.owner.name', 'foo')
+                ->assertJsonPath('team.owner.name', 'foo');
         }
     }
 
@@ -279,6 +279,7 @@ JSONレスポンスの特定パスに、指定したデータが含まれてい�
         }
     }
 
+<a name="fake-file-customization"></a>
 #### ダミーファイルのカスタマイズ
 
 `fake`メソッドでファイルを生成するときには、バリデーションルールをより便利にテストできるよう、画像の幅、高さ、サイズを指定できます。
@@ -311,6 +312,7 @@ LaravelではアプリケーションへのHTTPリクエストをシミュレー
 
     $contents = (string) $this->view('welcome');
 
+<a name="sharing-errors"></a>
 #### エラーの共有
 
 いくらかのビューは、Laravelが提供するグローバルエラーバッグで共有しているエラーに依存していることがあります。エラーバッグにエラーメッセージを追加するには、`withViewErrors`メソッドを使うことができます。
@@ -321,6 +323,7 @@ LaravelではアプリケーションへのHTTPリクエストをシミュレー
 
     $view->assertSee('Please provide a valid name.');
 
+<a name="rendering-blade-components"></a>
 #### Bladeとコンポーネントのレンダリング
 
 必要であれば、もとのBlade文字列を評価しレンダーするため、`blade`メソッドが使用できます。`blade`メソッドは`Illuminate\Testing\TestView`インスタンスを返します。

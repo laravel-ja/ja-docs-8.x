@@ -49,6 +49,7 @@ Laravelの`Hash` [ファサード](/docs/{{version}}/facades)は、ユーザー�
         }
     }
 
+<a name="adjusting-the-bcrypt-work-factor"></a>
 #### BcryptのWork Factorの調整
 
 Bcryptアルゴリズムを使用する場合、`make`メソッドで`rounds`オプションを使用することにより、アルゴリズムのwork factorを管理できます。しかし、ほとんどのアプリケーションではデフォルト値で十分でしょう。
@@ -57,6 +58,7 @@ Bcryptアルゴリズムを使用する場合、`make`メソッドで`rounds`オ
         'rounds' => 12,
     ]);
 
+<a name="adjusting-the-argon2-work-factor"></a>
 #### Argon2のWork Factorの調整
 
 Argon2アルゴリズムを使用する場合、`memory`と`time`、`threads`オプションを指定することにより、アルゴリズムのwork factorを管理できます。しかし、ほとんどのアプリケーションではデフォルト値で十分でしょう。
@@ -69,6 +71,7 @@ Argon2アルゴリズムを使用する場合、`memory`と`time`、`threads`オ
 
 > {tip} これらのオプションの詳細情報は、[PHP公式ドキュメント](https://secure.php.net/manual/ja/function.password-hash.php)をご覧ください。
 
+<a name="verifying-a-password-against-a-hash"></a>
 #### パスワードとハッシュ値の比較
 
 `check`メソッドにより指定した平文文字列と指定されたハッシュ値を比較確認できます。
@@ -77,6 +80,7 @@ Argon2アルゴリズムを使用する場合、`memory`と`time`、`threads`オ
         // パスワード一致
     }
 
+<a name="checking-if-a-password-needs-to-be-rehashed"></a>
 #### パスワードの再ハッシュが必要か確認
 
 パスワードがハシュされてからハッシャーのストレッチ回数が変更されているかを調べるには、`needsRehash`メソッドを使います。

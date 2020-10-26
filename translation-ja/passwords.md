@@ -37,6 +37,7 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
 <a name="requesting-the-password-reset-link"></a>
 ### パスワードリセットリンクの要求
 
+<a name="the-password-reset-link-request-form"></a>
 #### パスワードリセットリンク要求フォーム
 
 最初に、パスワードリセットリンクを要求するために必要なルートを定義します。そのために、パスワードリセットリンクリクエストフォームを含むビューを返すルートを定義します。
@@ -47,6 +48,7 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
 
 このルートによって返されるビューには、 `email`フィールドを含むフォームが必要です。これにより、ユーザーは特定のメールアドレスのパスワードリセットリンクをリクエストできます。
 
+<a name="password-reset-link-handling-the-form-submission"></a>
 #### フォーム送信の処理
 
 次に、「パスワードを忘れた」ビューからのフォーム要求を処理するルートを定義します。このルートは、電子メールアドレスを検証し、該当するユーザーへパスワードリセットリクエストを送る責務を負います。
@@ -75,6 +77,7 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
 <a name="resetting-the-password"></a>
 ### パスワードリセット
 
+<a name="the-password-reset-form"></a>
 #### パスワードリセットフォーム
 
 次に、ユーザーがメールで送られてきたパスワードリセットリンクをクリックして、新しいパスワードを入力し実際にパスワードをリセットするのに必要なルートを定義します。まず、ユーザーがパスワード再設定リンクをクリックしたときに表示されるパスワード再設定フォームを表示するルートを定義しましょう。このルートは後でパスワードリセットリクエストを確認するために使用する `token`パラメーターを受け取ります。
@@ -85,6 +88,7 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
 
 このルートによって返されるビューには、 `email`フィールド、` password`フィールド、`password_confirmation`フィールド、および非表示でルートが受け取るシークレットトークンの値を含む`token`フィールドを持つフォームが必要です。
 
+<a name="password-reset-handling-the-form-submission"></a>
 #### フォーム送信の処理
 
 もちろん、パスワードリセットフォームの送信内容を実際に処理するためのルートを定義する必要があります。このルートは、受信リクエストの検証とデータベース内のユーザーのパスワードの更新の責務を負います。
@@ -129,6 +133,26 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
 <a name="password-customization"></a>
 ## カスタマイズ
 
+<a name="reset-link-customization"></a>
+#### リセットリンクカスタマイズ
+
+`ResetPassword`通知クラスが提供する`createUrlUsing`メソッドを使用して、パスワードリセットリンクのURLをカスタマイズできます。このメソッドは、通知を受信するユーザーのインスタンスとパスワードリセットリンクトークンを引数に取るクロージャを受け入れます。通常、このメソッドはサービスプロバイダの`boot`メソッドで呼び出す必要があります。
+
+    use Illuminate\Auth\Notifications\ResetPassword;
+
+    /**
+     * 全アプリケーションサービスの初期化処理
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        ResetPassword::createUrlUsing(function ($notifiable, string $token) {
+            return 'https://example.com/auth/reset-password?token='.$token;
+        });
+    }
+
+<a name="reset-email-customization"></a>
 #### リセットメールのカスタマイズ
 
 パスワードリセットリンクをユーザーへ送るために使用する、通知クラスは簡単に変更できます。手始めに、`User`モデルの`sendPasswordResetNotification`メソッドをオーバーライドしましょう。このメソッドの中で、皆さんが選んだ通知クラスを使用し、通知を送信できます。パスワードリセット`$token`は、メソッドの第1引数として受け取ります。

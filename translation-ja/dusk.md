@@ -150,6 +150,7 @@ PHPUnitテストランナが通常受け付ける引数は、`dusk`コマンド�
 
     php artisan dusk --group=foo
 
+<a name="manually-starting-chromedriver"></a>
 #### ChromeDriverの手動起動
 
 デフォルトのDuskは、ChromeDriverを自動的に起動しようとします。特定のシステムで自動起動しない場合は、`dusk`コマンドを実行する前に手動でChromeDriverを起動することもできます。ChromeDriverを手動起動する場合は、`tests/DuskTestCase.php`ファイルの以下の行をコメントアウトしてください。
@@ -227,6 +228,7 @@ PHPUnitテストランナが通常受け付ける引数は、`dusk`コマンド�
 
 上記の例のように、`browse`メソッドはコールバックを引数に受けます。　Duskによりブラウザインスタンスは自動的にこのコールバックに渡され、このオブジェクトで、アプリケーションに対する操作やアサートを行います。
 
+<a name="creating-multiple-browsers"></a>
 #### 複数ブラウザの生成
 
 テストを行うために複数のブラウザが必要なこともあります。たとえば、Webソケットを使用するチャットスクリーンをテストするためには、複数のブラウザが必要でしょう。複数ブラウザを生成するには、`browse`メソッドに指定するコールバックの引数で、一つ以上のブラウザを指定します。
@@ -246,6 +248,7 @@ PHPUnitテストランナが通常受け付ける引数は、`dusk`コマンド�
               ->assertSee('Jeffrey Way');
     });
 
+<a name="resizing-browser-windows"></a>
 #### ブラウザウィンドウのリサイズ
 
 ブラウザウインドウのサイズを調整するため、`resize`メソッドを使用できます。
@@ -422,6 +425,7 @@ Duskセレクタにより、CSSセレクタを記憶せず効率的にテスト�
 <a name="text-values-and-attributes"></a>
 ### テキスト、値、属性
 
+<a name="retrieving-setting-values"></a>
 #### 値の取得／設定
 
 Duskは現在表示されているテキスト、値、ページ要素の属性を操作する、数多くのメソッドを提供します。たとえば、指定したセレクタに一致する要素の「値(value)」を取得するには、`value`メソッドを使用します。
@@ -437,12 +441,14 @@ Duskは現在表示されているテキスト、値、ページ要素の属性�
     // 入力要素の値の取得
     $inputValue = $browser->inputValue('field');
 
+<a name="retrieving-text"></a>
 #### テキストの取得
 
 `text`メソッドは、指定したセレクタに一致する要素の表示テキストを取得します。
 
     $text = $browser->text('selector');
 
+<a name="retrieving-attributes"></a>
 #### 属性の取得
 
 最後の`attribute`メソッドは、セレクタに一致する要素の属性を取得します。
@@ -452,6 +458,7 @@ Duskは現在表示されているテキスト、値、ページ要素の属性�
 <a name="using-forms"></a>
 ### フォームの使用
 
+<a name="typing-values"></a>
 #### 値のタイプ
 
 Duskはフォームと入力要素を操作する、さまざまなメソッドを提供しています。最初に、入力フィールドへテキストをタイプする例を見てみましょう。
@@ -480,6 +487,7 @@ Duskはフォームと入力要素を操作する、さまざまなメソッド�
     $browser->type('tags', 'foo')
             ->appendSlowly('tags', ', bar, baz');
 
+<a name="dropdowns"></a>
 #### ドロップダウン
 
 ドロップダウンの選択ボックスから値を選ぶには、`select`メソッドを使います。`type`メソッドと同様に、`select`メソッドも完全なCSSセレクタは必要ありません。`select`メソッドに引数を指定するとき、表示テキストの代わりに、オプション値を渡します。
@@ -490,6 +498,7 @@ Duskはフォームと入力要素を操作する、さまざまなメソッド�
 
     $browser->select('size');
 
+<a name="checkboxes"></a>
 #### チェックボックス
 
 チェックボックスを「チェック(check)」するには、`check`メソッドを使います。他の関連する多くのメソッドと同様に、完全なCSSセレクタは必要ありません。完全に一致するセレクタが見つからないと、Duskは`name`属性に一致するチェックボックスを探します。
@@ -498,6 +507,7 @@ Duskはフォームと入力要素を操作する、さまざまなメソッド�
 
     $browser->uncheck('terms');
 
+<a name="radio-buttons"></a>
 #### ラジオボタン
 
 ラジオボタンのオプションを「選択」するには、`radio`メソッドを使用します。他の関連する多くのメソッドと同様に、完全なセレクタは必要ありません。完全に一致するセレクタが見つからない場合、Duskは`name`と`value`属性に一致するラジオボタンを探します。
@@ -529,6 +539,7 @@ Duskはフォームと入力要素を操作する、さまざまなメソッド�
 <a name="using-the-mouse"></a>
 ### マウスの使用
 
+<a name="clicking-on-elements"></a>
 #### 要素のクリック
 
 指定したセレクタに一致する要素を「クリック」するには、`click`メソッドを使います。
@@ -559,12 +570,14 @@ Duskはフォームと入力要素を操作する、さまざまなメソッド�
             ->pause(1000)
             ->releaseMouse();
 
+<a name="mouseover"></a>
 #### マウスオーバー
 
 指定したセレクタに一致する要素を「マウスオーバー」したい場合は、`mouseover`メソッドを使います。
 
     $browser->mouseover('.selector');
 
+<a name="drag-drop"></a>
 #### ドラッグ＆ドロップ
 
 `drag`メソッドは指定したセレクタに一致する要素をドラッグし、もう一つの要素へドロップします。
@@ -629,12 +642,14 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
 
 広範囲に渡りJavaScriptを使用しているアプリケーションのテストでは、テストを進める前に特定の要素やデータが利用可能になるまで、「待つ(wait)」必要がしばしば起きます。Duskではこれも簡単に行えます。数多くのメソッドを使い、ページで要素が見えるようになるまで、もしくはJavaScriptの評価が`true`になるまで待機できます。
 
+<a name="waiting"></a>
 #### 待機
 
 指定したミリ秒の間、テストをポーズしたい場合は、`pause`メソッドを使用します。
 
     $browser->pause(1000);
 
+<a name="waiting-for-selectors"></a>
 #### セレクタの待機
 
 `waitFor`メソッドはテストの実行を指定したCSSセレクタがページに表示されるまで中断します。例外が投げられるまで、デフォルトで最長５秒間テストを中断します。必要であれば、カスタムタイムアウトを秒でメソッドの第２引数として指定できます。
@@ -661,6 +676,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
     // セレクタが消えるまで、最長１秒待つ
     $browser->waitUntilMissing('.selector', 1);
 
+<a name="scoping-selectors-when-available"></a>
 #### 利用可能時限定のセレクタ
 
 指定したセレクタを待ち、それからそのセレクタに一致する要素を操作したい場合もよくあります。たとえば、モーダルウィンドウが現れるまで待ち、それからそのモーダルウィンドウ上の"OK"ボタンを押したい場合です。このケースでは`whenAvailable`メソッドを使用します。指定したコールバック内で行われた要素操作はすべて、オリジナルのセレクタに対して限定されます。
@@ -670,6 +686,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
               ->press('OK');
     });
 
+<a name="waiting-for-text"></a>
 #### テキストの待機
 
 指定したテキストがページに表示されるまで待ちたい場合は、`waitForText`メソッドを使います。
@@ -688,6 +705,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
     // テキストが削除されるまで最大１秒間待つ
     $browser->waitUntilMissingText('Hello World', 1);
 
+<a name="waiting-for-links"></a>
 #### リンクの待機
 
 ページに指定したリンクテキストが表示されるまで待つ場合は、`waitForLink`メソッドを使います。
@@ -698,6 +716,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
     // リンクを最大１秒間待つ
     $browser->waitForLink('Create', 1);
 
+<a name="waiting-on-the-page-location"></a>
 #### ページロケーションの待機
 
 `$browser->assertPathIs('/home')`のようなパスをアサートするときに、`window.location.pathname`が非同期更新中の場合、アサートは失敗するでしょう。指定値のロケーションを待機するために、`waitForLocation`メソッドを使ってください。
@@ -708,6 +727,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
 
     $browser->waitForRoute($routeName, $parameters);
 
+<a name="waiting-for-page-reloads"></a>
 #### ページリロードの待機
 
 ページのリロード後にアサートする必要がある場合は、`waitForReload`メソッドを使ってください。
@@ -716,6 +736,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
             ->waitForReload()
             ->assertSee('something');
 
+<a name="waiting-on-javascript-expressions"></a>
 #### JavaScriptの評価の待機
 
 指定したJavaScript式の評価が`true`になるまで、テストの実行を中断したい場合もときどきあります。`waitUntil`メソッドで簡単に行えます。このメソッドに式を渡す時に、`return`キーワードや最後のセミコロンを含める必要はありません。
@@ -728,6 +749,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
     // 式がtrueになるまで最大１秒間待つ
     $browser->waitUntil('App.data.servers.length > 0', 1);
 
+<a name="waiting-on-vue-expressions"></a>
 #### Vue式でwaitする
 
 以下のメソッドで、特定のVueコンポーネント属性が、指定値になるまで待つことができます。
@@ -738,6 +760,7 @@ DuskはJavaScriptダイアログを操作する、さまざまなメソッドを
     // 指定したコンポーネント属性が、指定値を含まなくなるまで待つ
     $browser->waitUntilVueIsNot('user.name', null, '@user');
 
+<a name="waiting-with-a-callback"></a>
 #### コールバックによる待機
 
 Duskにある数多くの「待機」メソッドは、`waitUsing`メソッドを使用しています。このメソッドを直接利用し、コールバックが`true`を返すまで待機できます。`waitUsing`メソッドは最長待ち秒数とクロージャを評価する間隔秒数、クロージャを引数に取ります。オプションとして、失敗時のメッセージを引数に取ります。
@@ -1369,6 +1392,7 @@ Duskはアプリケーションに対する数多くのアサートを提供し�
 
 デフォルトでページには、`url`、`assert`、`elements`の３メソッドが用意されています。`url`と`assert`メソッドは、この後説明します。`elements`メソッドについては、[のちほど詳細を紹介](#shorthand-selectors)します。
 
+<a name="the-url-method"></a>
 #### `url`メソッド
 
 `url`メソッドでは、そのページを表すURLのパスを返します。Duskはブラウザでこのページへ移動するとき、このURLを使用します。
@@ -1383,6 +1407,7 @@ Duskはアプリケーションに対する数多くのアサートを提供し�
         return '/login';
     }
 
+<a name="the-assert-method"></a>
 #### `assert`メソッド
 
 `assert`メソッドでは、ブラウザが実際に指定ページを表示した時に、確認が必要なアサーションを定義します。このメソッドで完全に行う必要はありません。ですが、もしお望みであれば自由にアサートを記述してください。記述されたアサートは、このページへ移行時に自動的に実行されます。
@@ -1450,6 +1475,7 @@ Duskはアプリケーションに対する数多くのアサートを提供し�
 
     $browser->type('@email', 'taylor@laravel.com');
 
+<a name="global-shorthand-selectors"></a>
 #### グローバルなセレクタ簡略記述
 
 Duskをインストールすると、ベース`Page`クラスが`tests/Browser/Pages`ディレクトリへ設置されます。このクラスは、アプリケーション全部のどのページからでも利用可能な、グローバル短縮セレクタを定義する`siteElements`メソッドを含んでいます。

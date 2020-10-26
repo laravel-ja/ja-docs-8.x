@@ -110,6 +110,7 @@ Laravelは組み込み済みの[認証](/docs/{{version}}/authentication)サー�
         // ユーザーはポストの更新と削除ができない
     }
 
+<a name="authorizing-or-throwing-exceptions"></a>
 #### 認証か例外を投げる
 
 認証を試み、そのユーザーが指定したアクションの実行が許されていない場合は、自動的に`Illuminate\Auth\Access\AuthorizationException`例外を投げる方法を取るには、`Gate::authorize`メソッドを使用します。`AuthorizationException`は自動的に`403` HTTPレスポンスへ変換されます。
@@ -118,6 +119,7 @@ Laravelは組み込み済みの[認証](/docs/{{version}}/authentication)サー�
 
     // アクションが認証された…
 
+<a name="gates-supplying-additional-context"></a>
 #### 追加コンテキストの指定
 
 認可アビリティのゲートメソッド（`allows`、`denies`、`check`、`any`、`none`、`authorize`、`can`、`cannot`）と認可[Bladeディレクティブ](#via-blade-templates)（`@can`、`@cannot`、`@canany`）では２番めの引数として配列を受け取れます。これらの配列要素はゲートにパラメータとして渡されたもので、認可の可否を決定する際に、追加コンテキストとして利用できます。
@@ -239,6 +241,7 @@ Laravelは組み込み済みの[認証](/docs/{{version}}/authentication)サー�
         }
     }
 
+<a name="policy-auto-discovery"></a>
 #### ポリシーの自動検出
 
 モデルポリシーをいちいち登録する代わりに、モデルとポリシーの標準命名規則にしたがっているポリシーを自動的にLaravelは見つけます。具体的にはモデルが含まれているディレクトリの下に存在する、`Policies`ディレクトリ中のポリシーです。たとえば、モデルが`app/Models`ディレクトリ下にあれば、ポリシーは`app/Policies`ディレクトリへ置く必要があります。この場合は、Laravelは`app/Models/Policies`下を調べ、次に`app/Policies`を調べます。さらに、ポリシーの名前は対応するモデルの名前へ、`Policy`サフィックスを付けたものにする必要があります。ですから、`User`モデルに対応させるには、`UserPolicy`クラスと命名します。
@@ -401,6 +404,7 @@ Laravelアプリケーションに含まれる`User`モデルは、アクショ�
 
 指定するモデルの[ポリシーが登録済みであれば](#registering-policies)適切なポリシーの`can`メソッドが自動的に呼びだされ、論理型の結果が返されます。そのモデルに対するポリシーが登録されていない場合、`can`メソッドは指定したアクション名に合致する、ゲートベースのクロージャを呼びだそうとします。
 
+<a name="user-model-actions-that-dont-require-models"></a>
 #### モデルを必要としないアクション
 
 `create`のようなアクションは、モデルインスタンスを必要としないことを思い出してください。そうした場合は、`can`メソッドにはクラス名を渡してください。クラス名はアクションを認可するときにどのポリシーを使用すべきかを決めるために使われます。
@@ -424,6 +428,7 @@ Laravelアプリケーションに含まれる`User`モデルは、アクショ�
 
 この例では、`can`ミドルウェアへ２つの引数を渡しています。最初の引数は認可したいアクションの名前です。２つ目はポリシーメソッドに渡したいルートパラメータです。この場合、[暗黙のモデル結合](/docs/{{version}}/routing#implicit-binding)を使用しているため、`Post`モデルがポリシーメソッドへ渡されます。ユーザーに指定したアクションを実行する認可がない場合、ミドルウェアは`403`ステータスコードのHTTPレスポンスを生成します。
 
+<a name="middleware-actions-that-dont-require-models"></a>
 #### モデルを必要としないアクション
 
 この場合も、`create`のようなアクションではモデルインスタンスを必要としません。このようなケースでは、ミドルウェアへクラス名を渡してください。クラス名はアクションを認可するときに、どのポリシーを使用するかの判断に使われます。
@@ -463,6 +468,7 @@ Laravelアプリケーションに含まれる`User`モデルは、アクショ�
         }
     }
 
+<a name="controller-actions-that-dont-require-models"></a>
 #### モデルを必要としないアクション
 
 すでに説明してきたように、`create`のように、モデルインスタンスを必要としないアクションがあります。この場合、クラス名を`authorize`メソッドへ渡してください。クラス名はアクションの認可時に、どのポリシーを使用するのかを決めるために使われます
@@ -481,6 +487,7 @@ Laravelアプリケーションに含まれる`User`モデルは、アクショ�
         // 現在のユーザーはブログポストを生成できる
     }
 
+<a name="authorizing-resource-controllers"></a>
 #### リソースコントローラの認可
 
 [リソースコントローラ](/docs/{{version}}/controllers#resource-controllers)を活用している場合、コントローラのコンストラクタの中で、`authorizeResource`メソッドを使用できます。このメソッドはリソースコントローラのメソッドへ適切な`can`ミドルウェア定義を付加します。
@@ -552,6 +559,7 @@ Bladeテンプレートを書くとき、指定したアクションを実行で
         // 現在のユーザーはポストを作成できる
     @endcanany
 
+<a name="blade-actions-that-dont-require-models"></a>
 #### モデルを必要としないアクション
 
 他の認可メソッド同様に、アクションでモデルインスタンスが必要でない場合、`@can`と`@cannot`ディレクティブへクラス名を渡すことができます。

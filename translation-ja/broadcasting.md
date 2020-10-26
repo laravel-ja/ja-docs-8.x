@@ -42,10 +42,12 @@
 
 イベントブロードキャストの設定オプションは、すべて`config/broadcasting.php`設定ファイルの中にあります。Laravelはドライバをいくつか準備しています。[Pusherチャンネル](https://pusher.com/channels)や[Redis](/docs/{{version}}/redis)、それにローカルの開発とデバッグのための`log`ドライバがあります。さらにブロードキャストを完全に無効にするための、`null`ドライバも用意しています。`config/broadcasting.php`設定ファイルに、各ドライバの設定例が含まれています。
 
+<a name="broadcast-service-provider"></a>
 #### ブロードキャストサービスプロバイダ
 
 イベントをブロードキャストするには、事前に`App\Providers\BroadcastServiceProvider`を登録する必要があります。インストールしたばかりのLaravelアプリケーションで、`config/app.php`設定ファイル中の、`providers`配列配列にある、このプロバイダのコメントを外してください。このプロバイダはブロードキャスト認証ルートとコールバックを登録します。
 
+<a name="csrf-token"></a>
 #### CSRFトークン
 
 [Laravel Echo](#installing-laravel-echo)は、現在のセッションのCSRFトークンへアクセスする必要があります。アプリケーションの`head` HTML要素を確認し、CSRFトークンを含むように`meta`タグを定義してください。
@@ -55,6 +57,7 @@
 <a name="driver-prerequisites"></a>
 ### ドライバ要求
 
+<a name="pusher-channels"></a>
 #### Pusherチャンネル
 
 イベントを[Pusherチャンネル](https://pusher.com/channels)によりブロードキャストする場合、Composerパッケージマネージャを使い、PusherチャンネルPHP SDKをインストールする必要があります。
@@ -83,10 +86,12 @@
 
     BROADCAST_DRIVER=pusher
 
+<a name="pusher-compatible-laravel-websockets"></a>
 #### Pusher互換のLaravel　WebSocket
 
 [laravel-websockets](https://github.com/beyondcode/laravel-websockets)はPHPで実装された、Laravel用のPusher互換のWebSocketパッケージです。このパッケージは外部WebソケットプロバイダーやNodeを使用しなくてもLaravelブロードキャストの能力を最大限に活用できます。このパッケージのインストールと使用の詳細は、[公式ドキュメント]（https://beyondco.de/docs/laravel-websockets）を参照してください。
 
+<a name="redis"></a>
 #### Redis
 
 Redisブロードキャスタを使用する場合は、phpredis PHP拡張をPECLを使いインストールするか、PredisライブラリをComposerを使用しインストールする必要があります。
@@ -101,6 +106,7 @@ RedisブロードキャスタはRedisのpub/sub機能を使用し、メッセー
 
 Redisブロードキャスタがイベントを発行すると、そのイベントに指定されたチャンネル名へ発行され、イベント名、`data`ペイロード、イベントのソケットIDを生成したユーザー（該当する場合）を含む、ペイロードはJSONエンコードされた文字列になります。
 
+<a name="socketio"></a>
 #### Socket.IO
 
 RedisブロードキャスタとSocket.IOサーバをペアリングする場合、アプリケーションへSocket.IO JavaScriptクライアントライブラリをインクルードする必要があります。NPMパッケージマネージャにより、インストールできます。
@@ -120,6 +126,7 @@ RedisブロードキャスタとSocket.IOサーバをペアリングする場合
 
 最後に、Socket.IOのコンパチブルサーバを実行する必要があります。LaravelにはSocket.IOサーバの実装は含まれていません。しかし、[tlaverdure/laravel-echo-server](https://github.com/tlaverdure/laravel-echo-server) GitHubリポジトリで、コミュニティにより現在、Socket.IOサーバがメンテナンスされています。
 
+<a name="queue-prerequisites"></a>
 #### キュー事前要件
 
 イベントをブロードキャストし始める前に、[キューリスナ](/docs/{{version}}/queues)を設定し、実行する必要もあります。イベントのブロードキャストは、すべてキュージョブとして行われるため、アプリケーションのレスポンスタイムにはシリアスな影響はでません。
@@ -142,6 +149,7 @@ LaravelのイベントブロードキャストはサーバサイドのLaravelイ
 
     event(new ShippingStatusUpdated($update));
 
+<a name="the-shouldbroadcast-interface"></a>
 #### `ShouldBroadcast`インターフェイス
 
 ユーザーがある注文を閲覧している時に、ビューの状態を変更するために、ユーザーがページを再読込しなくてはならないなんてしたくありません。代わりにアップデートがあることをアプリケーションへブロードキャストしたいわけです。そのため、`ShouldBroadcast`インターフェイスを実装した、`ShippingStatusUpdated`イベントを作成する必要があります。このインターフェイスはイベントが発行されると、ブロードキャストすることをLaravelへ指示しています。
@@ -179,6 +187,7 @@ LaravelのイベントブロードキャストはサーバサイドのLaravelイ
         return new PrivateChannel('order.'.$this->update->order_id);
     }
 
+<a name="example-application-authorizing-channels"></a>
 #### 認証中チャンネル
 
 プライベートチャンネルをリッスンするには、ユーザーは認可されている必要があることを思い出してください。`routes/channels.php`ファイルでチャンネルの認可ルールを定義してください。この例の場合、プライベート`order.1`チャンネルをリッスンしようとするユーザーは、実際にそのオーダーの発注者であることを確認しています。
@@ -191,6 +200,7 @@ LaravelのイベントブロードキャストはサーバサイドのLaravelイ
 
 認可コールバックは、最初の引数に現在認証中のユーザーを受け取ります。引き続き、追加のプレースホルダパラメータを指定します。この例の場合、チャンネル名中で"ID"の部分を表す、`{orderID}`プレースホルダーを使っています。
 
+<a name="listening-for-event-broadcasts"></a>
 #### イベントブロードキャストのリッスン
 
 次に、皆さんのJavaScriptアプリケーションでイベントをリッスンします。このために、Laravel Echoが利用できます。最初に、プライベートチャンネルを購読するために、`private`メソッドを使います。それから、`ShippingStatusUpdated`イベントをリッスンするために、`listen`メソッドを使用します。デフォルトでは、イベントのpublicプロパティは、すべてブロードキャストイベントに含まれています。
@@ -347,6 +357,7 @@ Laravelへイベントをブロードキャストすることを知らせるた�
 
     Broadcast::routes($attributes);
 
+<a name="customizing-the-authorization-endpoint"></a>
 #### 認可エンドポイントのカスタマイズ
 
 デフォルトでは、チャンネルアクセスの認可にEchoは`/broadcasting/auth`エンドポイントを使用します。しかしながら、Echoインスタンスへ`authEndpoint`設定オプションを渡せば、独自の認可エンドポイントを指定できます。
@@ -370,6 +381,7 @@ Laravelへイベントをブロードキャストすることを知らせるた�
 
 認可コールバックは、最初の引数に現在認証中のユーザーを受け取ります。引き続き、追加のプレースホルダパラメータを指定します。この例の場合、チャンネル名中で"ID"の部分を表す、`{orderID}`プレースホルダーを使っています。
 
+<a name="authorization-callback-model-binding"></a>
 #### 認証コールバックモデル結合
 
 HTTPルートと同様にチャンネルルートでも、暗黙あるいは明白な[ルートモデル結合](/docs/{{version}}/routing#route-model-binding)を利用できます。たとえば、文字列や数値の注文IDを受け取る代わりに、実際の`Order`モデルインスタンスを要求できます。
@@ -380,6 +392,7 @@ HTTPルートと同様にチャンネルルートでも、暗黙あるいは明�
         return $user->id === $order->user_id;
     });
 
+<a name="authorization-callback-authentication"></a>
 #### 認可コールバックと認証
 
 プライベートとプレゼンス・ブロードキャスト・チャンネルは、アプリケーションのデフォルト認証ガードにより、現在のユーザーを認証します。ユーザーが認証されていない場合、チャンネルの許可は自動的に拒否され、認可コールバックは実行されません。しかし必要ならば、受信したリクエストを認証するカスタムガードを複数指定可能です。
@@ -466,6 +479,7 @@ HTTPルートと同様にチャンネルルートでも、暗黙あるいは明�
 
 > {note} イベントで`toOthers`メソッドを呼び出すには、`Illuminate\Broadcasting\InteractsWithSockets`トレイトを使用する必要があります。
 
+<a name="only-to-others-configuration"></a>
 #### 設定
 
 Laravel Echoインスタンスを初期化する時、接続へソケットIDをアサインします。[Vue](https://vuejs.org)と[Axios](https://github.com/mzabriskie/axios)を使用していれば、`X-Socket-ID`ヘッダとして、送信する全リクエストへ自動的に付加されます。そのため、`toOthers`メソッドを呼び出す場合、LaravelはヘッダからソケットIDを取り除き、そのソケットIDを使い全接続へブロードキャストしないように、ブロードキャスタに対し指示します。
@@ -502,6 +516,7 @@ Echoがインストールできたら、アプリケーションのJavaScriptで
         forceTLS: true
     });
 
+<a name="using-an-existing-client-instance"></a>
 #### 既存クライアントインスタンスの利用
 
 Echoで使用したいPusherチャンネルやSocket.ioクライアントを前もって用意してあれば、`client`設定オプションによりEchoへ指定できます。

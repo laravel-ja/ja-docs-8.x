@@ -36,6 +36,7 @@ Laravelフレームワークを動作させるには多少のシステム要件�
 
 Laravelは[Composer](https://getcomposer.org)を依存パッケージの管理に使用しています。ですから、Laravelを始める前に、自分の開発機にComposerを確実にインストールしておいてください。
 
+<a name="via-laravel-installer"></a>
 #### Laravelインストーラ
 
 最初にComposerを使用し、Laravelインストーラをダウンロードします。
@@ -58,12 +59,14 @@ Laravelは[Composer](https://getcomposer.org)を依存パッケージの管理�
 
 > {tip} ログイン、ユーザー登録などの機能を予め組み込んでいるLaravelプロジェクトを生成したいのですか？[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）を調べてみてください。
 
+<a name="via-composer-create-project"></a>
 #### Composer Create-Project
 
 ターミナルでComposerの`create-project`コマンドを実行し、Laravelをインストールする方法もあります。
 
     composer create-project --prefer-dist laravel/laravel blog
 
+<a name="local-development-server"></a>
 #### ローカル開発サーバ
 
 PHPがローカルにインストール済みで、PHPの組込み開発サーバをアプリケーションサーバとして使いたい場合は、`serve` Artisanコマンドを使用します。このコマンドは、開発サーバを`http://localhost:8000`として起動します。
@@ -75,24 +78,29 @@ PHPがローカルにインストール済みで、PHPの組込み開発サー�
 <a name="configuration"></a>
 ### 設定
 
+<a name="public-directory"></a>
 #### Publicディレクトリ
 
 Laravelをインストールできたら、Webサーバのドキュメント／Webルートが`public`ディレクトリになるように設定してください。このディレクトリの`index.php`は、アプリケーションへ送信された、全HTTPリクエストを始めに処理するフロントコントローラとして動作します。
 
+<a name="configuration-files"></a>
 #### 設定ファイル
 
 フレームワークで使用する設定ファイルは、すべて`config`ディレクトリ下に設置しています。それぞれのオプションにコメントがついていますので、使用可能なオプションを理解するため、ファイル全体に目を通しておくのが良いでしょう。
 
+<a name="directory-permissions"></a>
 #### ディレクトリパーミッション
 
 Laravelをインストールした後に、多少のパーミッションの設定が必要です。`storage`下と`bootstrap/cache`ディレクトリをWebサーバから書き込み可能にしてください。設定しないとLaravelは正しく実行されません。[Homestead](/docs/{{version}}/homestead)仮想マシンを使用する場合は、あらかじめ設定されています。
 
+<a name="application-key"></a>
 #### アプリケーションキー
 
 次にインストール後に行うべきなのは、アプリケーションキーにランダムな文字列を設定することです。ComposerかLaravelインストーラを使ってインストールしていれば、`php artisan key:generate`コマンドが、あらかじめ設定しています。
 
 通常、この文字列は３２文字にすべきです。キーは`.env`環境ファイルに設定されます。もし、`.env.example`ファイルをまだ`.env`へコピーしていなければ、今すぐ行ってください。**アプリケーションキーが設定されていなければ、ユーザーセッションや他の暗号化済みデーターは安全でありません！**
 
+<a name="additional-configuration"></a>
 #### その他の設定
 
 Laravelのその他の設定は、最初に指定する必要がありません。すぐに開発を開始しても大丈夫です！　しかし、`config/app.php`ファイルと、その中の記述を確認しておいたほうが良いでしょう。アプリケーションに合わせ変更したい、`timezone`や`local`のような多くのオプションが含まれています。
@@ -116,6 +124,7 @@ Laravelは常にWebサーバで設定した「Webディレクトリ」のルー�
 <a name="pretty-urls"></a>
 ### きれいなURL
 
+<a name="apache"></a>
 #### Apache
 
 URLパスにフロントコントローラの`index.php`を付けなくても良いように、Laravelは`public/.htaccess`ファイルを用意しています。LaravelをApache上で動作させるときは、確実に`mod_rewrite`モジュールを有効に設定し、そのサーバで`.htaccess`ファイルを動作させます。
@@ -132,6 +141,7 @@ Laravelに用意されている`.htaccess`ファイルが、インストール�
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 
+<a name="nginx"></a>
 #### Nginx
 
 Nginxを使用する場合は、すべてのリクエストが`index.php`フロントコントローラへ集まるように、サイト設定に以下のディレクティブを使用します。

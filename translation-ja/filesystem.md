@@ -58,6 +58,7 @@ LaravelはFrank de Jongeさんが作成した拝みたいほど素晴らしい�
 
     Storage::disk('local')->put('file.txt', 'Contents');
 
+<a name="permissions"></a>
 #### パーミッション
 
 `public`下の[パーミッション](#file-visibility)は、ディレクトリへ`0755`、ファイルへ`0664`を設定します。パーミッションは`filesystems`設定ファイルで変更可能です。
@@ -80,6 +81,7 @@ LaravelはFrank de Jongeさんが作成した拝みたいほど素晴らしい�
 <a name="driver-prerequisites"></a>
 ### ドライバ要件
 
+<a name="composer-packages"></a>
 #### Composerパッケージ
 
 SFTPかS3ドライバを使う前に、Composerで適切なパッケージをインストールしておく必要があります。
@@ -91,10 +93,12 @@ SFTPかS3ドライバを使う前に、Composerで適切なパッケージをイ
 
 - CachedAdapter: `league/flysystem-cached-adapter ~1.0`
 
+<a name="s3-driver-configuration"></a>
 #### S3ドライバ設定
 
 S3ドライバの設定情報は、`config/filesystems.php`設定ファイルにあります。このファイルはS3ドライバの設定配列のサンプルを含んでいます。この配列を自由に、自分のS3設定と認証情報に合わせて、変更してください。使いやすいように、環境変数はAWSで使用されている命名規約に合わせてあります。
 
+<a name="ftp-driver-configuration"></a>
 #### FTPドライバ設定
 
 Laravelのファイルシステム統合はFTPでも動作します。しかし、デフォルトでは、フレームワークの`filesystems.php`設定ファイルに、サンプルの設定を含めていません。FTPファイルシステムを設定する必要がある場合は、以下の設定例を利用してください。
@@ -113,6 +117,7 @@ Laravelのファイルシステム統合はFTPでも動作します。しかし�
         // 'timeout' => 30,
     ],
 
+<a name="sftp-driver-configuration"></a>
 #### SFTPドライバ設定
 
 Laravelのファイルシステム統合はSFTPできちんと動作します。しかし、デフォルトでは、フレームワークの`filesystems.php`設定ファイルに、サンプルの設定を含めていません。SFTPファイルシステムを設定する必要がある場合は、以下の設定例を利用してください。
@@ -200,6 +205,7 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
 
 > {note} `local`ドライバーを使用する場合、`url`の戻り値はURLエンコードされません。このため、有効なURLを作成する名前を使用してファイルを保存することをお勧めします。
 
+<a name="temporary-urls"></a>
 #### 一時的なURL
 
 `s3`ドライバを使用して保存したファイルに対し、指定ファイルの一時的なURLを作成する場合は、`temporaryUrl`メソッドを使用します。このメソッドはパスとURLの有効期限を指定する、`DateTime`インスタンスを引数に取ります。
@@ -219,6 +225,7 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
         ]
     );
 
+<a name="url-host-customization"></a>
 #### URLホストカスタマイズ
 
 `Storage`ファサードを使用し生成したファイルURLに対するホストを事前定義したい場合は、ディスク設定配列へ`url`オプションを追加してください。
@@ -263,6 +270,7 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
 
     Storage::put('file.jpg', $resource);
 
+<a name="automatic-streaming"></a>
 #### 自動ストリーミング
 
 指定したファイル位置のファイルのストリーミングを自動的にLaravelに管理させたい場合は、`putFile`か`putFileAs`メソッドを使います。このメソッドは、`Illuminate\Http\File`か`Illuminate\Http\UploadedFile`のインスタンスを引数に取り、希望する場所へファイルを自動的にストリームします。
@@ -282,6 +290,7 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
 
     Storage::putFile('photos', new File('/path/to/photo'), 'public');
 
+<a name="prepending-appending-to-files"></a>
 #### ファイルの先頭／末尾への追加
 
 `prepend`と`append`メソッドで、ファイルの初めと終わりに内容を追加できます。
@@ -290,6 +299,7 @@ Laravelのファイルシステム統合はSFTPできちんと動作します。
 
     Storage::append('file.log', 'Appended Text');
 
+<a name="copying-moving-files"></a>
 #### ファイルコピーと移動
 
 `copy`メソッドは、存在するファイルをディスク上の新しい場所へコピーするために使用します。一方の`move`メソッドはリネームや存在するファイルを新しい場所へ移動するために使用します。
@@ -332,6 +342,7 @@ Webアプリケーションで、ファイルを保存する一般的なケー�
 
     $path = Storage::putFile('avatars', $request->file('avatar'));
 
+<a name="specifying-a-file-name"></a>
 #### ファイル名の指定
 
 保存ファイルが自動的に命名されたくなければ、ファイルパスとファイル名、（任意で）ディスクを引数に持つ`storeAs`メソッドを使ってください。
@@ -348,6 +359,7 @@ Webアプリケーションで、ファイルを保存する一般的なケー�
 
 > {note} 印刷できない、または無効なユニコードは自動的にファイルパスから削除されます。そのため、Laravelのファイルストレージメソッドに渡す前に、ファイルパスをサニタライズしましょう。ファイルパスのノーマライズは、`League\Flysystem\Util::normalizePath`メソッドを使います。
 
+<a name="specifying-a-disk"></a>
 #### ディスクの指定
 
 デフォルトで、`store`メソッドはデフォルトディスクを使用します。他のディスクを指定したい場合は第２引数として、ディスク名を渡してください。
@@ -364,6 +376,7 @@ Webアプリケーションで、ファイルを保存する一般的なケー�
         's3'
     );
 
+<a name="other-file-information"></a>
 #### 他のファイル情報
 
 アップロードしたファイルの元の名前を知りたい場合は、`getClientOriginalName`メソッドを使います。
@@ -421,6 +434,7 @@ LaravelのFlysystem統合では、複数のプラットフォームにおける�
 <a name="directories"></a>
 ## ディレクトリ
 
+<a name="get-all-files-within-a-directory"></a>
 #### ディレクトリの全ファイル取得
 
 `files`メソッドは指定したディレクトリの全ファイルの配列を返します。指定したディレクトリのサブディレクトリにある全ファイルのリストも取得したい場合は、`allFiles`メソッドを使ってください。
@@ -431,6 +445,7 @@ LaravelのFlysystem統合では、複数のプラットフォームにおける�
 
     $files = Storage::allFiles($directory);
 
+<a name="get-all-directories-within-a-directory"></a>
 #### ディレクトリの全ディレクトリ取得
 
 `directories`メソッドは指定したディレクトリの全ディレクトリの配列を返します。指定したディレクトリ下の全ディレクトリと、サブディレクトリ下の全ディレクトリも取得したい場合は、`allDirectories`メソッドを使ってください。
@@ -440,12 +455,14 @@ LaravelのFlysystem統合では、複数のプラットフォームにおける�
     // 再帰的
     $directories = Storage::allDirectories($directory);
 
+<a name="create-a-directory"></a>
 #### ディレクトリ作成
 
 `makeDirectory`メソッドは必要なサブディレクトリを含め、指定したディレクトリを作成します。
 
     Storage::makeDirectory($directory);
 
+<a name="delete-a-directory"></a>
 #### ディレクトリ削除
 
 最後に、`deleteDirectory`メソッドは、ディレクトリと中に含まれている全ファイルを削除するために使用されます。

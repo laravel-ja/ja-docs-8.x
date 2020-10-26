@@ -39,6 +39,7 @@
         }
     }
 
+<a name="dependency-injection-route-parameters"></a>
 #### 依存注入とルートパラメータ
 
 もし、コントローラメソッドでルートパラメーターも併用したい場合は、依存の指定の後にルート引数を続けてリストしてください。たとえば次のようにルートを定義している場合：
@@ -70,6 +71,7 @@
         }
     }
 
+<a name="accessing-the-request-via-route-closures"></a>
 #### ルートクロージャでのリクエスト取得
 
 ルートクロージャでも`Illuminate\Http\Request`をタイプヒントで指定できます。そのルートが実行されると、送信されてきたリクエストをサービスコンテナが自動的にクロージャへ渡します。
@@ -85,6 +87,7 @@
 
 `Illuminate\Http\Request`インスタンスは、`Symfony\Component\HttpFoundation\Request`クラスを拡張しており、HTTPリクエストを調べるために数多くのメソッドを提供しています。提供されている便利なメソッドをいくつか紹介しましょう。
 
+<a name="retrieving-the-request-path"></a>
 #### リクエストURIの取得
 
 `path`メソッドはリクエストURIを返します。もしリクエストが`http://domain.com/foo/bar`に送られたとすると、`path`メソッドは`foo/bar`を返します。
@@ -97,6 +100,7 @@
         //
     }
 
+<a name="retrieving-the-request-url"></a>
 #### リクエストURLの取得
 
 送信されたリクエストの完全なURLを取得する場合は、`url`か`fullUrl`メソッドを使用してください。`url`メソッドはクエリストリングを除いたURLを返し、一方の`fullUrl`メソッドはクエリストリング付きで返します。
@@ -107,6 +111,7 @@
     // クエリ文字列付き
     $url = $request->fullUrl();
 
+<a name="retrieving-the-request-method"></a>
 #### リクエストメソッドの取得
 
 `method`メソッドはリクエストのHTTP動詞を返します。また、`isMethod`メソッドを使えば、指定した文字列とHTTP動詞が一致するかを調べることができます。
@@ -145,12 +150,14 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
 <a name="retrieving-input"></a>
 ## 入力の取得
 
+<a name="retrieving-all-input-data"></a>
 #### 全入力データの取得
 
 全入力を「配列」として受け取りたい場合は、`all`メソッドを使用します。
 
     $input = $request->all();
 
+<a name="retrieving-an-input-value"></a>
 #### 入力値の取得
 
 `Illuminate\Http\Request`インスタンスのシンプルなメソッドを利用すれば、ユーザー入力のすべてにアクセスできます。リクエストのHTTP動詞に気をもむ必要はありません。HTTP動詞にかかわらず、`input`メソッドでユーザー入力を取得できます。
@@ -171,6 +178,7 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
 
     $input = $request->input();
 
+<a name="retrieving-input-from-the-query-string"></a>
 #### クエリストリングからの入力取得
 
 `input`メソッドは、クエリストリングも含めたリクエストペイロード全体から、値を取得するのに対し、`query`メソッドはクエリストリングからのみ値を取得します。
@@ -185,6 +193,7 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
 
     $query = $request->query();
 
+<a name="retrieving-input-via-dynamic-properties"></a>
 #### 動的プロバティーでの入力取得
 
 `Illuminate\Http\Request`インスタンスに対する動的プロパティとして、ユーザーインプットにアクセスすることも可能です。たとえば、アプリケーションのフォーム上に`name`フィールドがあり、入力されたフィールド値にアクセスする場合は次のように行います。
@@ -193,18 +202,21 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
 
 動的プロパティが使われた場合、Laravelは最初にリクエスト本体のパラメータ値を探します。存在していない場合、次にルートパラメータ上のフィールドを探します。
 
+<a name="retrieving-json-input-values"></a>
 #### JSON入力値の取得
 
 アプリケーションにJSONリクエストが送られ、`Content-Type`ヘッダプロパティに`application/json`が指定されていたら、`input`メソッドによりJSON情報へアクセスできます。JSON配列の深い要素へアクセスするために、「ドット」記法も使用できます。
 
     $name = $request->input('user.name');
 
+<a name="retrieving-boolean-input-values"></a>
 #### 論理入力値の取得
 
 チェックボックスのようなHTML要素を取り扱う場合、アプリケーションが「実際」に受け取る値は文字列です。たとえば、"true"とか"on"です。これらの値を論理値で受け取れると便利なため、`boolean`メソッドが用意されています。`boolean`メソッドは1、"1"、true、"true"、"on"、"yes"には、`true`を返します。それ以外の場合は、すべて`false`を返します。
 
     $archived = $request->boolean('archived');
 
+<a name="retrieving-a-portion-of-the-input-data"></a>
 #### 入力データの一部取得
 
 入力データの一部を取得する必要があるなら、`only`や`except`メソッドが使用できます。両方のメソッドともに限定したい入力を「配列」や引数の並びとして指定します。
@@ -219,6 +231,7 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
 
 > {tip} `only` メソッドは要求したキー／値ペアを全部返しますが、リクエストに存在しない場合は、キー／値ペアを返しません。
 
+<a name="determining-if-an-input-value-is-present"></a>
 #### 入力値の存在チェック
 
 リクエストに値が存在するかを判定するには、`has`メソッドを使用します。`has`メソッドは、リクエストに値が存在する場合に、`true`を返します。
@@ -268,6 +281,7 @@ Laravelのデフォルトグローバルミドルウェアスタックには、`
 
 Laravelでは入力を次のリクエスト一回を処理するまで保存できます。これがとくに便利なのは、バリデーションにエラーがあった場合にフォームを再表示する時です。しかし、Laravelに含まれる[バリデーション機能](/docs/{{version}}/validation)を使っていれば、こうしたメソッドを自分で利用する必要はありません。組み込みバリデーション機能では自動的に利用します。
 
+<a name="flashing-input-to-the-session"></a>
 #### 入力をフラッシュデータとして保存
 
 `Illuminate\Http\Request`クラスの`flash`メソッドは、現在の入力を[セッション](/docs/{{version}}/session)へ、アプリケーションに要求される次のユーザーリクエストの処理中だけ利用できるフラッシュデータとして保存します。
@@ -280,6 +294,7 @@ Laravelでは入力を次のリクエスト一回を処理するまで保存で�
 
     $request->flashExcept('password');
 
+<a name="flashing-input-then-redirecting"></a>
 #### 入力保存後にリダイレクト
 
 入力をフラッシュデータとして保存する必要があるのは、直前のページヘリダイレクトする場合が多いでしょうから、`withInput`メソッドをリダイレクトにチェーンして簡単に、入力をフラッシュデータとして保存できます。
@@ -290,6 +305,7 @@ Laravelでは入力を次のリクエスト一回を処理するまで保存で�
         $request->except('password')
     );
 
+<a name="retrieving-old-input"></a>
 #### 直前のデータを取得
 
 直前のリクエストのフラッシュデータを取得するには、`Request`インスタンスに対し`old`メソッドを使用してください。`old`メソッドは[セッション](/docs/{{version}}/session)にフラッシュデータとして保存されている入力を取り出すために役に立ちます。
@@ -303,6 +319,7 @@ Laravelでは`old`グローバルヘルパ関数も用意しています。と�
 <a name="cookies"></a>
 ### クッキー
 
+<a name="retrieving-cookies-from-requests"></a>
 #### リクエストからクッキーを取得
 
 Laravelフレームワークが作成するクッキーはすべて暗号化され、認証コードで署名されています。つまりクライアントにより変更されると、無効なクッキーとして取り扱います。リクエストからクッキー値を取得するには、`Illuminate\Http\Request`インスタンスに対して`cookie`メソッドを使用してください。
@@ -315,6 +332,7 @@ Laravelフレームワークが作成するクッキーはすべて暗号化さ�
 
     $value = Cookie::get('name');
 
+<a name="attaching-cookies-to-responses"></a>
 #### レスポンスへクッキーを付ける
 
 送信する`Illuminate\Http\Response`インスタンスへ`cookie`メソッドを使い、クッキーを付加できます。このメソッドには、名前、値、それとこのクッキーが有効である分数を渡します。
@@ -335,6 +353,7 @@ Laravelフレームワークが作成するクッキーはすべて暗号化さ�
 
     Cookie::queue('name', 'value', $minutes);
 
+<a name="generating-cookie-instances"></a>
 #### Cookieインスタンスの生成
 
 後からレスポンスインスタンスへ付けることが可能な、`Symfony\Component\HttpFoundation\Cookie`インスタンスを生成したければ、`cookie`グローバルヘルパが使えます。このクッキーはレスポンスインスタンスへアタッチしない限り、クライアントへ送信されません。
@@ -343,6 +362,7 @@ Laravelフレームワークが作成するクッキーはすべて暗号化さ�
 
     return response('Hello World')->cookie($cookie);
 
+<a name="expiring-cookies-early"></a>
 #### 有効時間切れクッキー
 
 `Cookie`ファサードの`forget`メソッドにより、有効期間が切れたクッキーを削除できます。
@@ -373,6 +393,7 @@ Laravelフレームワークが作成するクッキーはすべて暗号化さ�
         //
     }
 
+<a name="validating-successful-uploads"></a>
 #### アップロードに成功したか確認
 
 ファイルが存在しているかに付け加え、`isValid`メソッドで問題なくアップロードできたのかを確認できます。
@@ -381,6 +402,7 @@ Laravelフレームワークが作成するクッキーはすべて暗号化さ�
         //
     }
 
+<a name="file-paths-extensions"></a>
 #### ファイルパスと拡張子
 
 `UploadedFile`クラスはファイルの絶対パスと拡張子へアクセスするメソッドも提供しています。`extension`メソッドは、ファイルのコンテンツを元に拡張子を推測します。この拡張子はクライアントから提供された拡張子と異なっている可能性があります。
@@ -389,6 +411,7 @@ Laravelフレームワークが作成するクッキーはすべて暗号化さ�
 
     $extension = $request->photo->extension();
 
+<a name="other-file-methods"></a>
 #### 他のファイルメソッド
 
 他にも、たくさんのメソッドが`UploadedFile`インスタンスに存在しています。[このクラスのAPIドキュメント](https://api.symfony.com/master/Symfony/Component/HttpFoundation/File/UploadedFile.html)で、より詳細な情報が得られます。
@@ -448,6 +471,7 @@ TLS／SSL証明を行うロードバランサの裏でアプリケーション�
 
 > {tip} AWS Elastic Load Balancingを使用している場合、`$headers`の値は`Request::HEADER_X_FORWARDED_AWS_ELB`に設定する必要があります。`$headers`で使用する内容の詳細は、Symfonyの[trusting proxies](https://symfony.com/doc/current/deployment/proxies.html)ドキュメントを参照してください。
 
+<a name="trusting-all-proxies"></a>
 #### 全プロキシを信用
 
 Amazon AWSや他の「クラウド」ロードバランサプロバイダを使用している場合は、実際のバランサのIPアドレスは分かりません。このような場合、全プロキシを信用するために、`*`を使います。

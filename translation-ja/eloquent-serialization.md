@@ -60,6 +60,7 @@ JSONでAPIを作成する場合にはモデルとリレーションを配列やJ
         return App\Models\User::all();
     });
 
+<a name="relationships"></a>
 #### リレーション
 
 EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属性として自動的にリレーションがロードされます。また、Eloquentのリレーションメソッドは「キャメルケース」で定義しますが、リレーションのJSON属性は「スネークケース」になります。
@@ -105,6 +106,7 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
         protected $visible = ['first_name', 'last_name'];
     }
 
+<a name="temporarily-modifying-attribute-visibility"></a>
 #### プロパティ配列出力管理の一時的変更
 
 特定のモデルインスタンスにおいて、通常は配列に含めない属性を含めたい場合は、`makeVisible`メソッドを使います。このメソッドは、メソッドチェーンしやすいようにモデルインスタンスを返します。
@@ -159,6 +161,7 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
 
 `appends`リストに属性を追加すれば、モデルの配列とJSON形式両方へ含まれるようになります。`appends`配列の属性もモデルの`visible`と`hidden`の設定に従い動作します。
 
+<a name="appending-at-run-time"></a>
 #### 実行時の追加
 
 一つのモデルインスタンスに対し、`append`メソッドにより属性を追加するように指示できます。もしくは、指定したモデルに対して、追加するプロパティの配列全体をオーバーライドするために、`setAppends`メソッドを使用します。
@@ -170,6 +173,7 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
 <a name="date-serialization"></a>
 ## 日付のシリアライズ
 
+<a name="customizing-the-default-date-format"></a>
 #### デフォルト日付形式のカスタマイズ
 
 `serializeDate`メソッドをオーバーライドすることにより、デフォルトの日付位形式をカスタマイズできます。
@@ -185,6 +189,7 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
         return $date->format('Y-m-d');
     }
 
+<a name="customizing-the-date-format-per-attribute"></a>
 #### 属性ごとに日付形式をカスタマイズ
 
 [キャスト宣言](/docs/{{version}}/eloquent-mutators#attribute-casting)で日付形式を指定することにより、Eloquent日付属性ごとにシリアライズ形式をカスタマイズできます。

@@ -21,6 +21,7 @@ Laravelは、アプリケーションにより管理されているアクティ�
 
 `web`ミドルウェアグループに含まれている、`VerifyCsrfToken` [ミドルウェア](/docs/{{version}}/middleware)が、リクエスト中のトークンとセッションに保存されているトークンが一致するか、確認しています。
 
+<a name="csrf-tokens-javascript"></a>
 #### CSRFトークンとJavaScript
 
 JacaScriptで駆動するアプリケーションを構築する場合、JavaScript HTTPライブラリーに対し、すべての送信リクエストへCSRFトークンを自動的に追加させると便利です。`resources/js/bootstrap.js`ファイルの中でデフォルトとして、Axios HTTPライブラリにより暗号化された`XSRF-TOKEN`クッキーの値を用い`X-XSRF-TOKEN`ヘッダを自動的に送信しています。このライブラリを使用しない場合、自身のアプリケーションでこの振る舞いを用意する必要があります。

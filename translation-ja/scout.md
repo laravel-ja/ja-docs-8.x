@@ -68,6 +68,7 @@ Scoutを厳格（リアルタイム）に利用する必要がないのであれ
 <a name="driver-prerequisites"></a>
 ### ドライバの事前要件
 
+<a name="algolia"></a>
 #### Algolia
 
 Algoliaドライバを使用する場合、Algolia `id`と`secret`接続情報を`config/scout.php`設定ファイルで設定する必要があります。接続情報を設定し終えたら、Algolia PHP SDKをComposerパッケージマネージャで、インストールする必要があります。
@@ -206,6 +207,7 @@ ScoutはAlgoliaを使用する場合、自動的にユーザーを識別しま�
 
     $order->save();
 
+<a name="adding-via-query"></a>
 #### クエリによる追加
 
 Eloquentクエリにより、検索インデックスへモデルのコレクションを追加したい場合は、Eloquentクエリに`searchable`メソッドをチェーンします。`searchable`メソッドは、クエリの[結果をチャンクへ分割](/docs/{{version}}/eloquent#chunking-results)し、レコードを検索エンジンへ追加します。この場合も、Scoutでキューを使用する設定をしていれば、キューワーカが全チャンクをバックグランドで追加します。
@@ -385,6 +387,7 @@ Scoutは検索クエリに対して"WHERE"節を単に追加する方法も提�
 <a name="custom-engines"></a>
 ## カスタムエンジン
 
+<a name="writing-the-engine"></a>
 #### エンジンのプログラミング
 
 組み込みのScout検索エンジンがニーズに合わない場合、独自のカスタムエンジンを書き、Scoutへ登録してください。エンジンは、`Laravel\Scout\Engines\Engine`抽象クラスを拡張してください。この抽象クラスは、カスタムエンジンが実装する必要のある、８つのメソッドを持っています。
@@ -402,6 +405,7 @@ Scoutは検索クエリに対して"WHERE"節を単に追加する方法も提�
 
 これらのメソッドの実装をレビューするために、`Laravel\Scout\Engines\AlgoliaEngine`クラスが役に立つでしょう。このクラスは独自エンジンで、各メソッドをどのように実装すればよいかの、良い取り掛かりになるでしょう。
 
+<a name="registering-the-engine"></a>
 #### エンジンの登録
 
 カスタムエンジンを書いたら、Scoutエンジンマネージャの`extend`メソッドを使用し、Scoutへ登録します。`AppServiceProvider`かアプリケーションで使用している他のサービスプロバイダの`boot`メソッドで、`extend`メソッドを呼び出してください。たとえば、`MySqlSearchEngine`を書いた場合、次のように登録します。

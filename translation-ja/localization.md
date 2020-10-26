@@ -51,6 +51,7 @@ Laravelのローカリゼーション機能はアプリケーションで多言�
 
     'fallback_locale' => 'en',
 
+<a name="determining-the-current-locale"></a>
 #### 現在のロケール判定
 
 現在のロケールを調べたり、特定のロケールであるかを判定したりするには、`App`ファサードの`getLocale`や`isLocale`を使います。

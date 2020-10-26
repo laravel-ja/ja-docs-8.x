@@ -87,10 +87,12 @@ Valetがインストールできたら、`ping foobar.test`のようなコマン
 
 Valetはマシンが起動されると、毎回デーモンを自動的に起動します。Valetが完全にインストールされていれば、`valet start`や`valet install`を再び実行する必要は永久にありません。
 
+<a name="database"></a>
 #### データベース
 
 データベースを使いたい場合、コマンドラインで`brew install mysql@5.7`を実行し、MySQLを試してください。MySQLがインストールできたら、`brew services start mysql@5.7`コマンドを使い、起動します。`127.0.0.1`でデータベースに接続し、ユーザー名は`root`、パスワードは空文字列です。
 
+<a name="php-versions"></a>
 #### PHPバージョン
 
 Valetでは`valet use php@version`コマンドにより、PHPバージョンを変更できます。指定されたPHPバージョンがインストールされていない場合、ValetはBrewによりインストールします。
@@ -101,6 +103,7 @@ Valetでは`valet use php@version`コマンドにより、PHPバージョンを�
 
 > {note} 複数のPHPバージョンをインストールしている場合でも、Valetは一度に一つのPHPバージョンのみを提供します。
 
+<a name="resetting-your-installation"></a>
 #### インストレーションのリセット
 
 Valetインストレーションが正しく動作せずに問題が起きた時は、`composer global update`の後に、`valet install`を実行してください。これによりインストール済みのValetがリセットされ、さまざまな問題が解決されます。稀にValetを「ハードリセット」する必要がある場合もあり、その場合は`valet install`の前に`valet uninstall --force`を実行してください。
@@ -156,6 +159,7 @@ Valetはデフォルトで通常のHTTP通信で接続します。しかし、HT
 
 Valetはローカルサイトをモバイルでテストしたり、チームメンバーや顧客と共有したりするため、世界に公開するコマンドも用意しています。Valetがインストールしてあれば、他のソフトウェアは必要ありません。
 
+<a name="sharing-sites-via-ngrok"></a>
 ### Ngrokを使用した公開
 
 サイトを共有するには、ターミナルでサイトのディレクトリに移動し、`valet share`コマンドを実行します。公開用のURLはクリップボードにコピーされますので、ブラウザに直接ペーストしてください。これだけでブラウザで閲覧したり、チームでシェアできます。
@@ -164,12 +168,14 @@ To stop sharing your site, hit `Control + C` to cancel the process.
 
 > {tip} 共有コマンドには、`valet share --region=eu`のようなオプションのパラメータを渡せます。詳しい情報は、[ngrokのドキュメント](https://ngrok.com/docs)をご覧ください。
 
+<a name="sharing-sites-via-expose"></a>
 ### Exposeによりサイトを共有する
 
 [Expose](https://beyondco.de/docs/expose)がインストールされている場合は、ターミナルでサイトのディレクトリへ移動し、`expose`コマンドを実行すればサイトを共有できます。サポートされているコマンドラインパラメータは、exposeドキュメントを参照してください。サイトを共有すると、Exposeは他のデバイスやチームメンバー間で使用できる共有可能URLを表示します。
 
 To stop sharing your site, hit `Control + C` to cancel the process.
 
+<a name="sharing-sites-on-your-local-network"></a>
 ### ローカルネットワークでのサイト共有
 
 Valetは内部の`127.0.0.1`インターフェイスへ送信されるトラフィックをデフォルトで制限しています。これにより、開発マシンをインターネットからのセキュリティリスクに晒すのを防いでいます。
@@ -229,6 +235,7 @@ Valetでサポートされていない、他のフレームワークやCMSでPHP
 
 カスタムValetドライバで実装する各メソッドのサンプルコードを見ていきましょう。
 
+<a name="the-serves-method"></a>
 #### `serves`メソッド
 
 `serves`メソッドは、そのドライバがやって来たリクエストを処理すべき場合に、`true`を返してください。それ以外の場合は`false`を返してください。そのためには、メソッドの中で、渡された`$sitePath`の内容が、動作させようとするプロジェクトタイプを含んでいるかを判定します。
@@ -248,6 +255,7 @@ Valetでサポートされていない、他のフレームワークやCMSでPHP
         return is_dir($sitePath.'/wp-admin');
     }
 
+<a name="the-isstaticfile-method"></a>
 #### `isStaticFile`メソッド
 
 `isStaticFile`はリクエストが画像やスタイルシートのような「静的」なファイルであるかを判定します。ファイルが静的なものであれば、そのファイルが存在するディスク上のフルパスを返します。リクエストが静的ファイルでない場合は、`false`を返します。
@@ -271,6 +279,7 @@ Valetでサポートされていない、他のフレームワークやCMSでPHP
 
 > {note} `isStaticFile`メソッドは、リクエストのURIが`/`ではなく、`serves`メソッドで`true`が返された場合のみ呼びだされます。
 
+<a name="the-frontcontrollerpath-method"></a>
 #### `frontControllerPath`メソッド
 
 `frontControllerPath`メソッドは、アプリケーションの「フロントコントローラ」への絶対パスを返します。通常は"index.php`ファイルか、似たようなファイルでしょう。

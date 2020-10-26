@@ -136,6 +136,7 @@ Parallelsプロバイダを使用するには、[Parallels Vagrantプラグイ�
 
 Because of [Vagrant limitations](https://www.vagrantup.com/docs/hyperv/limitations.html), the Hyper-V provider ignores all networking settings.
 
+<a name="installing-the-homestead-vagrant-box"></a>
 #### Homestead Vagrant Boxのインストール
 
 VirtualBox/VMwareとVagrantをインストールし終えたら、`laravel/homestead` boxをVagrantへ追加するため次のコマンドを端末で実行する必要があります。boxをダウンロードし終えるまで、接続速度にもよりますが数分かかるでしょう。
@@ -146,6 +147,7 @@ VirtualBox/VMwareとVagrantをインストールし終えたら、`laravel/homes
 
 > {note} Homesteadは定期的に「アルファ版／ベータ版」Boxをテストのためリリースしています。これは`vagrant box add`コマンドと干渉してしまいます。`vagrant box add`の実行で問題が起きたら、`vagrant up`コマンドを実行し、Vagrantが仮想マシンを開始する時点で正しいBoxをダウンロードしてください。
 
+<a name="installing-homestead"></a>
 #### Homesteadのインストール
 
 ホストマシンへリポジトリをクローンし、Homesteadをインストールできます。自分の「ホーム」ディレクトリの中の`Homestead`フォルダへリポジトリをクローンするのことは、自分のLaravel（とPHP）の全プロジェクトをホストしておくHomestead Boxを用意するのだと考えてください。
@@ -169,12 +171,14 @@ Homesteadリポジトリをクローンしたら、`Homestead.yaml`設定ファ�
 <a name="configuring-homestead"></a>
 ### Homestead設定
 
+<a name="setting-your-provider"></a>
 #### プロバイダの設定
 
 `Homestead.yaml`ファイル中の`provider`キーは、Vagrantのプロバイダとして、`virtualbox`、`vmware_fusion`、`vmware_workstation`、`parallels`、`hyperv`のどれを使用するかを指定します。使用するプロバイダの値を指定してください。
 
     provider: virtualbox
 
+<a name="configuring-shared-folders"></a>
 #### 共有フォルダの設定
 
 `Homestead.yaml`ファイルの`folders`プロパティには、Homestead環境と共有したい全フォルダがリストされています。これらのフォルダの中のファイルが変更されると、ローカルマシンとHomestead環境との間で同期されます。必要なだけ共有フォルダを設定してください！
@@ -215,6 +219,7 @@ Homesteadリポジトリをクローンしたら、`Homestead.yaml`設定ファ�
               rsync__args: ["--verbose", "--archive", "--delete", "-zz"]
               rsync__exclude: ["node_modules"]
 
+<a name="configuring-nginx-sites"></a>
 #### Nginxサイトの設定
 
 Nginxには詳しくない？　問題ありません。`sites`プロパティでHomestead環境上のフォルダと「ドメイン」を簡単にマップできます。サイト設定のサンプルは、`Homestead.yaml`ファイルに含まれています。これも必要に応じ、Homestead環境へサイトを好きなだけ追加してください。便利に使えるよう、Homesteadは皆さんが作業するすべてのLaravelプロジェクトの仮想環境を提供します。
@@ -227,6 +232,7 @@ Nginxには詳しくない？　問題ありません。`sites`プロパティ�
 
 > {note} Homesteadのスクリプトは可能な限り冪等性を保つように組まれています。しかしながら、プロビジョニング中に問題が起きたら、`vagrant destroy && vagrant up`によりマシンを壊し、再構築してください。
 
+<a name="enable-disable-services"></a>
 #### サービスの有効／無効
 
 Homesteadはデフォルトで多くのサービスを起動します。プロビジョニング時にサービスの有効／無効をカスタマイズ可能です。例として、PostgreSQLを有効にし、MySQLを無効にしてみます。
@@ -315,20 +321,24 @@ Windows：
         - solr: true
         - webdriver: true
 
+<a name="mariadb"></a>
 #### MariaDB
 
 MariaDBを有効にすると、MySQLを削除してMariaDBをインストールします。MariaDBはMySQLのそのまま置き換え可能な代替機能として動作します。そのため、アプリケーションのデータベース設定では、`mysql`データベースドライバをそのまま使ってください。
 
+<a name="mongodb"></a>
 #### MongoDB
 
 デフォルト状態のMongoDBでは、データベースのユーザー名を`homestead`、パスワードを`secret`に設定します。
 
+<a name="elasticsearch"></a>
 #### Elasticsearch
 
 デフォルトのインストールでは、`homestead`という名前のクラスタが作成されます。Elasticsearchにオペレーティングシステムのメモリの半分以上を割り当ててはいけません。つまり、Elasticsearchに割り当てる量の最低でも２倍以上のメモリをHomesteadマシンに割り当てます。
 
 > {tip} 設定のカスタマイズについては、[Elasticsearchのドキュメント](https://www.elastic.co/guide/en/elasticsearch/reference/current)を確認してください。
 
+<a name="neo4j"></a>
 #### Neo4j
 
 デフォルト状態のNeo4jでは、データベースのユーザー名を`homestead`、パスワードを`secret`として設定します。Neo4jブラウザにアクセスするには、Webブラウザで`http://homestead.test:7474`にアクセスしてください。Neo4jクライアントのために、`7687` (Bolt)、`7474` (HTTP)、`7473` (HTTPS)ポートが用意されています。
@@ -351,6 +361,7 @@ HomesteadでBashのエイリアスを指定するには、Homesteadディレク�
 
 MacとLinuxシステムでは、Bashプロファイルへ簡単なBash関数を追加すれば実現できます。Windowsでは、`PATH`に「バッチ」ファイルを追加すれば、行えます。以下のスクリプトはシステムのどこからでも、どんなVagrantコマンドでも実行できるようにし、自動的にHomesteadをインストール済みのディレクトリで実行します。
 
+<a name="mac-linux"></a>
 #### Mac / Linux
 
     function homestead() {
@@ -359,6 +370,7 @@ MacとLinuxシステムでは、Bashプロファイルへ簡単なBash関数を�
 
 エイリアス中の`~/Homestead`パスを実際のHomesteadインストール場所を示すように調整してください。関数がインストールできたら、システムのどこからでも`homestead up`や`homestead ssh`のように実行できます。
 
+<a name="windows"></a>
 #### Windows
 
 以下の内容の`homestead.bat`バッチファイルを、マシン上に作成してください。
@@ -568,6 +580,7 @@ Minioを使用するために、`config/filesystems.php`設定ファイルの中
 - **Minio:** 9600 &rarr; フォワード先 9600
 </div>
 
+<a name="forwarding-additional-ports"></a>
 #### 追加のフォワードポート
 
 ご希望ならば追加のポートをVagrant Boxへフォワードすることもできます。プロトコルを指定することもできます。
@@ -653,6 +666,7 @@ PHP CLIアプリケーションをデバッグするには、Vagrant Box内で�
 
     xphp path/to/script
 
+<a name="autostarting-xdebug"></a>
 #### Xdebugの自動スタート
 
 Webサーバへのリクエストを生成する機能テストのデバッグの場合、デバッグを開始するためにカスタムヘッダやクッキーを付与するようにテストを変更するよりは、自動的に起動するほうが簡単です。Xdebugを自動的に起動するよう強制するには、Vagrant Boxの中で以下のように`/etc/php/7.x/fpm/conf.d/20-xdebug.ini`を変更してください。
@@ -679,6 +693,7 @@ Blackfireを有効にするためには、Homestead設定ファイルの"feature
 
 Blackfireサーバ設定項目とクライアント設定項目には、[ユーザーアカウントが必要です](https://blackfire.io/signup)。BlackfireはCLIツールやブラウザ拡張を含んだ、アプリケーションのプロファイルに使用するさまざまなオプションを用意しています。[詳細についてはBlackfireのドキュメント](https://blackfire.io/docs/cookbooks/index)をご覧ください。
 
+<a name="profiling-php-performance-using-xhgui"></a>
 ### XHGuiを使用した、PHPパフォーマンスのプロファイリング
 
 [XHGui](https://www.github.com/perftools/xhgui)はPHPアプリケーションのパフォーマンスを表示してくれるユーザーインターフェイスです。XHGuiを有効にするには、サイト設定に`xhgui: 'true'`を追加してください。
@@ -738,6 +753,7 @@ Homesteadをカスタマイズすると、Ubuntuはパッケージのオリジ�
         -o Dpkg::Options::="--force-confold" \
         install your-package
 
+<a name="user-customizations"></a>
 ### ユーザーによるカスタマイズ
 
 チームの設定でHomesteadを使用している場合でも、自分の個人的な開発スタイルに合うようにHomesteadを調整したくなることでしょう。`Homestead.yaml`が含まれるHomesteadのルートディレクトリに、`user-customizations.sh`を作成してください。このファイルの中で、好きなようにカスタマイズを行なってください。ただし、この`user-customizations.sh`はバージョンコントロールに含めてはいけません。
@@ -783,6 +799,7 @@ Homesteadの更新を開始する前に、現在の仮想マシンを削除す�
 <a name="provider-specific-virtualbox"></a>
 ### VirtualBox
 
+<a name="natdnshostresolver"></a>
 #### `natdnshostresolver`
 
 デフォルトのHomestead設定は、`natdnshostresolver`設定を`on`にしています。これにより、HomesteadはホストのオペレーティングシステムのDNS設定を利用します。この動作をオーバーライドしたい場合は、`Homestead.yaml`へ以下の行を追加してください。
@@ -790,6 +807,7 @@ Homesteadの更新を開始する前に、現在の仮想マシンを削除す�
     provider: virtualbox
     natdnshostresolver: 'off'
 
+<a name="symbolic-links-on-windows"></a>
 #### Windowsでのシンボリックリンク
 
 Windowsマシンでシンボリックリンクが正しく動かない場合は、`Vagrantfile`に以下のコードブロックを追加する必要があります。

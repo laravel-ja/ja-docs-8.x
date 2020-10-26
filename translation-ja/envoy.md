@@ -30,6 +30,7 @@
 
 > {note} `envoy`コマンドを端末で実行するときに`envoy`の実行ファイルが見つかるように`$HOME/.config/composer/vendor/bin`、もしくは`$HOME/.composer/vendor/bin`ディレクトリに実行パスを通しておくのを忘れないでください。
 
+<a name="updating-envoy"></a>
 #### Envoyの更新
 
 インストールしたEnvoyをアップデートするためにも、Composerを使用します。`composer global update`コマンドの実行により、インストール済みのグローバルComposerパッケージがすべてアップデートされます。
@@ -134,6 +135,7 @@ Envoyでは、複数のサーバに渡りタスクを実行するのも簡単で
         php artisan migrate
     @endtask
 
+<a name="parallel-execution"></a>
 #### 並列実行
 
 デフォルトでタスクは各サーバで順番に実行されます。つまり最初のサーバで実行を終えたら、次のサーバで実行されます。タスクを複数サーバで並列実行したい場合は、タスク宣言に`parallel`オプションを追加してください。

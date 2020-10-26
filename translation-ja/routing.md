@@ -33,6 +33,7 @@
         return 'Hello World';
     });
 
+<a name="the-default-route-files"></a>
 #### デフォルトルート定義ファイル
 
 Laravelの全ルートは、`routes`ディレクトリ下に設置されている、ルートファイルで定義されます。これらのファイルはフレームワークにより、自動的に読み込まれます。`routes/web.php`ファイルで、Webインターフェイスのルートを定義します。定義されたルートは`web`ミドルウェアグループにアサインされ、セッション状態やCSRF保護などの機能が提供されます。`routes/api.php`中のルートはステートレスで、`api`ミドルウェアグループにアサインされます。
@@ -45,6 +46,7 @@ Laravelの全ルートは、`routes`ディレクトリ下に設置されてい�
 
 `routes/api.php`ファイル中で定義したルートは`RouteServiceProvider`により、ルートグループの中にネストされます。このグループには、`/api`のURIが自動的にプレフィックスされ、それによりこのファイル中の全ルートにわざわざ指定する必要はありません。プレフィックスや他のルートグループオプションに変更する場合は、`RouteServiceProvider`を変更してください。
 
+<a name="available-router-methods"></a>
 #### 使用可能なルート定義メソッド
 
 ルータはHTTP動詞に対応してルートを定義できるようにしています。
@@ -66,6 +68,7 @@ Laravelの全ルートは、`routes`ディレクトリ下に設置されてい�
         //
     });
 
+<a name="csrf-protection"></a>
 #### CSRF保護
 
 `web`ルートファイル中で定義され、`POST`、`PUT`、`PATCH`、`DELETE`ルートへ送信されるHTMLフォームはすべて、CSRFトークンフィールドを含んでいる必要があります。含めていないと、そのリクエストは拒否されます。CSRF保護についての詳細は、[CSRFのドキュメント](/docs/{{version}}/csrf)をご覧ください。
@@ -90,6 +93,8 @@ Laravelの全ルートは、`routes`ディレクトリ下に設置されてい�
 
     Route::permanentRedirect('/here', '/there');
 
+> {注}リダイレクトルートでルートパラメータを使用する場合、`destination`と`status`パラメータは、Laravelにより予約されているため、使用できません。
+
 <a name="view-routes"></a>
 ### ビュールート
 
@@ -98,6 +103,8 @@ Laravelの全ルートは、`routes`ディレクトリ下に設置されてい�
     Route::view('/welcome', 'welcome');
 
     Route::view('/welcome', 'welcome', ['name' => 'Taylor']);
+
+> {注}ビュールートでルートパラメータを使用する場合、`view`、`data`、`status`、`headers`パラメータはLaravelにより予約されいるため、使用できません。
 
 <a name="route-parameters"></a>
 ## ルートパラメーター
@@ -196,6 +203,7 @@ Laravelのルーティングコンポーネントは、`/`を除くすべての�
 
 > {note} ルート名は常に一意にしてください。
 
+<a name="generating-urls-to-named-routes"></a>
 #### 名前付きルートへのURLを生成する
 
 ルートに一度名前を付ければ、その名前をグローバルな`route`関数で使用すれば、URLを生成したり、リダイレクトしたりできます。
@@ -226,6 +234,7 @@ Laravelのルーティングコンポーネントは、`/`を除くすべての�
 
 > {tip} たとえば現在のローケルのように、URLパラメータへ複数回のリクエスト間に渡るデフォルト値を指定したい場合も時々あります。このためには、[`URL::defaults`メソッド](/docs/{{version}}/urls#default-values)を使用して下さい。
 
+<a name="inspecting-the-current-route"></a>
 #### 現在ルートの検査
 
 現在のリクエストが指定した名前付きルートのものであるかを判定したい場合は、Routeインスタンスの`named`メソッドを使います。たとえば、ルートミドルウェアから、現在のルート名を判定できます。
@@ -319,6 +328,19 @@ Laravelはタイプヒントされた変数名とルートセグメント名が�
 
 `$user`変数が`App\Models\User` Eloquentモデルとしてタイプヒントされており、変数名が`{user}` URIセグメントと一致しているため、Laravelは、リクエストされたURIの対応する値に一致するIDを持つ、モデルインスタンスを自動的に注入します。一致するモデルインスタンスがデータベースへ存在しない場合、404 HTTPレスポンスが自動的に生成されます。
 
+もちろん、コントローラメソッドを使用する場合でも、暗黙的な結合は可能です。繰り返しますが、`{user}` URIセグメントは`App\Models\User`タイプヒントを含むコントローラの`$user`変数と一致することに注意してください。
+
+    use App\Http\Controllers\UserController;
+    use App\Models\User;
+
+    Route::get('users/{user}', [UserController::class, 'show']);
+
+    public function show(User $user)
+    {
+        return view('user.profile', ['user' => $user]);
+    }
+
+<a name="customizing-the-key"></a>
 #### キーのカスタマイズ
 
 `id`以外のカラムを使用するEloquentモデルでも暗黙の結合を使いたい場合があるでしょう。それには、ルートパラメータ定義でカラムを指定してください。
@@ -341,6 +363,7 @@ Laravelはタイプヒントされた変数名とルートセグメント名が�
 
 カスタムなキーを付けた暗黙の結合をネストしたルートパラメータで使用するとき、親で定義されるリレーションは慣習にしたがい名付けられているだろうとLaravelは推測し、ネストしたモデルへのクエリを自動的に制約します。この場合、`User`モデルには`Post`モデルを取得するために`posts`（ルートパラメータ名の複数形）という名前のリレーションがあると想定します。
 
+<a name="customizing-the-default-key-name"></a>
 #### デフォルトキー名のカスタマイズ
 
 特定のモデルの取得時に、`id`以外のデフォルトデータベースカラム名を使用しモデル結合したい場合は、そのEloquentモデルの`getRouteKeyName`メソッドをオーバーライドしてください。
@@ -382,6 +405,7 @@ Laravelはタイプヒントされた変数名とルートセグメント名が�
 
 一致するモデルインスタンスがデータベース上に見つからない場合、404 HTTPレスポンスが自動的に生成されます。
 
+<a name="customizing-the-resolution-logic"></a>
 #### 依存解決ロジックのカスタマイズ
 
 独自の依存解決ロジックを使いたい場合は、`Route::bind`メソッドを使います。`bind`メソッドに渡す「クロージャ」は、URIセグメントの値を受け取るので、ルートへ注入したいクラスのインスタンスを返してください。
@@ -412,6 +436,21 @@ Laravelはタイプヒントされた変数名とルートセグメント名が�
     public function resolveRouteBinding($value, $field = null)
     {
         return $this->where('name', $value)->firstOrFail();
+    }
+
+ルートが[暗黙的な結合のスコープ](#implicit-model-binding-scoping)を利用している場合、親モデルの子結合を依存解決するために、`resolveChildRouteBinding`メソッドをします。
+
+    /**
+     * 値を結合する子モデルの取得
+     *
+     * @param  string  $childType
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveChildRouteBinding($childType, $value, $field)
+    {
+        return parent::resolveChildRouteBinding($childType, $value, $field);
     }
 
 <a name="fallback-routes"></a>
@@ -458,6 +497,7 @@ Laravelは指定ルートまたはルートグループのトラフィック量�
                     : Limit::perMinute(100);
     });
 
+<a name="segmenting-rate-limits"></a>
 #### 分割レート制限
 
 レート制限を任意の値で分割したい場合があります。たとえば、ユーザーが指定ルートへIPアドレスごとに1分あたり100回のアクセスを許可したいとします。これを行うには、レート制限の作成時に`by`メソッドを使用します。
@@ -468,6 +508,7 @@ Laravelは指定ルートまたはルートグループのトラフィック量�
                     : Limit::perMinute(100)->by($request->ip());
     });
 
+<a name="multiple-rate-limits"></a>
 #### 複数のレート制限
 
 必要であれば、指定するレート制限設定の配列を返せます。各レート制限は配列内で配置された順序に基づき、ルートに対して評価されます。
@@ -493,6 +534,13 @@ Laravelは指定ルートまたはルートグループのトラフィック量�
             //
         });
     });
+
+<a name="throttling-with-redis"></a>
+#### Redis使用時の利用回数制限
+
+通常、`throttle`ミドルウェアは`Illuminate\Routing\Middleware\ThrottleRequests`クラスへマップされます。このマッピングは、アプリケーションのHTTPカーネルで定義されています。ただし、アプリケーションのキャッシュドライバーとしてRedisを使用している場合はこのマッピングを変更して、`Illuminate\Routing\Middleware\ThrottleRequestsWithRedis`クラスを使用することをおすすめします。このクラスは、レート制限の管理でより効率的にRedisを使用します。
+
+    'throttle' => \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
 
 <a name="form-method-spoofing"></a>
 ## 擬似フォームメソッド

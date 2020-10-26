@@ -60,6 +60,7 @@ LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github
 
     ],
 
+<a name="configuring-the-connection-scheme"></a>
 #### 接続スキームの設定
 
 デフォルトでRedisサーバへの接続に、`tcp`スキームをRedisクライアントは使用します。しかし、Redisサーバ接続設定の`scheme`設定オプションを指定すれば、TLS／SSL暗号化を使用できます。
@@ -78,6 +79,7 @@ LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github
 
     ],
 
+<a name="configuring-clusters"></a>
 #### クラスタ設定
 
 アプリケーションでRedisサーバのクラスタを使用している場合は、Redis設定の`clusters`キーで定義する必要があります。
@@ -167,6 +169,7 @@ PhpRedis拡張は、`config/database.php`の中で`REDIS_CLIENT`環境変数の�
         ],
     ],
 
+<a name="the-redis-facade"></a>
 #### Redisファサード
 
 Redis PHP拡張自身と名前が衝突するのを避けるため、`app`設定ファイルの`aliases`配列から`Illuminate\Support\Facades\Redis`ファサードエイリアスを削除かリネームする必要があります。一般的には、このエイリアスを完全に取り除き、Redis PHP拡張を使用するときに完全なクラス名を指定することで、ファサードを参照するに留めるべきです。
@@ -209,6 +212,7 @@ Redis PHP拡張自身と名前が衝突するのを避けるため、`app`設定
 
     $values = Redis::command('lrange', ['name', 5, 10]);
 
+<a name="using-multiple-redis-connections"></a>
 #### 複数のRedis接続の使用
 
 Redisインスタンスを`Redis::connection`メソッドの呼び出しで取得できます。
@@ -281,6 +285,7 @@ Redisインスタンスを`Redis::connection`メソッドの呼び出しで取�
         Redis::publish('test-channel', json_encode(['foo' => 'bar']));
     });
 
+<a name="wildcard-subscriptions"></a>
 #### ワイルドカード購入
 
 `psubscribe`メソッドでワイルドカードチャネルに対し購入できます。全チャンネルの全メッセージを補足するために便利です。`$channel`名は指定するコールバック「クロージャ」の第２引数として渡されます。

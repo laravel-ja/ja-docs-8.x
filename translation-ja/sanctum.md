@@ -29,12 +29,14 @@ Laravel Sanctum（サンクタム：聖所）はSPA（Single Page Applications�
 
 Laravel Sanctumは、2つの別個の問題を解決するために存在します。
 
+<a name="how-it-works-api-tokens"></a>
 #### APIトークン
 
 １つ目はOAuthの煩雑さなしにユーザーへAPIトークンを発行するためのシンプルなパッケージの提供です。たとえば、ユーザーがAPIトークンを自分のアカウントへ生成すると想像してください。アプリケーションへ「アカウント設定」ページを用意するでしょう。こうしたトークンを生成し、管理するためにSanctumが使われます。こうしたトークンへは通常数年にも渡る、とても長い有効期間を指定します。しかし、ユーザー自身はいつでも破棄可能です。
 
 この機能を実現するため、Laravel Sanctumは一つのデータベーステーブルへユーザーのAPIトークンを保存しておき、受信したリクエストが`Authorization`ヘッダに有効なAPIトークンを含んでいるかにより認証します。
 
+<a name="how-it-works-spa-authentication"></a>
 #### SPA認証
 
 ２つ目の存在理由は、Laravelが提供するAPIを使用し通信する必要があるシングルページアプリケーション(SPA)へ、シンプルな認証方法を提供するためです。こうしたSPAはLaravelアプリケーションと同じリポジトリにあっても、まったく別のリポジトリに存在していてもかまいません。たとえばSPAがVue CLIを使用して生成された場合などです。
@@ -66,6 +68,7 @@ SPAの認証のためにSanctumを活用しようと計画している場合は�
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ],
 
+<a name="migration-customization"></a>
 #### マイグレーションのカスタマイズ
 
 Sanctumのデフォルトマイグレーションを使用しない場合は、`AppServiceProvider`の`register`メソッドの中で、`Sanctum::ignoreMigrations`を必ず呼び出してください。デフォルトマイグレーションは、`php artisan vendor:publish --tag=sanctum-migrations`を使えばエクスポートできます。
@@ -151,12 +154,14 @@ Sanctumはこの機能の実現のためにトークンは一切使用しませ�
 <a name="spa-configuration"></a>
 ### 設定
 
+<a name="configuring-your-first-party-domains"></a>
 #### ファーストパーティドメインの設定
 
 最初に、どのドメインから皆さんのSPAがリクエストを作成するのか設定する必要があります。`sanctum`設定ファイルの`stateful`設定オプションを利用してこのドメインを指定します。この設定を元にして皆さんのAPIへリクエストを作成するときに、Laravelのセッションクッキーを使用することで「ステートフル」な認証を維持する必要があるドメインを判断します。
 
 > {note} ポート（`127.0.0.1：8000`）を含むURLによりアプリケーションにアクセスする場合は、ドメインにポート番号を含める必要があります。
 
+<a name="sanctum-middleware"></a>
 #### Sanctumミドルウェア
 
 次に、`app/Http/Kernel.php`ファイル中の`api`ミドルウェアグループへ、Sanctumのミドルウェアを追加する必要があります。このミドルウェアは皆さんのSPAから受信するリクエストが、Laravelのセッションクッキーを使用して確実に認証できるようにする責任を負っています。同時に、サードパーティやモバイルアプリからのリクエストに対し、APIトークンを使用した認証ができるようにしています。

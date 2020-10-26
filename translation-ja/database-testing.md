@@ -227,12 +227,14 @@ You may create a collection of many models using the `count` method:
         return \Database\Factories\Administration\FlightFactory::new();
     }
 
+<a name="applying-states"></a>
 #### ステートの適用
 
 こうしたモデルに対して[ステート](#factory-states)を適用することもできます。複数の状態遷移を適用したい場合は、シンプルにステートメソッドを直接呼び出します。
 
     $users = User::factory()->count(5)->suspended()->make();
 
+<a name="overriding-attributes"></a>
 #### 属性のオーバーライド
 
 モデルのデフォルト値をオーバーライドしたい場合は、`make`メソッドに配列で値を渡してください。指定した値のみ置き換わり、残りの値はファクトリで指定したデフォルト値のまま残ります。
@@ -364,6 +366,7 @@ You may create a collection of many models using the `count` method:
                 )
                 ->create();
 
+<a name="has-many-relationships-using-magic-methods"></a>
 #### マジックメソッドの使用
 
 リレーションシップを定義するため便利なように、ファクトリのマジックリレーションメソッドを使用できます。たとえば以下の例では、関連するモデルが`User`モデル上の`posts`リレーションメソッドを介して作成されるべきであることを決定するように記法を使用します。
@@ -403,6 +406,7 @@ You may create a collection of many models using the `count` method:
                 ]))
                 ->create();
 
+<a name="belongs-to-relationships-using-magic-methods"></a>
 #### マジックメソッドの使用
 
 "belongs to"リレーションを定義するのに便利なように、ファクトリのマジックリレーションメソッドを使用できます。たとえば次の例は記法を使用し、３つのポストが`Post`モデルの`user`リレーションに属することを決定します
@@ -426,6 +430,7 @@ You may create a collection of many models using the `count` method:
                 ->has(Role::factory()->count(3))
                 ->create();
 
+<a name="pivot-table-attributes"></a>
 #### 中間テーブルの属性
 
 モデルにリンクするピボット／中間テーブルへセットする属性を定義する必要がある場合は、`hasAttached`メソッドを使用します。このメソッドは第２引数としてピボットテーブルの属性名と値の配列を引数に取ります。
@@ -453,6 +458,7 @@ You may create a collection of many models using the `count` method:
                 )
                 ->create();
 
+<a name="many-to-many-relationships-using-magic-methods"></a>
 #### マジックメソッドの使用
 
 ファクトリのマジックリレーションメソッドを使用して、多対多のリレーションを便利に定義できます。たとえば次の例では、関連するモデルが`User`モデル上の`roles`リレーションメソッドを介して作成されるべきだと決めるため記法を使用しています。
@@ -472,6 +478,7 @@ You may create a collection of many models using the `count` method:
 
     $post = Post::factory()->hasComments(3)->create();
 
+<a name="morph-to-relationships"></a>
 #### Morph Toリレーション
 
 マジックメソッドは`morphTo`リレーションを作成するために使用できません。代わりに`for`メソッドを直接使用し、リレーション名を明白に指定する必要があります。たとえば、`Comment`モデルが`morphTo`リレーションを定義する`commentable`メソッドを持っていると想像してください。この状況で、`for`メソッドを直接使用し１つのポストに所属する３コメントを作成してみましょう。
@@ -480,6 +487,7 @@ You may create a collection of many models using the `count` method:
         Post::factory(), 'commentable'
     )->create();
 
+<a name="polymorphic-many-to-many-relationships"></a>
 #### Polymorphic Many To Manyリレーション
 
 ポリモーフィック"many to many"リレーションは、ポリモーフィックではない"many to many"と同様に作成できます。

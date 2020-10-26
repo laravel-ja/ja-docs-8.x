@@ -77,6 +77,7 @@ Passportサービスプロバイダはフレームワークに対し、自身の
 
     namespace App\Models;
 
+    use Illuminate\Database\Eloquent\Factories\HasFactory
     use Illuminate\Foundation\Auth\User as Authenticatable;
     use Illuminate\Notifications\Notifiable;
     use Laravel\Passport\HasApiTokens;
@@ -262,6 +263,7 @@ OAuth2で認可コードを使いこなせるかは、どの程度開発者がOA
 
 あなたのアプリケーションのAPIと連携する必要のある、アプリケーションを構築しようとしている開発者たちは、最初に「クライアント」を作成することにより、彼らのアプリケーションを登録しなくてはなりません。通常、アプリケーションの名前と、許可のリクエストをユーザーが承認した後に、アプリケーションがリダイレクトされるURLにより、登録情報は構成されます。
 
+<a name="the-passportclient-command"></a>
 #### `passport:client`コマンド
 
 クライアントを作成する一番簡単な方法は、`passport:client` Artisanコマンドを使うことです。このコマンドは、OAuth2の機能をテストするため、皆さん自身のクライアントを作成する場合に使用できます。`client`コマンドを実行すると、Passportはクライアントに関する情報の入力を促し、クライアントIDとシークレットを表示します。
@@ -276,6 +278,7 @@ OAuth2で認可コードを使いこなせるかは、どの程度開発者がOA
 
 > {note} カンマを含んでいるURLは、エンコードしてください。
 
+<a name="clients-json-api"></a>
 #### JSON API
 
 皆さんのアプリのユーザーは`client`コマンドを使用できないわけですから、Passportはクライアント作成のJSON APIを提供しています。これにより、クライアントを作成、更新、削除するコントローラをわざわざコードする手間を省略できます。
@@ -284,6 +287,7 @@ OAuth2で認可コードを使いこなせるかは、どの程度開発者がOA
 
 JSON APIは`web`と`auth`ミドルウェアにより保護されています。そのため、みなさん自身のアプリケーションからのみ呼び出せます。外部ソースから呼び出すことはできません。
 
+<a name="get-oauthclients"></a>
 #### `GET /oauth/clients`
 
 このルートは認証されたユーザーの全クライアントを返します。ユーザーのクライアントの全リストは、主にクライアントを編集、削除する場合に役立ちます。
@@ -293,6 +297,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
             console.log(response.data);
         });
 
+<a name="post-oauthclients"></a>
 #### `POST /oauth/clients`
 
 このルートは新クライアントを作成するために使用します。これには２つのデータが必要です。クライアントの名前（`name`）と、リダイレクト（`redirect`）のURLです。`redirect`のURLは許可のリクエストが承認されるか、拒否された後のユーザーのリダイレクト先です。
@@ -312,6 +317,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
             // レスポンス上のエラーのリスト
         });
 
+<a name="put-oauthclientsclient-id"></a>
 #### `PUT /oauth/clients/{client-id}`
 
 このルートはクライアントを更新するために使用します。それには２つのデータが必要です。クライアントの`name`と`redirect`のURLです。`redirect`のURLは許可のリクエストが承認されるか、拒否され後のユーザーのリダイレクト先です。このルートは更新されたクライアントインスタンスを返します。
@@ -329,6 +335,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
             // レスポンス上のエラーのリスト
         });
 
+<a name="delete-oauthclientsclient-id"></a>
 #### `DELETE /oauth/clients/{client-id}`
 
 このルートはクライアントを削除するために使用します。
@@ -341,6 +348,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
 <a name="requesting-tokens"></a>
 ### トークンのリクエスト
 
+<a name="requesting-tokens-redirecting-for-authorization"></a>
 #### 許可のリダイレクト
 
 クライアントが作成されると、開発者はクライアントIDとシークレットを使用し、あなたのアプリケーションへ許可コードとアクセストークンをリクエストするでしょう。まず、API利用側アプリケーションは以下のように、あなたのアプリケーションの`/oauth/authorize`ルートへのリダイレクトリクエストを作成する必要があります。
@@ -361,6 +369,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
 
 > {tip} `/oauth/authorize`ルートは、すでに`Passport::routes`メソッドが定義づけていることを覚えておいてください。このルートを自分で定義する必要はありません。
 
+<a name="approving-the-request"></a>
 #### リクエストの承認
 
 許可のリクエストを受け取ると、Passportはユーザーがその許可のリクエストを承認するか、拒絶するかのテンプレートを自動的に表示します。ユーザーが許可した場合、API利用側アプリケーションが指定した`redirect_uri`へリダイレクトします。`redirect_uri`は、クライアントを作成した時に指定した`redirect`のURLと一致する必要があります。
@@ -390,6 +399,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
         }
     }
 
+<a name="requesting-tokens-converting-authorization-codes-to-access-tokens"></a>
 #### 許可コードからアクセストークンへの変換
 
 ユーザーが許可リクエストを承認したら、API使用側アプリケーションへリダイレクトされます。使用側は最初に、リダイレクトする前に保存していた値と、`state`パラメータを確認する必要があります。stateパラメータが一致したら、使用側はあなたのアプリケーションへアクセストークンをリクエストするための`POST`リクエストを送信する必要があります。そのリクエストには、ユーザーが許可リクエストを承認した時にあなたのアプリケーションが発行した、許可コードを含める必要があります。この例として、Guzzle HTTPライブラリで`POST`リクエストを作成してみましょう。
@@ -421,10 +431,12 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
 
 > {tip} `/oauth/authorize`ルートと同様に、`/oauth/token`ルートは`Passport::routes`メソッドが定義しています。このルートを自分で定義する必要はありません。デフォルトでこのルートは、`ThrottleRequests`ミドルウェアの設定を利用し、アクセス回数制限されています。
 
+<a name="tokens-json-api"></a>
 #### JSON API
 
 Passportには、承認済みアクセストークンを管理するためのJSON APIも含んでいます。これを独自のフロントエンドと組み合わせ、アクセストークンを管理するダッシュボードをユーザーへ提供できます。便宜上、[Axios](https://github.com/mzabriskie/axios)をエンドポイントへのHTTPリクエストを生成するデモンストレーションのため使用しています。JSON APIは`web`と`auth`ミドルウェアにより保護されているため、自身のアプリケーションからのみ呼び出しできます。
 
+<a name="get-oauthtokens"></a>
 #### `GET /oauth/tokens`
 
 このルートは、認証されたユーザーが作成した、承認済みアクセストークンをすべて返します。これは主に取り消すトークンを選んでもらうため、ユーザーの全トークンを一覧リスト表示するのに便利です。
@@ -434,6 +446,7 @@ Passportには、承認済みアクセストークンを管理するためのJSO
             console.log(response.data);
         });
 
+<a name="delete-oauthtokenstoken-id"></a>
 #### `DELETE /oauth/tokens/{token-id}`
 
 このルートは、認証済みアクセストークンと関連するリフレッシュトークンを取り消すために使います。
@@ -517,6 +530,7 @@ PKCEを使用した認可コードグラントを通じトークンを発行す�
 <a name="requesting-auth-pkce-grant-tokens"></a>
 ### トークンのリクエスト
 
+<a name="code-verifier-code-challenge"></a>
 #### コードベリファイヤとコードチャレンジ
 
 この認可グラントではクライアント秘密コードが提供されないため、開発者はトークンを要求するためにコードベリファイヤとコードチャレンジのコンビネーションを生成する必要があります。
@@ -529,6 +543,7 @@ PKCEを使用した認可コードグラントを通じトークンを発行す�
 
     $codeChallenge = strtr(rtrim($encoded, '='), '+/', '-_');
 
+<a name="code-grant-pkce-redirecting-for-authorization"></a>
 #### 許可のリダイレクト
 
 クライアントが生成できたら、アプリケーションから認可コードとアクセストークンをリクエストするために、クライアントIDと生成したコードベリファイヤ、コードチャレンジを使用します。最初に、認可要求側のアプリケーションは、あなたのアプリケーションの`/oauth/authorize`ルートへのリダイレクトリクエストを生成する必要があります。
@@ -555,6 +570,7 @@ PKCEを使用した認可コードグラントを通じトークンを発行す�
         return redirect('http://your-app.com/oauth/authorize?'.$query);
     });
 
+<a name="code-grant-pkce-converting-authorization-codes-to-access-tokens"></a>
 #### 許可コードからアクセストークンへの変換
 
 ユーザーが認可リクエストを承認すると、認可要求側のアプリケーションへリダイレクで戻されます。認可要求側では認可コードグラントの規約に従い、リダイレクトの前に保存しておいた値と、`state`パラメータを検証する必要があります。
@@ -764,6 +780,7 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
         ...
     })->middleware('client:check-status,your-scope');
 
+<a name="retrieving-tokens"></a>
 ### トークンの取得
 
 このグラントタイプを使うトークンを取得するため、`oauth/token`エンドポイントへリクエストを送ります。
@@ -811,12 +828,14 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
     // スコープ付きのトークンを作成する
     $token = $user->createToken('My Token', ['place-orders'])->accessToken;
 
+<a name="personal-access-tokens-json-api"></a>
 #### JSON API
 
 Passportにはパーソナルアクセストークンを管理するためのJSON APIも含まれています。ユーザーにパーソナルアクセストークンを管理してもらうダッシュボードを提供するため、APIと皆さんのフロントエンドを結びつける必要があるでしょう。以降から、パーソナルアクセストークンを管理するためのAPIエンドポイントをすべて説明します。利便性を考慮し、エンドポイントへのHTTPリクエスト作成をデモンストレートするために、[Axios](https://github.com/mzabriskie/axios)を使用していきましょう。
 
 JSON APIは`web`と`auth`ミドルウェアにより保護されています。そのため、みなさん自身のアプリケーションからのみ呼び出せます。外部ソースから呼び出すことはできません。
 
+<a name="get-oauthscopes"></a>
 #### `GET /oauth/scopes`
 
 このルートはあなたのアプリケーションで定義した、全[スコープ](#token-scopes)を返します。このルートを使い、ユーザーがパーソナルアクセストークンに割り付けたスコープをリストできます。
@@ -826,6 +845,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
             console.log(response.data);
         });
 
+<a name="get-oauthpersonal-access-tokens"></a>
 #### `GET /oauth/personal-access-tokens`
 
 このルートは認証中のユーザーが作成したパーソナルアクセストークンをすべて返します。ユーザーがトークンの編集や取り消しを行うため、全トークンをリストするために主に使われます。
@@ -835,6 +855,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
             console.log(response.data);
         });
 
+<a name="post-oauthpersonal-access-tokens"></a>
 #### `POST /oauth/personal-access-tokens`
 
 このルートは新しいパーソナルアクセストークンを作成します。トークンの名前(`name`)と、トークンに割り付けるスコープ(`scope`)の、２つのデータが必要です。
@@ -852,6 +873,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
             // レスポンス上のエラーのリスト
         });
 
+<a name="delete-oauthpersonal-access-tokenstoken-id"></a>
 #### `DELETE /oauth/personal-access-tokens/{token-id}`
 
 このルートはパーソナルアクセストークンを取り消すために使用します。
@@ -870,6 +892,7 @@ Passportは送信されてきたリクエスト上のアクセストークンを
         //
     })->middleware('auth:api');
 
+<a name="multiple-authentication-guards"></a>
 #### 複数認証ガード
 
 アプリケーションの認証でたぶんまったく異なるEloquentモデルを使用する、別々のタイプのユーザーを認証する場合、それぞれのユーザープロバイダタイプごとにガード設定を定義する必用があるでしょう。これにより特定ユーザープロバイダ向けのリクエストを保護できます。例として`config/auth.php`設定ファイルで以下のようなガード設定を行っているとしましょう。
@@ -936,6 +959,7 @@ Passportにより保護されているルートを呼び出す場合、あなた
 <a name="assigning-scopes-to-tokens"></a>
 ### トークンへのスコープ割り付け
 
+<a name="when-requesting-authorization-codes"></a>
 #### 許可コードのリクエスト時
 
 許可コードグラントを用い、アクセストークンをリクエストする際、利用者は`scope`クエリ文字列パラメータとして、希望するスコープを指定する必要があります。`scope`パラメータはスコープを空白で区切ったリストです。
@@ -951,6 +975,7 @@ Passportにより保護されているルートを呼び出す場合、あなた
         return redirect('http://your-app.com/oauth/authorize?'.$query);
     });
 
+<a name="when-issuing-personal-access-tokens"></a>
 #### パーソナルアクセストークン発行時
 
 `User`モデルの`createToken`メソッドを使用し、パーソナルアクセストークンを発行する場合、メソッドの第２引数として希望するスコープを配列で渡します。
@@ -965,6 +990,7 @@ Passportには、指定されたスコープが許可されているトークン
     'scopes' => \Laravel\Passport\Http\Middleware\CheckScopes::class,
     'scope' => \Laravel\Passport\Http\Middleware\CheckForAnyScope::class,
 
+<a name="check-for-all-scopes"></a>
 #### 全スコープの確認
 
 `scopes`ミドルウェアは、リストしたスコープが**すべて**、送信されてきたリクエストのアクセストークンに含まれていることを確認するため、ルートへ指定します。
@@ -973,6 +999,7 @@ Passportには、指定されたスコープが許可されているトークン
         // アクセストークンは"check-status"と"place-orders"、両スコープを持っている
     })->middleware(['auth:api', 'scopes:check-status,place-orders']);
 
+<a name="check-for-any-scopes"></a>
 #### 一部のスコープの確認
 
 `scope`ミドルウエアは、リストしたスコープのうち、**最低1つ**が送信されてきたリクエストのアクセストークンに含まれていることを確認するため、ルートへ指定します。
@@ -981,6 +1008,7 @@ Passportには、指定されたスコープが許可されているトークン
         // アクセストークンは、"check-status"か"place-orders"、どちらかのスコープを持っている
     })->middleware(['auth:api', 'scope:check-status,place-orders']);
 
+<a name="checking-scopes-on-a-token-instance"></a>
 #### トークンインスタンスでのスコープチェック
 
 アクセストークンを確認されたリクエストがアプリケーションにやってきた後でも、認証済みの`User`インスタンスへ`tokenCan`メソッドを使用し、トークンが指定したスコープを持っているかを確認できます。
@@ -993,6 +1021,7 @@ Passportには、指定されたスコープが許可されているトークン
         }
     });
 
+<a name="additional-scope-methods"></a>
 #### その他のスコープメソッド
 
 `scopeIds`メソッドは定義済みの全ID／名前の配列を返します。
@@ -1032,6 +1061,7 @@ API構築時にJavaScriptアプリケーションから、自分のAPIを利用�
             console.log(response.data);
         });
 
+<a name="customizing-the-cookie-name"></a>
 #### クッキー名のカスタマイズ
 
 必要であれば、`Passport::cookie`メソッドを使用し、`laravel_token`クッキーの名前をカスタマイズできます。通常、このメソッドは`AuthServiceProvider`の`boot`メソッドから呼び出します。
@@ -1050,6 +1080,7 @@ API構築時にJavaScriptアプリケーションから、自分のAPIを利用�
         Passport::cookie('custom_name');
     }
 
+<a name="csrf-protection"></a>
 #### CSRF保護
 
 この認証方法を使用する場合、リクエストのヘッダに有効なCSRFトークンを確実に含める必要があります。デフォルトのLaravel JavaScriptスカフォールドはAxiosインスタンスを含み、同一オリジンリクエスト上に`X-XSRF-TOKEN`ヘッダを送るために、暗号化された`XSRF-TOKEN`クッキーを自動的に使用します。

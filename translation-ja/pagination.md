@@ -50,6 +50,7 @@
 
 > {note} 現在`groupBy`文を使用したペジネーション操作は、Laravelで効率よく実行できません。`groupBy`を使用したペジネーションを使用する必要がある場合はデータベースクエリを実行し、その結果を元にペジネーターを自前で作成してください。
 
+<a name="simple-pagination"></a>
 #### シンプル・ペジネーション
 
 「次」と「前」のリンクだけのシンプルなペジネーションビューを表示したい場合は`simplePaginate`メソッドを使用し、より効率的にクエリすべきでしょう。これはビューに正確なページ番号を表示する必要がない、巨大なデータセットを扱う場合に便利です。
@@ -97,6 +98,7 @@ Elqouentモデルをページづけするときにも、`simplePaginate`メソ�
 
 `links`メソッドは結果の残りのページヘのリンクをレンダーします。それらの各リンクには`page`クエリ文字列変数が含まれています。`links`メソッドが生成するHTMLは[Tailwind CSSフレームワーク](https://tailwindcss.com)と互換性があることを覚えておいてください。
 
+<a name="customizing-the-paginator-uri"></a>
 #### ペジネーターURIのカスタマイズ
 
 `withPath`メソッドにより、ペジネーターがリンクを生成するときに使用するURIをカスタマイズできます。たとえばペジネーターで`http://example.com/custom/url?page=N`のようなリンクを生成したい場合、`withPath`メソッドに`custom/url`を渡してください。
@@ -109,6 +111,7 @@ Elqouentモデルをページづけするときにも、`simplePaginate`メソ�
         //
     });
 
+<a name="appending-to-pagination-links"></a>
 #### ペジネーションリンクの追加
 
 ペジネーションリンクにクエリ文字列を付け加えたいときは、`appends`メソッドを使います。たとえば`sort=votes`を各ペジネーションリンクに追加する場合には、以下のように`appends`を呼び出します。
@@ -123,6 +126,7 @@ Elqouentモデルをページづけするときにも、`simplePaginate`メソ�
 
     {{ $users->fragment('foo')->links() }}
 
+<a name="adjusting-the-pagination-link-window"></a>
 #### ペジネーションリンクウィンドウの調整
 
 ペジネータのURL「ウィンドウ」の両サイドに、いくつの追加のリンクを表示するかを調整できます。デフォルトでは、メインのペジネータリンクの両サイドに３つのリンクが表示されます。この数を調整するには、`onEachSide`メソッドを使用します。

@@ -126,6 +126,7 @@ Laravelは入力されたデータに対するバリデーションのさまざ�
         'body' => ['required'],
     ]);
 
+<a name="stopping-on-first-validation-failure"></a>
 #### 最初のバリデーション失敗時に停止
 
 最初のバリデーションに失敗したら、残りのバリデーションルールの判定を停止したいことも、ときどきあります。このためには、`bail`ルールを使ってください。
@@ -137,6 +138,7 @@ Laravelは入力されたデータに対するバリデーションのさまざ�
 
 この例の場合、`title`属性の`unique`ルールに失敗すると、`max`ルールはチェックされません。ルールは指定した順番にバリデートされます。
 
+<a name="a-note-on-nested-attributes"></a>
 #### ネストした属性の注意点
 
 HTTPリクエストに「ネスト」したパラメーターが含まれている場合、バリデーションルールは「ドット」記法により指定します。
@@ -181,6 +183,7 @@ HTTPリクエストに「ネスト」したパラメーターが含まれてい�
 
     <!-- ポスト作成フォーム -->
 
+<a name="the-at-error-directive"></a>
 #### `@error`ディレクティブ
 
 `@error` [Blade](/docs/{{version}}/blade)ディレクティブは、指定した属性のバリデーションエラーメッセージがあるかを簡単に判定するために使用します。`@error`ディレクティブの中でエラーメッセージを表示するために、`$message`変数をエコーすることも可能です。
@@ -258,6 +261,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 
 バリデーションに失敗すると、前のアドレスにユーザーを戻すために、リダイレクトレスポンスが生成されます。エラーも表示できるように、フラッシュデーターとしてセッションに保存されます。もしリクエストがAJAXリクエストであれば、バリデーションエラーを表現するJSONを含んだ、422ステータスコードのHTTPレスポンスがユーザーに返されます。
 
+<a name="adding-after-hooks-to-form-requests"></a>
 #### フォームリクエストへのAfterフックを追加
 
 フォームリクエストへ"after"フックを追加したい場合は、`withValidator`メソッドを使用します。このメソッドは完全に構築されたバリデータを受け取るため、バリデーションルールの評価前に、バリデータの全メソッドを呼び出すことができます。
@@ -461,6 +465,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 
 `Validator`インスタンスの`errors`メソッドを呼び出すと、エラーメッセージを操作する便利なメソッドを数揃えた、`Illuminate\Support\MessageBag`インスタンスを受け取ります。自動的に作成され、すべてのビューで使用できる`$errors`変数も、`MessageBag`クラスのインスタンスです。
 
+<a name="retrieving-the-first-error-message-for-a-field"></a>
 #### 指定フィールドの最初のエラーメッセージ取得
 
 指定したフィールドの最初のエラーメッセージを取得するには、`first`メソッドを使います。
@@ -469,6 +474,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 
     echo $errors->first('email');
 
+<a name="retrieving-all-error-messages-for-a-field"></a>
 #### 指定フィールドの全エラーメッセージ取得
 
 指定したフィールドの全エラーメッセージを配列で取得したい場合は、`get`メソッドを使います。
@@ -483,6 +489,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
         //
     }
 
+<a name="retrieving-all-error-messages-for-all-fields"></a>
 #### 全フィールドの全エラーメッセージ取得
 
 全フィールドの全メッセージの配列を取得したい場合は、`all`メソッドを使います。
@@ -491,6 +498,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
         //
     }
 
+<a name="determining-if-messages-exist-for-a-field"></a>
 #### 指定フィールドのメッセージ存在確認
 
 `has`メソッドは、指定したフィールドのエラーメッセージが存在しているかを判定するために使います。
@@ -519,6 +527,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
         'in' => 'The :attribute must be one of the following types: :values',
     ];
 
+<a name="specifying-a-custom-message-for-a-given-attribute"></a>
 #### 指定フィールドにカスタムメッセージ指定
 
 ときどき、特定のフィールドに対してカスタムエラーメッセージを指定したい場合があります。「ドット」記法を使用し行います。最初が属性名で、続いてルールをつなげます。
@@ -538,6 +547,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
         ],
     ],
 
+<a name="specifying-custom-attribute-values"></a>
 #### カスタム属性値の指定
 
 バリデーションメッセージの`:attribute`部分をカスタムアトリビュート名で置き換えたい場合は、`resources/lang/xx/validation.php`言語ファイルの`attributes`配列でカスタム名を指定してください。
@@ -554,6 +564,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 
     $validator = Validator::make($input, $rules, $messages, $customAttributes);
 
+<a name="specifying-custom-values-in-language-files"></a>
 #### 言語ファイルでカスタム値を指定
 
 バリデーションメッセージの`:value`部分をその値のカスタム表現へ置き換える必要がある場合も起きます。たとえば、`payment_type`が`cc`という値であれば、クレジットカード番号ルールを指定する必要があると想像してください。
@@ -639,6 +650,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 [MIMEタイプ](#rule-mimetypes)
 [MIMEタイプ(ファイル拡張子)](#rule-mimes)
 [最小値](#rule-min)
+[倍数値](#multiple-of)
 [非内包](#rule-not-in)
 [正規表現不一致](#rule-not-regex)
 [NULL許可](#rule-nullable)
@@ -841,12 +853,14 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 
 フィールドの値が、指定されたデータベーステーブルに存在することをバリデートします。
 
+<a name="basic-usage-of-exists-rule"></a>
 #### 基本的なExistsルールの使用法
 
     'state' => 'exists:states'
 
 `column`オプションを指定しない場合、フィールド名が利用されます。
 
+<a name="specifying-a-custom-column-name"></a>
 #### カスタムカラム名の指定
 
     'state' => 'exists:states,abbreviation'
@@ -928,10 +942,12 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 
 フィールドがIPアドレスの形式として正しいことをバリデートします。
 
+<a name="ipv4"></a>
 #### ipv4
 
 フィールドがIPv4アドレスの形式として正しいことをバリデートします。
 
+<a name="ipv6"></a>
 #### ipv6
 
 フィールドがIPv6アドレスの形式として正しいことをバリデートします。
@@ -970,6 +986,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 
 フィールドで指定されたファイルが拡張子のリストの中のMIMEタイプのどれかと一致することをバリデートします。
 
+<a name="basic-usage-of-mime-rule"></a>
 #### MIMEルールの基本的な使用法
 
     'photo' => 'mimes:jpeg,bmp,png'
@@ -982,6 +999,11 @@ MIMEタイプと対応する拡張子の完全なリストは、[https://svn.apa
 #### min:_値_
 
 フィールドが最小値として指定された**値**以上であることをバリデートします。[`size`](#rule-size)ルールと同様の判定方法で、文字列、数値、配列、ファイルが評価されます。
+
+<a name="multiple-of"></a>
+#### multiple_of:_値_
+
+フィールドが、**値**の倍数であることをバリデートします。これは、`step`属性を利用する数値入力を検証するときに役立ちます。
 
 <a name="rule-not-in"></a>
 #### not_in:_foo_,_bar_,...
@@ -1203,6 +1225,7 @@ uniqueチェックで指定したIDを除外したい場合があります。た
 <a name="conditionally-adding-rules"></a>
 ## 条件付きでルールを追加する
 
+<a name="skipping-validation-when-fields-have-certain-values"></a>
 #### フィールドが特定値を持つ場合にバリデーションを飛ばす
 
 他のフィールドに指定値が入力されている場合は、バリデーションを飛ばしたい状況がときどき起きるでしょう。`exclude_if`バリデーションルールを使ってください。`appointment_date`と`doctor_name`フィールドは、`has_appointment`フィールドが`false`値の場合バリデートされません。
@@ -1221,6 +1244,7 @@ uniqueチェックで指定したIDを除外したい場合があります。た
         'doctor_name' => 'exclude_unless:has_appointment,true|required|string',
     ]);
 
+<a name="validating-when-present"></a>
 #### 項目存在時のバリデーション
 
 ある状況では、そのフィールドが入力配列の中に存在する場合**のみ**、バリデーションを実行したいことがあると思います。これを簡単に行うには、`sometimes`ルールを追加してください。
@@ -1233,6 +1257,7 @@ uniqueチェックで指定したIDを除外したい場合があります。た
 
 > {tip} フィールドが常に存在しているが、空であることをバリデートする場合は、[この追加フィールドに対する注意事項](#a-note-on-optional-fields)を確認してください。
 
+<a name="complex-conditional-validation"></a>
 #### 複雑な条件のバリデーション
 
 ときどきもっと複雑な条件のロジックによりバリデーションルールを追加したい場合もあります。たとえば他のフィールドが１００より大きい場合のみ、指定したフィールドが入力されているかをバリデートしたいときなどです。もしくは２つのフィールドのどちらか一方が存在する場合は、両方共に値を指定する必要がある場合です。こうしたルールを付け加えるのも面倒ではありません。最初に`Validator`インスタンスを生成するのは、**固定ルール**の場合と同じです。
@@ -1403,6 +1428,7 @@ Laravelはさまざまな便利なバリデーションルールを提供して�
 
     Validator::extend('foo', 'FooValidator@validate');
 
+<a name="defining-the-error-message"></a>
 #### エラーメッセージの定義
 
 カスタムルールに対するエラーメッセージを定義する必要もあります。インラインでカスタムエラーの配列を使うか、バリデーション言語ファイルにエントリーを追加するどちらかで行えます。このメッセージは属性とエラーメッセージを指定するだけの一次配列で、「カスタマイズ」した配列を入れてはいけません。
@@ -1448,6 +1474,7 @@ Laravelはさまざまな便利なバリデーションルールを提供して�
 
 > {note} 「暗黙の」拡張は、単にその属性が必須であると**ほのめかしている**だけです。属性が存在しない場合や空のときに、実際にバリデーションを失敗と判断するかどうかは、みなさん次第です。
 
+<a name="implicit-rule-objects"></a>
 #### 暗黙のルールオブジェクト
 
 属性が空の場合にルールオブジェクトを実行したい場合は、`Illuminate\Contracts\Validation\ImplicitRule`インターフェイスを実装してください。このインターフェイスはバリデータの「マーカー（目印）インターフェイス」として動作します。そのため、実装する必要のあるメソッドは含んでいません。

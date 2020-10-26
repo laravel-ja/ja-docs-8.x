@@ -20,6 +20,8 @@ Horizon（水平線、展望）は、Laravelで動作するRedisキューのた�
 
 一つのシンプルな設定ファイルにすべてのワーカ設定を保存するため、チーム全体がコラボレート可能なソースコントロール下に、設定を保持できます。
 
+<img src="https://laravel.com/img/docs/horizon-example.png">
+
 <a name="installation"></a>
 ## インストール
 
@@ -40,6 +42,7 @@ Horizonのアセットを公開すると、`config/horizon.php`に一番重要�
 
 > {note} Horizonを実行する予定の環境ごとのエントリーを`horizon`設定ファイルの`environments`部分へ確実に含めてください。
 
+<a name="balance-options"></a>
 #### バランスオプション
 
 Horizonでは３つのバランシング戦略が選択できます。`simple`と`auto`、`false`です。`simple`戦略は設定ファイルのデフォルトで、投入されたジョブをプロセス間に均等に割り当てます。
@@ -67,6 +70,7 @@ Horizonでは３つのバランシング戦略が選択できます。`simple`�
 
 `balanceMaxShift`と`balanceCooldown`の設定値はいかに素早くHorizonをワーカの要求に合わせてスケールするかを決めるためのものです。上の例の場合、３秒毎に最大１つの新しいプロセスを生成するか、破棄します。アプリケーションの必要性を基にし、自由にこの値を調整してください。
 
+<a name="job-trimming"></a>
 #### ジョブのクリア
 
 `horizon`設定ファイルで、現在がどのくらいの長さなのか、それと失敗したジョブをどのくらい保持しているかを分数で設定できます。デフォルトでは、現在のジョブは１時間、失敗したジョブは１週間保持されます。
@@ -144,6 +148,7 @@ Horizonプロセスを`horizon:pause` Artisanコマンドで一時停止した�
 
 Horizonを実働サーバにデプロイする場合、`php artisan horizon`コマンドをプロセスモニタで監視し、予期せず終了した場合には再起動をかけるように設定する必要があります。サーバに新しいコードをデプロイしたときに、Horizonプロセスを停止指示する必要があります。その結果、プロセスモニタにより再起動され、コードの変更が反映されます。
 
+<a name="installing-supervisor"></a>
 #### Supervisorのインストール
 
 SupervisorはLinuxオペレーティングシステムのプロセスモニターで、`horizon`システムが停止すると自動的に再起動してくれます。UbuntuへSupervisorをインストールするには、次のようにコマンドを入力します。
@@ -152,6 +157,7 @@ SupervisorはLinuxオペレーティングシステムのプロセスモニタ�
 
 > {tip} Supervisorの設定を自分で行うのに圧倒されるようでしたら、[Laravel Forge](https://forge.laravel.com)の使用を考慮してください。LaravelプロジェクトのためにSupervisorを自動的にインストールし、設定します。
 
+<a name="supervisor-configuration"></a>
 #### Supervisor設定
 
 Supervisorの設定ファイルは通常`/etc/supervisor/conf.d`へ保存されています。このディレクトリの中では、Supervisorへプロセスをどのようにモニタリングするのかを指示するために、設定ファイルをいくつでも作成できます。一例として、`horizon.conf`ファイルを作成し、`horizon`プロセスを起動・監視してみましょう。
@@ -168,6 +174,7 @@ Supervisorの設定ファイルは通常`/etc/supervisor/conf.d`へ保存され�
 
 > {note} 一番時間がかかるジョブが消費する秒数より大きな値を`stopwaitsecs`へ必ず指定してください。そうしないと、Supervisorは処理が終了する前に、そのジョブをキルしてしまうでしょう。
 
+<a name="starting-supervisor"></a>
 #### Supervisorの起動
 
 設定ファイルが作成できたら、Supervisor設定をを更新し、起動するために次のようにコマンドを入力します。
@@ -235,6 +242,7 @@ Horizonでは、mailableやイベントブロードキャスト、通知、キ�
 
     App\Jobs\RenderVideo::dispatch($video);
 
+<a name="manually-tagging"></a>
 #### 手動のタグ付け
 
 queueableオブジェクトのタグを任意に定義したい場合は、そのクラスで`tags`メソッドを定義してください。
@@ -263,6 +271,7 @@ queueableオブジェクトのタグを任意に定義したい場合は、そ�
     Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');
     Horizon::routeSmsNotificationsTo('15556667777');
 
+<a name="configuring-notification-wait-time-thresholds"></a>
 #### 通知wait時間のシュレッドホールド設定
 
 何秒を「長時間」と考えるかは、`config/horizon.php`設定ファイルで指定できます。このファイルの`waits`設定オプションで、接続／キューの組み合わせごとに、長時間と判定するシュレッドホールドをコントロールできます。

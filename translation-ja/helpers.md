@@ -22,6 +22,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
     }
 </style>
 
+<a name="arrays-and-objects-method-list"></a>
 ### 配列とオブジェクト
 
 <div class="collection-method-list" markdown="1">
@@ -61,6 +62,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [last](#method-last)
 </div>
 
+<a name="paths-method-list"></a>
 ### パス
 
 <div class="collection-method-list" markdown="1">
@@ -76,6 +78,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
 </div>
 
+<a name="strings-method-list"></a>
 ### 文字列
 
 <div class="collection-method-list" markdown="1">
@@ -128,7 +131,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
 </div>
 
-<a name="fluent-strings"></a>
+<a name="fluent-strings-method-list"></a>
 ### Fluent Strings
 
 <div class="collection-method-list" markdown="1">
@@ -188,6 +191,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
 </div>
 
+<a name="urls-method-list"></a>
 ### URL
 
 <div class="collection-method-list" markdown="1">
@@ -201,6 +205,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
 </div>
 
+<a name="miscellaneous-method-list"></a>
 ### その他
 
 <div class="collection-method-list" markdown="1">

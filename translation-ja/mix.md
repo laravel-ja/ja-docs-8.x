@@ -35,6 +35,7 @@ webpackやアセットのコンパイルを始めようとして、混乱と圧�
 <a name="installation"></a>
 ## インストールと準備
 
+<a name="installing-node"></a>
 #### Nodeのインストール
 
 Mixを始める前、最初にNode.jsとNPMを開発機へ確実にインストールしてください。
@@ -44,6 +45,7 @@ Mixを始める前、最初にNode.jsとNPMを開発機へ確実にインスト�
 
 Laravel Homesteadならデフォルトのままでも必要なものが全部そろっています。しかし、Vagrantを使っていなくても、[ダウンロードページ](https://nodejs.org/ja/download/)を読めば、NodeとNPMは簡単にインストールできます。
 
+<a name="laravel-mix"></a>
 #### Laravel Mix
 
 残っているステップはLaravel Mixのインストールだけです。新しくLaravelをインストールすると、ルートディレクトリに`package.json`があることに気づくでしょう。PHPの代わりにNodeの依存パッケージが定義されている所が異なりますが、`composer.json`ファイルに似た構成ファイルだと考えてください。以下のコマンドで、依存パッケージをインストールしてください。
@@ -61,6 +63,7 @@ Mixは[webpack](https://webpack.js.org)上の設定レイヤーですから、La
     // 全タスク実行を実行し、出力を圧縮
     npm run production
 
+<a name="watching-assets-for-changes"></a>
 #### アセット変更の監視
 
 `npm run watch`コマンドはターミナルで実行し続け、関連ファイル全部の変更を監視します。webpackは変更を感知すると、アセットを自動的に再コンパイルします。
@@ -191,6 +194,7 @@ Laravel Mixはwebpack上に構築されているため、webpackのコンセプ�
     mix.js('resources/js/app.js', 'public/js')
         .sourceMaps();
 
+<a name="style-of-source-mapping"></a>
 #### ソースマップのスタイル
 
 webpackはさまざまな[ソースマップスタイル](https://webpack.js.org/configuration/devtool/#devtool)を提供しています。Mixはソースマッピングスタイルのデフォルトとして、ブルド時間の早い `eval-source-map`をセットしています。マッピングスタイルを変更したい場合は、 `sourceMaps`メソッドを使用してください。
@@ -268,6 +272,7 @@ MixはReactをサポートするために、Babelプラグインを自動的に�
 
 Laravel Mixはできるだけ素早く実行できるように、裏で事前に設定済みの`webpack.config.js`ファイルを参照しています。ときどき、このファイルを変更する必要が起きるでしょう。参照する必要がある特別なローダやプラグインがあったり、Sassの代わりにStylusを使うのが好みであるかもしれません。そうした場合、２つの選択肢があります。
 
+<a name="merging-custom-configuration"></a>
 #### カスタム設定のマージ
 
 Mixはオーバーライドする短いwebpack設定をマージできるように、便利な`webpackConfig`メソッドを提供しています。これは、`webpack.config.js`ファイルをコピーし、独自バージョンをメンテナンスする必要がないため、やや魅力的な選択しです。`webpackConfig`メソッドは、適用したい[webpack限定設定](https://webpack.js.org/configuration/)を含むオブジェクトを引数に取ります。
@@ -280,6 +285,7 @@ Mixはオーバーライドする短いwebpack設定をマージできるよう�
         }
     });
 
+<a name="custom-configuration-files"></a>
 #### カスタム設定ファイル
 
 webpack設定をすべてカスタマイズしたい場合は、`node_modules/laravel-mix/setup/webpack.config.js`をプロジェクトのルートディレクトリへコピーしてください。次に、`package.json`ファイル中の`--config`参照をすべて新しくコピーした設定ファイルに変更します。カスタマイズにこのアプローチを取る場合は、Mixの`webpack.config.js`に対するアップストリームの機能変更を自分でカスタマイズするファイルへマージする必要があります。
@@ -317,6 +323,7 @@ webpack設定をすべてカスタマイズしたい場合は、`node_modules/la
         mix.version();
     }
 
+<a name="custom-mix-base-urls"></a>
 #### MixのベースURLのカスタマイズ
 
 アプリケーションから独立して、MixがコンパイルしたアセットをCDNへデプロイしている場合は、`mix`関数が生成するベースURLを変更する必要があります。そのためには、`config/app.php`設定ファイルへ`mix_url`設定オプションを追加してください。

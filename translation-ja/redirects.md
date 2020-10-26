@@ -35,6 +35,7 @@
 
     return redirect()->route('profile', ['id' => 1]);
 
+<a name="populating-parameters-via-eloquent-models"></a>
 #### Eloquentモデルを使用したパラメータの埋め込み
 
 あるEloquentモデルの"ID"パラメータを含むルートへリダイレクトする場合は、そのモデル自身を渡してください。IDは自動的に取り出されます。

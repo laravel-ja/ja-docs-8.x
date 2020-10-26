@@ -37,6 +37,7 @@ ArtisanはLaravelに含まれているコマンドラインインターフェイ
 
 Laravel Tinkerは、LaravelフレームワークのためのパワフルなREPLです。[PsySH](https://github.com/bobthecow/psysh)パッケージを利用しています。
 
+<a name="installation"></a>
 #### インストール
 
 LaravelアプリケーションはTinkerをデフォルトで含んでいます。しかし必要に応じ、Composerにより自分でインストールすることもできます。
@@ -45,6 +46,7 @@ LaravelアプリケーションはTinkerをデフォルトで含んでいます�
 
 > {tip} Laravelアプリケーションを操作する、グラフィカルなUIをお探しですか？[Tinkerwell](https://tinkerwell.app)をお試しください。
 
+<a name="usage"></a>
 #### 使用法
 
 TinkerによりコマンドラインでEloquent ORM、ジョブ、イベントなど、Laravelアプリケーション全体を操作できます。Tinker環境を利用するには、`tinker` Artisanコマンドを実行してください。
@@ -57,6 +59,7 @@ TinkerによりコマンドラインでEloquent ORM、ジョブ、イベント�
 
 > {note} ジョブをキューの中へ置くために、`dispatch`ヘルパ関数と`Dispatchable`クラスの`dispatch`メソッドは、ガベージコレクションに依存しています。そのため、Tinkerを使う場合には、ディスパッチするジョブには`Bus::dispatch`か`Queue::push`を使用してください。
 
+<a name="command-whitelist"></a>
 #### コマンドホワイトリスト
 
 Tinkerのシェルで利用可能なArtisanコマンドを指定するため、ホワイトリストが用意されています。デフォルトでは、`clear-compiled`、`down`、`env`、`inspire`、`migrate`、`optimize`、`up`コマンドが実行できます。ホワイトリストにコマンドを追加したい場合は、`tinker.php`設定ファイルの`commands`配列へ追加してください。
@@ -65,6 +68,7 @@ Tinkerのシェルで利用可能なArtisanコマンドを指定するため、�
         // App\Console\Commands\ExampleCommand::class,
     ],
 
+<a name="classes-that-should-not-be-aliased"></a>
 #### エイリアスにしないクラス
 
 通常、Tinkerは要求されたクラスのエイリアスを自動的に定義します。しかし、エイリアスを定義したくないクラスもあるでしょう。そのためには、`tinker.php`設定ファイルの`dont_alias`配列にクラスをリストしてください。
@@ -163,6 +167,7 @@ HTTPルートは定義していませんが、このファイルはアプリケ�
 
 クロージャは裏で動作するコマンドインスタンスと結合します。そのため、完全なコマンドクラス上でアクセスできる、通常のヘルパメソッドにすべてアクセスできます。
 
+<a name="type-hinting-dependencies"></a>
 #### 依存のタイプヒント
 
 コマンドの引数とオプションに付け加え、コマンドクロージャはタイプヒントによる追加の依存を受け取り、それらは[サービスコンテナ](/docs/{{version}}/container)により依存解決されます。
@@ -174,6 +179,7 @@ HTTPルートは定義していませんが、このファイルはアプリケ�
         $drip->send(User::find($user));
     });
 
+<a name="closure-command-descriptions"></a>
 #### クロージャコマンドの説明
 
 クロージャベースコマンドの定義時には、コマンドの説明を追加するために`describe`メソッドを使います。この説明は`php artisan list`や`php artisan help`コマンド実行時に表示されます。
@@ -334,6 +340,7 @@ HTTPルートは定義していませんが、このファイルはアプリケ�
 
     $password = $this->secret('What is the password?');
 
+<a name="asking-for-confirmation"></a>
 #### 確認
 
 単純にユーザーから確認を取りたい場合は、`confirm`メソッドを使ってください。このメソッドはデフォルトで`false`を返します。プロンプトに対して`y`か`yes`が入力されると、`true`を返します。
@@ -342,6 +349,7 @@ HTTPルートは定義していませんが、このファイルはアプリケ�
         //
     }
 
+<a name="auto-completion"></a>
 #### 自動補完
 
 `anticipate`メソッドは可能性のある選択肢の、自動補完機能を提供するために使用します。ユーザーは表示される自動補完の候補にかかわらず、どんな答えも返答できます。
@@ -354,6 +362,7 @@ HTTPルートは定義していませんが、このファイルはアプリケ�
         // 自動補完候補を返す
     });
 
+<a name="multiple-choice-questions"></a>
 #### 複数選択の質問
 
 あらかじめ決められた選択肢をユーザーから選んでもらいたい場合は、`choice`メソッドを使用します。何も選ばれなかった場合に返ってくるデフォルト値の配列インデックスを指定することも可能です。
@@ -400,6 +409,7 @@ HTTPルートは定義していませんが、このファイルはアプリケ�
     // ３空行の書き出し
     $this->newLine(3);
 
+<a name="table-layouts"></a>
 #### テーブルレイアウト
 
 `table`メソッドにより簡単に正しくデータの複数行／カラムをフォーマットできます。メソッドにヘッダと行を渡してください。幅と高さは与えたデータから動的に計算されます。
@@ -410,6 +420,7 @@ HTTPルートは定義していませんが、このファイルはアプリケ�
 
     $this->table($headers, $users);
 
+<a name="progress-bars"></a>
 #### プログレスバー
 
 時間がかかるタスクでは、進捗状況のインディケータを表示できると便利です。出力のオブジェクトを使用し、プログレスバーを開始、進行、停止できます。最初に、処理全体を繰り返す総ステップ数を定義します。それから各アイテムの処理の後に、プログレスバーを進めます。
@@ -487,6 +498,7 @@ Artisanコマンドが実行される接続やキューを特定することも�
         'user' => 1, '--queue' => 'default'
     ])->onConnection('redis')->onQueue('commands');
 
+<a name="passing-array-values"></a>
 #### 配列値の引数
 
 コマンドで配列を受け取るオプションを定義している場合、そのオプションに配列値を渡してください。
@@ -497,6 +509,7 @@ Artisanコマンドが実行される接続やキューを特定することも�
         ]);
     });
 
+<a name="passing-boolean-values"></a>
 #### 論理値の引数
 
 `migrate:refresh`コマンドの`--force`フラグのように、文字列値を受け取らないオプションに値を指定する必要がある場合は、`true`か`false`を渡す必要があります。

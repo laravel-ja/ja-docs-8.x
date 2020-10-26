@@ -146,12 +146,14 @@ Socialiteを使用する前に、アプリケーションで使用するOAuthサ
     $user->getEmail();
     $user->getAvatar();
 
+<a name="retrieving-user-details-from-a-token-oauth2"></a>
 #### トークンからのユーザー詳細情報の取得(OAuth2)
 
 ユーザーへの有効なアクセストークンを事前に取得している場合は、`userFromToken`メソッドを用い、詳細を取得できます。
 
     $user = Socialite::driver('github')->userFromToken($token);
 
+<a name="retrieving-user-details-from-a-token-and-secret-oauth1"></a>
 #### トークンとSecretからのユーザー詳細情報の取得(OAuth1)
 
 すでにユーザーに対する有効なトークン／secretペアを取得している場合は、`userFromTokenAndSecret`メソッドを用い、詳細を取得できます。

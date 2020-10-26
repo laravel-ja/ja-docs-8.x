@@ -24,6 +24,7 @@
 
 デフォルトでは、Laravelは`stack`チャンネルをメッセージをログする場合に使用します。`stack`チャンネルは、複数のログチャンネルを一つのログチャンネルへ集結するために使用します。スタックの構築に関する詳細は、[このドキュメントで後ほど](#building-log-stacks)説明します。
 
+<a name="configuring-the-channel-name"></a>
 #### チャンネル名の設定
 
 Monologはデフォルトで`production`や`local`のような、現在の環境と一致する「チャンネル名」でインスタンス化されます。この値を変更するには、チャンネルの設定に`name`オプションを追加してください。
@@ -34,6 +35,7 @@ Monologはデフォルトで`production`や`local`のような、現在の環境
         'channels' => ['single', 'slack'],
     ],
 
+<a name="available-channel-drivers"></a>
 #### 利用可能なチャンネルドライバ
 
 名前 | 説明
@@ -50,6 +52,7 @@ Monologはデフォルトで`production`や`local`のような、現在の環境
 
 > {tip} `monolog`と`custom`ドライバの詳細は、[上級チャンネルカスタマイズ](#advanced-monolog-channel-customization)のドキュメントを確認し、学んでください。
 
+<a name="configuring-the-single-and-daily-channels"></a>
 #### シングルファイルとディリーチャンネルの設定
 
 `single`と`daily`チャンネルは３つ設定オプションを持っています。`bubble`、`permission`、`locking`です。
@@ -60,10 +63,12 @@ Monologはデフォルトで`production`や`local`のような、現在の環境
 `permission` | ログファイルのパーミッション | `0644`
 `locking` | 書き込む前にログファイルのロックを試みる | `false`
 
+<a name="configuring-the-papertrail-channel"></a>
 #### Papertrailチャンネルの設置
 
 `papertrail`チャンネルでは、`url`と`port`設定オプションが必要です。[Papertrail](https://help.papertrailapp.com/kb/configuration/configuring-centralized-logging-from-php-apps/#send-events-from-php-app)から、それらの値を入手できます。
 
+<a name="configuring-the-slack-channel"></a>
 #### Slackチャンネルの設定
 
 `slack`チャンネルには、`url`設定オプションが必須です。このURLはSlackチームに対して設定されている、[incoming webhook](https://slack.com/apps/A0F7XDUAZ-incoming-webhooks)へのURLと一致させる必要があります。デフォルトでSlackは`critical`レベル以上のログのみを受け付けます。しかしながら、`logging`設定ファイルでこれを調整可能です。
@@ -95,6 +100,7 @@ Monologはデフォルトで`production`や`local`のような、現在の環境
 
 では、個別にこの設定を確認しましょう。最初に、`stack`チャンネルが`channels`オプションにより`syslog`と`slack`、２つのチャンネルをまとめていることに注目してください。
 
+<a name="log-levels"></a>
 #### ログレベル
 
 上記の例で、`syslog`と`slack`チャンネル設定の中に、`level`設定オプションが存在していることに注目です。このオプションは、そのチャンネルでメッセージをログする、最低の「レベル」を定めるオプションです。Laravelのログサービスを動かしているMonologは、[RFC 5424規約](https://tools.ietf.org/html/rfc5424)で定められている全ログレベルが使用できます。**emergency**と**alert**、**critical**、**error**、**warning**、**notice**、**info**、**debug**です。
@@ -147,6 +153,7 @@ Monologはデフォルトで`production`や`local`のような、現在の環境
         }
     }
 
+<a name="contextual-information"></a>
 #### 文脈情報
 
 ログメソッドには、文脈情報の配列を渡すことも可能です。この文脈情報は、ログメッセージに整形され、表示されます。
@@ -226,6 +233,7 @@ Monologはバラエティーに富んだ[利用可能なハンドラ](https://gi
         ],
     ],
 
+<a name="monolog-formatters"></a>
 #### Monologフォーマッター
 
 `monolog`ドライバーを使用する場合、Monolog `LineFormatter`をデフォルトフォーマッターとして使用します。しかし、フォーマッターのタイプをカスタマイズする必要がある場合は、`formatter`と`formatter_with`設定オプションを使用します。

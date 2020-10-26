@@ -58,6 +58,7 @@
         'role' => 'Network Administrator',
     ]);
 
+<a name="get-request-query-parameters"></a>
 #### GETリクエストのクエリパラメータ
 
 `GET`リクエストの作成時はクエリ文字列をURLに直接追加するか、キー／値ペアの配列を第２引数として`get`メソッドに渡します。
@@ -67,6 +68,7 @@
         'page' => 1,
     ]);
 
+<a name="sending-form-url-encoded-requests"></a>
 #### URLエンコードされたリクエストのフォーム送信
 
 `application/x-www-form-urlencoded`コンテンツタイプを使用してデータを送信したい場合は、リクエストを作成する前に`asForm`メソッドを呼び出す必要があります。
@@ -76,6 +78,7 @@
         'role' => 'Privacy Consultant',
     ]);
 
+<a name="sending-a-raw-request-body"></a>
 #### リクエスト本体をそのまま送信する
 
 リクエスト作成時に、リクエストの本体をそのまま指定したい場合は、`withBody`メソッドを使います。
@@ -84,6 +87,7 @@
         base64_encode($photo), 'image/jpeg'
     )->post('http://test.com/photo');
 
+<a name="multi-part-requests"></a>
 #### マルチパートリクエスト
 
 ファイルをマルチパートリクエストとして送信したい場合は、リクエストを作成する前に`attach`メソッドを呼び出す必要があります。このメソッドはファイル名と、その内容を引数に受け取ります。オプションとして第３引数に、ファイルのファイル名と想定できる文字列を指定できます。
@@ -123,6 +127,7 @@
     // Digest認証
     $response = Http::withDigestAuth('taylor@laravel.com', 'secret')->post(...);
 
+<a name="bearer-tokens"></a>
 #### Bearerトークン
 
 手早く`Authorization` bearerトークンをリクエストのヘッダに追加したい場合は、`withToken`メソッドを使います。
@@ -164,6 +169,7 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
     // ステータスコードが５００レベルのレスポンスであったかを判定
     $response->serverError();
 
+<a name="throwing-exceptions"></a>
 #### 例外を投げる
 
 レスポンスインスタンスを受け取り、そのレスポンスがクライアントかサーバエラーであった場合に、`Illuminate\Http\Client\RequestException`のインスタンスを投げる場合は、`throw`メソッドを使います。
@@ -214,6 +220,7 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 
 > {note} リクエストをFakeする時、HTTPクライアントミドルウェアは実行されません。Fakeするレスポンスでこうしたミドルウェアが正しく実行されたかのように、エクスペクションを定義する必要があります。
 
+<a name="faking-specific-urls"></a>
 #### 特定URLのFake
 
 `fake`メソッドに配列を渡すこともできます。配列のキーはfakeするURLパターンを表し、値はレスポンスです。`*`文字はワイルドカードとして使えます。FakeしないURLに対するリクエストは、実際に実行されます。エンドポイントに対するスタブ／fakeを組み立てるために、`response`メソッドを使います。
@@ -236,6 +243,7 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
         '*' => Http::response('Hello World', 200, ['Headers']),
     ]);
 
+<a name="faking-response-sequences"></a>
 #### 一連のレスポンスのFake
 
 特定の順番で一連のfakeレスポンスを一つのURLに対して指定する必要がある場合もときどきあります。このレスポンスを組み立てるには、`Http::sequence`メソッドを使用します。
@@ -264,6 +272,7 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
             ->push('Hello World', 200)
             ->whenEmpty(Http::response());
 
+<a name="fake-callback"></a>
 #### コールバックのFake
 
 特定のエンドポイントでどんなレスポンスを返すか決めるために、より複雑なロジックが必要な場合は、`fake`メソッドへコールバックを渡してください。このコールバックは`Illuminate\Http\Client\Request`のインスタンスを受け取るので、レスポンスインスタンスを返してください。

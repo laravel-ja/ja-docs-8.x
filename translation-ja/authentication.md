@@ -40,6 +40,7 @@ Laravelの認証機能は「ガード」と「プロバイダ」を中心概念�
 
 混乱しても心配ありません。通常のアプリケーションでは、デフォルトの認証設定を変更する必要はありません。
 
+<a name="getting-started-fast"></a>
 #### てっとり早く始める
 
 早速使い始めたいですか？真新しくインストールしたLaravelパッケージへ、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）をインストールしてください。データベースをマイグレーションしたら、`/register`へブラウザでアクセスするか、アプリケーションに割り付けた別のURLへアクセスしましょう。Jetstreamは認証システム全体のスカフォールディングを面倒見ます！
@@ -62,6 +63,7 @@ Laravelは、認証に関連するパッケージをいくつか提供してい�
 
 APIへアクセスするためにリモートサービスが認証を必要とする場合、Webブラウザがないためクッキーを通常使用しません。代わりにリモートサービスは、リクエストごとにAPIトークンをAPIに送信します。アプリケーションは有効なAPIトークンのテーブルに照らし合わせ受信トークンを検証し、そのAPIトークンに関連付けられているユーザーが実行しているリクエストを「認証」できます。
 
+<a name="laravels-built-in-browser-authentication-services"></a>
 #### Laravel組み込みのブラウザ認証サービス
 
 Laravelは、通常`Auth`および`Session`ファサードを介してアクセスする組み込み認証とセッションサービスを用意しています。これらの機能はWebブラウザから開始されたリクエストにクッキーベースの認証を提供しています。ユーザーの認証情報を確認し、そのユーザーを認証するメソッドを提供しています。さらに、これらのサービスは適切なデータをユーザーのセッションに自動的に保存し、適切なセッションクッキーを発行します。こうしたサービスの使用方法は、このドキュメントに記載しています。
@@ -72,6 +74,7 @@ Laravelは、通常`Auth`および`Session`ファサードを介してアクセ�
 
 Laravel FortifyはLaravelのヘッドレス認証バックエンドです。クッキーベースの認証や２要素認証、メールバリデーションなど他の機能を含め、このドキュメントで多くの機能を説明しています。Laravel Jetstreamは、[Tailwind CSS](https://tailwindcss.com)、[Laravel Livewire](https://laravel-livewire.com)、[Inertia.js](https://inertiajs.com)を使い、美しくモダンなUIでFortifyの認証サービスを利用および公開するUIです。Laravel Jetstreamは、ブラウザベースのクッキー認証の提供に加えAPIトークン認証を提供するため、Laravel Sanctumとの統合を組み込んでいます。LaravelのAPI認証サービスについては、以下で説明します。
 
+<a name="laravels-api-authentication-services"></a>
 #### LaravelのAPI認証サービス
 
 Laravelは、APIトークンの管理とAPIトークンで行われたリクエストの認証を支援する2つのオプションパッケージを提供しています。[Passport](/docs/{{version}}/passport)と[Sanctum](/docs/{{version}}/sanctum)です。これらのライブラリとLaravelの組み込みCookieベースの認証ライブラリは互いに排他的でないことを注意してください。これらのライブラリは主にAPIトークン認証に重点を置いていますが、組み込みの認証サービスはクッキーベースのブラウザ認証に重点を置いています。多くのアプリケーションは、Laravelの組み込みクッキーベースの認証サービスと、LaravelのAPI認証パッケージのどちらか１つの、両方を使用するでしょう。
@@ -88,6 +91,7 @@ Laravel Sanctumは、アプリケーションの認証プロセス全体を管�
 
 Laravel Sanctumは、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）認証スカフォールドに含める選択をしたAPIパッケージです。なぜなら、Webアプリケーションの認証ニーズの大部分に最適であると考えているためです。
 
+<a name="summary-choosing-your-stack"></a>
 #### まとめと選択方法
 
 要約すると、ブラウザを使用してアプリケーションにアクセスする場合、アプリケーションはLaravelの組み込み認証サービスを使用します。
@@ -118,6 +122,7 @@ Laravel'の`laravel/jetstream`パッケージは、簡単なコマンドで認�
 
 このコマンドは真新しくインストールしたアプリケーションで使用してください。認証の全エンドポイントに対するルートと同時に、レイアウトビュー、登録とログインビューをインストールします。ログイン後のリクエストを処理するため、アプリケーションのダッシュボードを`/dashboard`ルートとして生成します。
 
+<a name="creating-applications-including-authentication"></a>
 #### 認証を含むアプリケーションの生成
 
 真新しいアプリケーションを開始し、認証のスカフォールドを含めたい場合は、アプリケーションの生成時にLaravelインストーラへ`--jet`ディレクティブを使ってください。このコマンドはアプリケーションへ認証スカフォールドを全部インストールし、コンパイルします。
@@ -138,6 +143,7 @@ Jetstreamはアプリケーションのベースレイアウトを含む`resourc
 
 これでアプリケーションが認証用にスカフォールドされたので、ユーザー登録して認証する準備ができました。Jetstreamの認証コントローラには既存のユーザーを認証してデータベースに新しいユーザーを保存するロジックがすでに含まれているため、ブラウザでアプリケーションにアクセスするだけです。
 
+<a name="path-customization"></a>
 #### パスのカスタマイズ
 
 Wユーザーが認証に成功した場合、典型的には`/home`のURIへリダイレクトすると思います。`RouteServiceProvider`に`HOME`定数を定義することにより、認証後のリダイレクトパスをカスタマイズできます。
@@ -181,6 +187,7 @@ Laravel Jetstreamを使う場合、Jetstreamのインストール処理は`HOME`
         }
     }
 
+<a name="determining-if-the-current-user-is-authenticated"></a>
 #### 現在のユーザーが認証されているか調べる
 
 ユーザーがすでにアプリケーションにログインしているかを調べるには、`Auth`ファサードの`check`メソッドが使えます。認証時に`true`を返します。
@@ -202,6 +209,7 @@ Laravel Jetstreamを使う場合、Jetstreamのインストール処理は`HOME`
         // 認証済みのユーザーのみが入れる
     })->middleware('auth');
 
+<a name="redirecting-unauthenticated-users"></a>
 #### 未認証ユーザーのリダイレクト
 
 ミドルウェアが未認証ユーザーを突き止めると、ユーザーを`login`[名前付きルート](/docs/{{version}}/routing#named-routes)へリダイレクトします。この振る舞いは、`app/Http/Middleware/Authenticate.php`ファイルの`redirectTo`関数で変更できます。
@@ -217,6 +225,7 @@ Laravel Jetstreamを使う場合、Jetstreamのインストール処理は`HOME`
         return route('login');
     }
 
+<a name="specifying-a-guard"></a>
 #### ガードの指定
 
 `auth`ミドルウェアをルートに対し指定するときに、そのユーザーに対し認証を実行するガードを指定することもできます。指定されたガードは、`auth.php`設定ファイルの`guards`配列のキーを指定します。
@@ -272,6 +281,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
 
 リダイレクタの`intended`メソッドは、認証フィルターで引っかかる前にアクセスしようとしていたURLへ、ユーザーをリダイレクトしてくれます。そのリダイレクトが不可能な場合の移動先として、フォールバックURIをこのメソッドに指定してください。
 
+<a name="specifying-additional-conditions"></a>
 #### 追加条件の指定
 
 お望みであれば、ユーザーのメールアドレスとパスワードに付け加え、認証時のクエリに追加の条件を指定することも可能です。例として、ユーザーが「アクティブ」である条件を追加してみましょう。
@@ -282,6 +292,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
 
 > {note} この例のように、`email`を必ず認証に使用しなくてならない訳ではありません。データーベース中にあるユーザー名(username)に該当する、一意にユーザーを特定できるカラムであれば何でも使用できます。
 
+<a name="accessing-specific-guard-instances"></a>
 #### 特定のGuardインスタンスへのアクセス
 
 `Auth`ファサードの`guard`メソッドにより、使用したいガードインスタンスを指定できます。これによりまったく異なった認証用のモデルやユーザーテーブルを使い、アプリケーションの別々の部分に対する認証が管理できます。
@@ -292,6 +303,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
         //
     }
 
+<a name="manually-logging-out"></a>
 #### ログアウト
 
 アプリケーションからユーザーをログアウトさせるには、`Auth`ファサードの`logout`メソッドを使用してください。これはユーザーセッションの認証情報をクリアします。
@@ -316,6 +328,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
 <a name="other-authentication-methods"></a>
 ### 他の認証方法
 
+<a name="authenticate-a-user-instance"></a>
 #### Userインスタンスによる認証
 
 既存ユーザーインスタンスをアプリケーションへログインさせたい場合、そのユーザーインスタンスの`login`メソッドを呼び出します。指定オブジェクトは`Illuminate\Contracts\Auth\Authenticatable`[契約](/docs/{{version}}/contracts)を実装しておく必要があります。Laravelの`App\Models\User`モデルは、このインターフェイスを始めから実装しています。この認証方法は、ユーザーがアプリケーションに登録した直後など、すでに有効なユーザーインスタンスがある場合に役立ちます。
@@ -329,6 +342,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
 
     Auth::guard('admin')->login($user);
 
+<a name="authenticate-a-user-by-id"></a>
 #### IDによるユーザー認証
 
 ユーザーをアプリケーションへIDによりログインさせる場合は、`loginUsingId`メソッドを使います。このメソッドは認証させたいユーザーの主キーを引数に受け取ります。
@@ -338,6 +352,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
     // 指定したユーザーでログインし、"remember"にする
     Auth::loginUsingId(1, true);
 
+<a name="authenticate-a-user-once"></a>
 #### ユーザーを一度だけ認証する
 
 `once`メソッドを使用すると、アプリケーションにユーザーをそのリクエストの間だけログインさせることができます。セッションもクッキーも使用しないため、ステートレスなAPIを構築する場合に便利です。
@@ -357,6 +372,7 @@ Laravelの認証サービスには`Auth`[ファサード](/docs/{{version}}/faca
 
 ミドルウェアをルートに指定すれば、ブラウザからこのルートへアクセスされると自動的に認証が求められます。デフォルトでは、`auth.basic`ミドルウェアはユーザーを決める"username"としてユーザーの`email`カラムを使用します。
 
+<a name="a-note-on-fastcgi"></a>
 #### FastCGIの注意
 
 PHP FastCGIを使用している場合、初期状態のままでHTTP基本認証は正しく動作しないでしょう。以下の行を`.htaccess`ファイルへ追加してください。
@@ -444,6 +460,7 @@ PHP FastCGIを使用している場合、初期状態のままでHTTP基本認�
 <a name="password-confirmation-routing"></a>
 ### ルート
 
+<a name="the-password-confirmation-form"></a>
 #### パスワード確認フォーム
 
 はじめに、ユーザーへパスワードの確認を行うビューを表示するために必要なルートを定義します。
@@ -454,6 +471,7 @@ PHP FastCGIを使用している場合、初期状態のままでHTTP基本認�
 
 ご想像のとおり、このルートが返すビューには、`password`フィールドを含むフォームが必要です。さらに、ユーザーがアプリケーションの保護領域に入っており、パスワードを確認する必要があることを説明するテキストをビュー内に含めてください。
 
+<a name="confirming-the-password"></a>
 #### パスワードの確認
 
 次に、「パスワードの確認」ビューからのフォームリクエストを処理するルートを定義します。このルートは、パスワードを検証し、ユーザーを目的先にリダイレクトする責務を持っています。

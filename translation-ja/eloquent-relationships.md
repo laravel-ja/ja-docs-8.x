@@ -93,6 +93,7 @@ Eloquentは親の`id`カラム（もしくはカスタム`$primaryKey`）と一�
 
     return $this->hasOne('App\Models\Phone', 'foreign_key', 'local_key');
 
+<a name="one-to-one-defining-the-inverse-of-the-relationship"></a>
 #### 逆の関係の定義
 
 これで`User`から`Phone`モデルへアクセスできるようになりました。今度は`Phone`モデルからそれを所有している`User`へアクセスするリレーションを定義しましょう。`hasOne`の逆のリレーションを定義するには、`belongsTo`メソッドを使います。
@@ -229,6 +230,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
 
 多対多の関係は`hasOne`と`hasMany`リレーションよりも多少複雑な関係です。このような関係として、ユーザー(user)が多くの役目(roles)を持ち、役目(role)も大勢のユーザー(users)に共有されるという例が挙げられます。たとえば多くのユーザーは"管理者"の役目を持っています。
 
+<a name="many-to-many-table-structure"></a>
 #### テーブル構造
 
 この関係を定義するには、`users`、`roles`、`role_user`の３テーブルが必要です。`role_user`テーブルは関係するモデル名をアルファベット順に並べたもので、`user_id`と`role_id`を持つ必要があります。
@@ -245,6 +247,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
         user_id - integer
         role_id - integer
 
+<a name="many-to-many-model-structure"></a>
 #### モデル構造
 
 多対多リレーションは`belongsToMany`メソッド呼び出しを記述することで定義します。例として`User`モデルに`roles`メソッドを定義してみましょう。
@@ -286,6 +289,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
 
     return $this->belongsToMany('App\Models\Role', 'role_user', 'user_id', 'role_id');
 
+<a name="many-to-many-defining-the-inverse-of-the-relationship"></a>
 #### 逆の関係の定義
 
 多対多のリレーションの逆リレーションを定義するには、関連するモデルで`belongsToMany`を呼び出してください。引き続きユーザーと役割の例を続けますが`Role`モデルで`users`メソッドを定義してみましょう。
@@ -309,6 +313,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
 
 ご覧の通り一方の`User`とまったく同じ定義のリレーションです。違いは`App\Models\User`モデルを参照していることです。同じ`belongsToMany`メソッドを使っているのですから、通常のテーブル名、キーカスタマイズのオプションは逆の多対多リレーションを定義するときでもすべて使用できます。
 
+<a name="retrieving-intermediate-table-columns"></a>
 #### 中間テーブルのカラム取得
 
 すでに学んだように、多対多リレーションの操作には中間テーブルが必要です。Eloquentこのテーブルを操作する便利な手段を用意しています。例として`User`オブジェクトが関連する`Role`オブジェクトを持っているとしましょう。このリレーションへアクセスした後、モデルの`pivot`属性を使い中間テーブルにアクセスできます。
@@ -331,6 +336,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
 
 > {note} ピボットテーブルでタイムスタンプを使用する場合、テーブルには `created_at`とʻupdated_at`の両方のタイムスタンプカラムが必要です。
 
+<a name="customizing-the-pivot-attribute-name"></a>
 #### `pivot`属性の名前変更
 
 前述の通り、中間テーブルには`pivot`属性を使ってアクセスできます。その際、アプリケーションの目的をより良く反映するために`pivot`属性の名前を変更できます。
@@ -349,6 +355,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
         echo $podcast->subscription->created_at;
     }
 
+<a name="filtering-relationships-via-intermediate-table-columns"></a>
 #### 中間テーブルのカラムを使った関係のフィルタリング
 
 リレーション定義時に、`wherePivot`や`wherePivotIn`、`wherePivotNotIn`を使い、`belongsToMany`が返す結果をフィルタリングすることも可能です。
@@ -420,6 +427,7 @@ Eloquentは、`Comment`モデルに対する外部キーを自動的に決める
 
 > **注意：** ピボットモデルでは、`SoftDeletes`トレイトを使わないほうが良いでしょう。ピボットレコードのソフト削除が必要な場合は、ピボットモデルを実際のEloquentモデルに変換することを考えてください。
 
+<a name="custom-pivot-models-and-incrementing-ids"></a>
 #### カスタム中間テーブルとIDの増分
 
 カスタム中間テーブルを使用し、多対多リレーションを定義しており、その中間テーブルが自動増加する主キーを持つ場合、カスタム中間テーブルクラスの`incrementing`プロパティを`true`にセットしてください。
@@ -560,6 +568,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
 <a name="one-to-one-polymorphic-relations"></a>
 ### １対１（ポリモーフィック）
 
+<a name="one-to-one-polymorphic-table-structure"></a>
 #### テーブル構造
 
 １対１ポリモーフィックリレーションは、１対１リレーションと似ています。しかしながら一つの関連付けで、対象モデルが複数のタイプのモデルに所属できる点が異なります。たとえば、ブログの`Post`と`User`が、`Image`モデルに対してポリモーフィックリレーションを共有しているとしましょう。１対１ポリモーフィックリレーションを使えば、１つでブログポストとユーザーアカウント両方に対し使用できる、画像のリストを利用できます。最初に、テーブル構造を見てみましょう。
@@ -580,6 +589,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
 
 `imageable_id`と`imageable_type`カラムに注目してください。`imageable_id`カラムは、ポストかユーザーのID値を含みます。一方の`imageable_type`カラムは、親モデルのクラス名を含みます。`imageable`関係がアクセスされた場合に、Eloquentにより`imageable_type`カラムは親のモデルがどんな「タイプ」であるかを決めるために使用されます。
 
+<a name="one-to-one-polymorphic-model-structure"></a>
 #### モデル構造
 
 次に、このリレーションを構築するために必要なモデルの定義を確認しましょう。
@@ -623,6 +633,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
         }
     }
 
+<a name="one-to-one-polymorphic-retrieving-the-relationship"></a>
 #### リレーションの取得
 
 データベーステーブルとモデルが定義できたら、モデルを使いリレーションへアクセスできます。例として、ポストに対するイメージを取得してみましょう。`image`動的プロパティが使用できます。
@@ -650,6 +661,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
 <a name="one-to-many-polymorphic-relations"></a>
 ### １対多（ポリモーフィック）
 
+<a name="one-to-many-polymorphic-table-structure"></a>
 #### テーブル構造
 
 １対多ポリモーフィックリレーションは、シンプルな１対多リレーションと似ています。しかしながら一つの関連付けで、対象モデルが複数のタイプのモデルに所属できる点が異なります。たとえば、アプリケーションのユーザーが、ポストと動画の両方へ「コメント」できるようにすると想像してください。ポリモーフィックリレーションを使用すれば、両方のシナリオに対し一つの`comments`テーブルで対処できます。最初に、このリレーションを構築するために必要な、テーブル構造を確認しましょう。
@@ -670,6 +682,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
         commentable_id - integer
         commentable_type - string
 
+<a name="one-to-many-polymorphic-model-structure"></a>
 #### モデル構造
 
 次に、このリレーションを構築するために必要なモデルの定義を確認しましょう。
@@ -713,6 +726,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
         }
     }
 
+<a name="one-to-many-polymorphic-retrieving-the-relationship"></a>
 #### リレーションの取得
 
 データベーステーブルとモデルが定義できたら、モデルを使いリレーションにアクセスできます。たとえば、あるポストの全コメントへアクセスするには、`comments`動的プロパティを使います。
@@ -734,6 +748,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
 <a name="many-to-many-polymorphic-relations"></a>
 ### 多対多（ポリモーフィック）
 
+<a name="many-to-many-polymorphic-table-structure"></a>
 #### テーブル構造
 
 多対多ポリモーフィックリレーションは、`morphOne`や`morphMany`リレーションより、少々複雑です。例として、ブログの`Post`と`Video`モデルが`Tag`モデルに対し、ポリモーフィックリレーションを共有しているとしましょう。多対多ポリモーフィックリレーションにより、一つのユニークなタグリストをブログポストと動画両方で共有できます。最初に、テーブル構造を確認してください。
@@ -755,6 +770,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
         taggable_id - integer
         taggable_type - string
 
+<a name="many-to-many-polymorphic-model-structure"></a>
 #### モデル構造
 
 次にモデルにその関係を用意しましょう。`Post`と`Video`モデルは両方ともベースのEloquentクラスの`morphToMany`メソッドを呼び出す`tags`メソッドを持っています。
@@ -776,6 +792,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
         }
     }
 
+<a name="many-to-many-polymorphic-defining-the-inverse-of-the-relationship"></a>
 #### 逆の関係の定義
 
 次に`Tag`モデルで関係する各モデルに対するメソッドを定義する必要があります。たとえばこの例であれば、`posts`メソッドと`videos`メソッドを用意します。
@@ -805,6 +822,7 @@ has many through（〜経由で多数へ紐づく）リレーションは、仲�
         }
     }
 
+<a name="many-to-many-polymorphic-retrieving-the-relationship"></a>
 #### リレーションの取得
 
 データベーステーブルとモデルが定義できたら、モデルを使いリレーションにアクセスできます。たとえば、ポストに対する全タグへアクセスするには、単に`tags`動的プロパティを使用します。
@@ -893,6 +911,7 @@ Eloquentリレーションはすべてメソッドとして定義されている
 
 すべての[クエリビルダ](/docs/{{version}}/queries)メソッドをリレーションで使用することも可能です。ですから、提供している全メソッドを学ぶために、クエリビルダのドキュメントを研究してください。
 
+<a name="chaining-orwhere-clauses-after-relationships"></a>
 #### リレーションに`orWhere`を続ける
 
 前記の例では、リレーションのクエリ時に制約を自由に追加できることをデモンストレーションしました。しかし、`orWhere`節はリレーション制約として、同じレベルの論理グループにしてしまうため、使用には注意が必要です。
@@ -1167,18 +1186,21 @@ Eagerロードのクエリに追加の制約を指定する必要がある場合
 
     select * from authors where id in (1, 2, 3, 4, 5, ...)
 
+<a name="eager-loading-multiple-relationships"></a>
 #### 複数のリレーションに対するEagerロード
 
 一回の操作で異なった複数のリレーションをEagerロードする必要がある場合もあります。その場合でも、`with`メソッドに引数を追加で渡すだけです。
 
     $books = App\Models\Book::with(['author', 'publisher'])->get();
 
+<a name="nested-eager-loading"></a>
 #### ネストしたEagerロード
 
 ネストしたリレーションをEagerロードする場合は「ドット」記法が使用できます。例としてEloquent文で全著者と著者個人のコンタクトも全部Eagerロードしてみましょう。
 
     $books = App\Models\Book::with('author.contacts')->get();
 
+<a name="nested-eager-loading-morphto-relationships"></a>
 #### `morphTo`リレーションのネストしたEagerロード
 
 リレーションにより返されるさまざまなエンティティのリレーションがネストしている、`morphTo`リレーションをEagerロードしたい場合は、`with`メソッドを`morphTo`リレーションの`morphWith`メソッドと組み合わせて使用します。
@@ -1213,6 +1235,7 @@ Eagerロードのクエリに追加の制約を指定する必要がある場合
             ]);
         }])->get();
 
+<a name="eager-loading-specific-columns"></a>
 #### 特定カラムのEagerロード
 
 検索しているリレーションの中ですべてのカラムが必要とは限りません。そのため、Eloquentではリレーションの中で取得したいカラムを指定できます。
@@ -1221,6 +1244,7 @@ Eagerロードのクエリに追加の制約を指定する必要がある場合
 
 > {note} この機能を使用する場合は`id`カラムと、取得するカラムリスト中の関連付けられた外部キーカラムすべてを常に含める必要があります。
 
+<a name="eager-loading-by-default"></a>
 #### デフォルトのEagerロード
 
 あるモデル取得時、常にリレーションを取得したい場合もあります。そのためには、モデルに`$with`プロパティを定義します。
@@ -1299,6 +1323,7 @@ Eagerロードに追加の制約をかける必要があるなら、ロードし
         ];
     }
 
+<a name="nested-lazy-eager-loading-morphto"></a>
 #### ネストした遅延Eagerローディングと`morphTo`
 
 `morphTo`リレーションをEagerロードし、同時にこのリレーションが数多くのエンティティとネストしたリレーションを返す場合、`loadMorph`メソッドを使用してください。
@@ -1461,6 +1486,7 @@ Eloquentは新しいモデルをリレーションへ追加するために便利
 <a name="updating-many-to-many-relationships"></a>
 ### 多対多関係
 
+<a name="attaching-detaching"></a>
 #### attach／detach
 
 多対多リレーションを操作時により便利なように、Eloquentはヘルパメソッドをいくつか用意しています。例としてユーザーが多くの役割を持ち、役割も多くのユーザーを持てる場合を考えてみましょう。モデルを結びつけている中間テーブルにレコードを挿入することにより、ユーザーに役割を持たせるには`attach`メソッドを使います。
@@ -1492,6 +1518,7 @@ Eloquentは新しいモデルをリレーションへ追加するために便利
         2 => ['expires' => $expires],
     ]);
 
+<a name="syncing-associations"></a>
 #### 関連付けの同期
 
 多対多の関連を構築するために`sync`メソッドも使用できます。`sync`メソッドへは中間テーブルに設置しておくIDの配列を渡します。その配列に指定されなかったIDは中間テーブルから削除されます。ですからこの操作が完了すると、中間テーブルには配列中のIDだけが存在することになります。
@@ -1506,18 +1533,21 @@ IDと一緒に中間テーブルの追加の値を渡すことができます。
 
     $user->roles()->syncWithoutDetaching([1, 2, 3]);
 
+<a name="toggling-associations"></a>
 #### 関連の切り替え
 
 多対多リレーションは、指定したIDの関連状態を「切り替える」、`toggle`メソッドも提供しています。指定したIDが現在関連している場合は、関連を切り離します。同様に現在関連がない場合は、関連付けます。
 
     $user->roles()->toggle([1, 2, 3]);
 
+<a name="saving-additional-data-on-a-pivot-table"></a>
 #### 中間テーブルへの追加データ保存
 
 多対多リレーションを操作する場合、`save`メソッドの第２引数へ追加の中間テーブルの属性を指定できます。
 
     App\Models\User::find(1)->roles()->save($role, ['expires' => $expires]);
 
+<a name="updating-a-record-on-a-pivot-table"></a>
 #### 中間テーブルのレコード更新
 
 中間テーブルに存在している行を更新する必要がある場合は、`updateExistingPivot`メソッドを使います。このメソッドは、中間テーブルの外部キーと更新する属性の配列を引数に取ります。

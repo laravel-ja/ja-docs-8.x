@@ -140,6 +140,7 @@ null | (null) null
 
     php artisan down --retry=60
 
+<a name="bypassing-maintenance-mode"></a>
 #### メンテナンスモードをバイパスする
 
 メンテナンスモード状態でも`secret`オプションを使い、メンテナンスモードパイパストークンを指定できます。
@@ -152,6 +153,7 @@ null | (null) null
 
 この隠しルートへアクセスすると、次にアプリケーションの`/`ルートへリダイレクトされます。ブラウザへこのクッキーが一度発行されると、メンテナンスモードでない状態と同様に、アプリケーションへ普通にブラウズできます。
 
+<a name="pre-rendering-the-maintenance-mode-view"></a>
 #### Viewメンテナンスモードビューの事前レンダリング
 
 開発時に`php artisan down`コマンドを使うと、Composerの依存パッケージやその他の基盤コンポーネントのアップデート中に、アプリケーションへユーザーがアクセスすると、エラーが発生することがあります。この理由は、アプリケーションがメンテナンスモードであると判断することやテンプレートエンジンによりメンテナンスモードビューをレンダーするには、Laravelフレームワークのかなりの部分が起動している必要があるからです。
@@ -160,12 +162,14 @@ null | (null) null
 
     php artisan down --render="errors::503"
 
+<a name="redirecting-maintenance-mode-requests"></a>
 #### メンテナンスモードのリクエストのリダイレクト
 
 URI:メンテナンスモード中、Laravelはユーザーがアクセスしてきたアプリケーションの全URLに対し、メンテナンスモードビューを表示します。お望みならば、全リクエストを特定のＵＲＬへリダイレクトすることも可能です。`redirect`オプションを使用してください。例として、全リクエストを`/`のＵＲＩへリダイレクトするとしましょう。
 
     php artisan down --redirect=/
 
+<a name="disabling-maintenance-mode"></a>
 #### Disabling Maintenance Mode
 
 メンテナンスモードから抜けるには、`up`コマンドを使います。
@@ -174,10 +178,12 @@ URI:メンテナンスモード中、Laravelはユーザーがアクセスして
 
 > {tip} `resources/views/errors/503.blade.php`を独自に定義することにより、メンテナンスモードのデフォルトテンプレートをカスタマイズできます。
 
+<a name="maintenance-mode-queues"></a>
 #### メンテナンスモードとキュー
 
 アプリケーションがメンテナンスモードの間、[キューされたジョブ](/docs/{{version}}/queues)は実行されません。メンテナンスモードから抜け、アプリケーションが通常状態へ戻った時点で、ジョブは続けて処理されます。
 
+<a name="alternatives-to-maintenance-mode"></a>
 #### メンテナンスモードの代替
 
 メンテナンスモードでは、アプリケーションがその間ダウンタイムになってしまいますので、Laravelでの開発でゼロダウンタイムを実現する[Envoyer](https://envoyer.io)のような代替サービスを検討してください。

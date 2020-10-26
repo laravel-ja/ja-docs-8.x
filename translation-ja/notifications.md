@@ -148,6 +148,7 @@ Laravelの各通知は、（通常、`app/Notifications`ディレクトリに設
 
     $user->notify((new InvoicePaid($invoice))->delay($when));
 
+<a name="customizing-notification-channel-queues"></a>
 #### 通知チャンネルキューのカスタマイズ
 
 各通知チャンネルが使用し、その通知がサポートしている特定のキューを指定する場合、通知へ`viaQueues`メソッドを定義してください。このメソッドはチャンネル名／キュー名のペアの配列を返してください。
@@ -204,10 +205,11 @@ Laravelの各通知は、（通常、`app/Notifications`ディレクトリに設
 
 この例では、挨拶、テキスト行、アクションの呼び出し、別のテキスト行を登録しています。これらのメソッドは、小さなトランザクションメールをシンプルで素早くフォーマットする、`MailMessage`オブジェクトが提供しています。メールチャンネルはテンプレートにより、メッセージの構成物をきれいでレスポンシブなHTMLメールへ、変換します。平文メールも用意されます。以下は`mail`チャンネルにより生成されたメールの例です。I
 
-<img src="https://laravel.com/img/docs/notification-example.png" width="551" height="596">
+<img src="https://laravel.com/img/docs/notification-example-2.png">
 
 > {tip} メール通知を行うときは、`config/app.php`設定ファイルの`name`値を確実に設定してください。この値は、メール通知メッセージのヘッダとフッタで使用されます。
 
+<a name="other-notification-formatting-options"></a>
 #### 他の通知フォーマットオプション
 
 通知クラスの中にテキストの「行(line)」を定義する代わりに、通知メールをレンダーするためのカスタムテンプレートを`view`メソッドを使い、指定できます。
@@ -406,6 +408,7 @@ Laravelの各通知は、（通常、`app/Notifications`ディレクトリに設
 
 > {tip} Mailableオブジェクトにファイルを添付するのとは異なり、`attachFromStorage`を使用してストレージディスクからファイルを直接添付できません。ストレージディスク上のファイルへの絶対パスを指定して`attach`メソッドを使用する必要があります。もしくは、`toMail`メソッドから[mailable](/docs/{{version}}/mail#generating-mailables)を返すこともできます。
 
+<a name="raw-data-attachments"></a>
 #### 生データの添付
 
 生のバイト文字列を添付する場合は、`attachData`メソッドを使います。
@@ -484,6 +487,7 @@ Markdownメール通知ではBladeコンポーネントとMarkdown記法が利�
     {{ config('app.name') }} 様
     @endcomponent
 
+<a name="button-component"></a>
 #### Buttonコンポーネント
 
 ボタンコンポーネントは中央寄せのボタンリンクをレンダーします。このコンポーネントは引数として、`url`とオプションの`color`を受け取ります。サポートしている色は`blue`、`green`、`red`です。メッセージに好きなだけのボタンコンポーネントを追加できます。
@@ -492,6 +496,7 @@ Markdownメール通知ではBladeコンポーネントとMarkdown記法が利�
     注文の確認
     @endcomponent
 
+<a name="panel-component"></a>
 #### Panelコンポーネント
 
 パネルコンポーネントは、メッセージの他の部分とは少し異なった背景色のパネルの中に、指定されたテキストブロックをレンダーします。これにより、指定するテキストに注目を集められます。
@@ -500,6 +505,7 @@ Markdownメール通知ではBladeコンポーネントとMarkdown記法が利�
     ここはパネルの内容です。
     @endcomponent
 
+<a name="table-component"></a>
 #### Tableコンポーネント
 
 テーブルコンポーネントは、MarkdownテーブルをHTMLテーブルへ変換します。このコンポーネントはMarkdownテーブルを内容として受け入れます。デフォルトのMarkdownテーブルの記法を使った、文字寄せをサポートしています。
@@ -520,6 +526,7 @@ Markdownメール通知ではBladeコンポーネントとMarkdown記法が利�
 
 このコマンドにより、`resources/views/vendor/mail`ディレクトリ下にMarkdownメールコンポーネントがリソース公開されます。`mail`ディレクトリ下に、`html`と`text`ディレクトリがあります。各ディレクトリは名前が示す形式で、利用できるコンポーネントすべてのレスポンシブなプレゼンテーションを持っています。これらのコンポーネントはお好きなよう、自由にカスタマイズしてください。
 
+<a name="customizing-the-css"></a>
 #### CSSのカスタマイズ
 
 コンポーネントをエクスポートすると、`resources/views/vendor/mail/html/themes`ディレクトリに、`default.css`ファイルが用意されます。このファイル中のCSSをカスタマイズすれば、Markdownメール通知変換後のHTML形式の中に、インラインCSSとして自動的に取り込まれます。
@@ -575,6 +582,7 @@ LaravelのMarkdownコンポーネントの完全に新しいテーマを作成�
         ];
     }
 
+<a name="todatabase-vs-toarray"></a>
 #### `toDatabase` Vs. `toArray`
 
 `toArray`メソッドは、JavaScriptクライアントへどのデータをブロードキャストするかを決めるために、`broadcast`チャンネルでも使用されます。`database`と`broadcast`チャンネルで、別々の配列プレゼンテーションを持ちたい場合は、`toArray`メソッドの代わりに、`toDatabase`メソッドを定義してください。
@@ -654,6 +662,7 @@ LaravelのMarkdownコンポーネントの完全に新しいテーマを作成�
         ]);
     }
 
+<a name="broadcast-queue-configuration"></a>
 #### ブロードキャストキュー設定
 
 すべてのブロードキャスト通知はキューへ投入されます。ブロードキャスト操作に使用されるキューの接続や名前を設定したい場合は、`BroadcastMessage`の`onConnection`と`onQueue`メソッドを使用してください。
@@ -662,6 +671,7 @@ LaravelのMarkdownコンポーネントの完全に新しいテーマを作成�
                     ->onConnection('sqs')
                     ->onQueue('broadcasts');
 
+<a name="customizing-the-notification-type"></a>
 #### 通知タイプのカスタマイズ
 
 データの指定に付け加え、すべてのブロードキャストは通知の完全なクラス名を含む`type`フィールドを持っています。JavaScriptクライアントへ提供される通知`type`をカスタマイズしたい場合は、通知クラスで`broadcastType`メソッドを定義してください。
@@ -681,13 +691,14 @@ LaravelのMarkdownコンポーネントの完全に新しいテーマを作成�
 <a name="listening-for-notifications"></a>
 ### 通知のリッスン
 
-プライベートチャンネルにブロードキャストされる通知は、`{notifiable}.{id}`命名規則に従いフォーマットされます。ですから、IDが`1`の`App\Models\User`インスタンスを通知で送る場合、`App.User.1`プライベートチャンネルへブロードキャストされます。[Laravel Echo](/docs/{{version}}/broadcasting)を使用していれば、`notification`ヘルパメソッドを使い、チャンネルへの通知を簡単にリッスンできます。
+プライベートチャンネルにブロードキャストされる通知は、`{notifiable}.{id}`命名規則に従いフォーマットされます。ですから、IDが`1`の`App\Models\User`インスタンスを通知で送る場合、`App.Models.User.1`プライベートチャンネルへブロードキャストされます。[Laravel Echo](/docs/{{version}}/broadcasting)を使用していれば、`notification`ヘルパメソッドを使い、チャンネルへの通知を簡単にリッスンできます。
 
-    Echo.private('App.User.' + userId)
+    Echo.private('App.Models.User.' + userId)
         .notification((notification) => {
             console.log(notification.type);
         });
 
+<a name="customizing-the-notification-channel"></a>
 #### 通知チャンネルのカスタマイズ
 
 ブロードキャスト通知のNotifiableエンティティを受け取るチャンネルをカスタマイズしたい場合は、そのエンティティに`receivesBroadcastNotificationsOn`メソッドを定義してください。
@@ -775,6 +786,7 @@ Nexmoアカウントで事前に定義したメッセージテンプレートで
 
 > {tip} [SMS通知のルート指定](#routing-sms-notifications)と同様に、通知モデル`routeNotificationForShortcode`メソッドを実装する必要があります。
 
+<a name="unicode-content"></a>
 #### Unicodeコンテンツ
 
 SMSメッセージにUnicode文字を含む場合は、`NexmoMessage`インスタンスの生成時に、`unicode`メソッドを呼び出してください。
@@ -867,10 +879,7 @@ Slackを通して通知を送れるようにするには、ComposerでSlackの�
                     ->content('One of your invoices has been paid!');
     }
 
-この例では、Slackへ一行のテキストを送っており、以下のようなメッセージが生成されます。
-
-<img src="https://laravel.com/img/docs/basic-slack-notification.png">
-
+<a name="customizing-the-sender-recipient"></a>
 #### 送信者と受信者のカスタマイズ
 
 `from`と`to`メソッドを使い、送信者と受信者のカスタマイズができます。`from`メソッドはユーザー名と絵文字識別子を受け付け、`to`メソッドはチャンネルかユーザー名を受け取ります。
@@ -929,10 +938,6 @@ Slackメッセージに「添付」を追加することもできます。添付
                     });
     }
 
-上の例は、次のようなSlackメッセージを生成します。
-
-<img src="https://laravel.com/img/docs/basic-slack-attachment.png">
-
 添付ではさらに、ユーザーに対し表示すべきデータの配列を指定することもできます。簡単によめるよう指定したデータは、テーブルスタイルの形式で表示されます。
 
     /**
@@ -959,10 +964,7 @@ Slackメッセージに「添付」を追加することもできます。添付
                     });
     }
 
-上の例は、以下のようなSlackメッセージを作成します。
-
-<img src="https://laravel.com/img/docs/slack-fields-attachment.png">
-
+<a name="markdown-attachment-content"></a>
 #### Markdown添付コンテンツ
 
 添付フィールドをMarkdownで構成している場合、`markdown`メソッドでSlackへ指定した添付フィールドがMarkdown形式のテキストであるため、パースしてから表示するように指示します。このメソッドが受け取る値は、`pretext`、`text`、`fields`です。Slackの添付形式についての詳細は、[Slack APIドキュメント](https://api.slack.com/docs/message-formatting#message_formatting)をご覧ください。
@@ -1028,6 +1030,7 @@ Laravelでは、現在のデフォルト言語とは別のローケルで、通�
 
     Notification::locale('es')->send($users, new InvoicePaid($invoice));
 
+<a name="user-preferred-locales"></a>
 ### ユーザー希望のローケル
 
 ユーザーの希望するローケルをアプリケーションで保存しておくことは良くあります。notifiableモデルで`HasLocalePreference`契約を実装すると、通知送信時にこの保存してあるローケルを使用するように、Laravelへ指示できます。

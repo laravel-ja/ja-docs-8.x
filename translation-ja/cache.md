@@ -31,6 +31,7 @@ Laravelは読み書きしやすい、多くのキャッシュシステムに対�
 <a name="driver-prerequisites"></a>
 ### ドライバ事前要件
 
+<a name="prerequisites-database"></a>
 #### データベース
 
 データベースをキャッシュドライバに使用する場合、キャッシュアイテムを構成するテーブルを用意する必要があります。このテーブルの「スキーマ」を定義するサンプルを見てください。
@@ -43,6 +44,7 @@ Laravelは読み書きしやすい、多くのキャッシュシステムに対�
 
 > {tip} 正確なスキーマのマイグレーションを生成するために、`php artisan cache:table` Artisanコマンドを使用することもできます。
 
+<a name="memcached"></a>
 #### Memcached
 
 Memcachedキャッシュを使用する場合は、[Memcached PECLパッケージ](https://pecl.php.net/package/memcached)をインストールする必要があります。全Memcachedサーバは、`config/cache.php`設定ファイルにリストしてください。
@@ -65,6 +67,7 @@ Memcachedキャッシュを使用する場合は、[Memcached PECLパッケー�
         ],
     ],
 
+<a name="redis"></a>
 #### Redis
 
 LaravelでRedisを使う前にPECLでPhpRedis PHP拡張、もしくはComposerで`predis/predis`パッケージ(~1.0）のどちらかをインストールしておく必要があります。
@@ -102,6 +105,7 @@ Redisの設定についての詳細は、[Laravelドキュメントページ](/d
         }
     }
 
+<a name="accessing-multiple-cache-stores"></a>
 #### 複数のキャッシュ保存先へのアクセス
 
 `Cache`ファサードの`store`メソッドを使い、さまざまなキャッシュ保存域へアクセスできます。`store`メソッドに渡すキーは、`cache`設定ファイルの`stores`設定配列にリストしている保存域の一つです。
@@ -125,6 +129,7 @@ Redisの設定についての詳細は、[Laravelドキュメントページ](/d
         return DB::table(...)->get();
     });
 
+<a name="checking-for-item-existence"></a>
 #### アイテムの存在確認
 
 `has`メソッドで、キャッシュにアイテムが存在しているかを調べることができます。このメソッドは、値が`null`の場合、`false`を返します。
@@ -133,6 +138,7 @@ Redisの設定についての詳細は、[Laravelドキュメントページ](/d
         //
     }
 
+<a name="incrementing-decrementing-values"></a>
 #### 値の増減
 
 `increment`と`decrement`メソッドはキャッシュの整数アイテムの値を調整するために使用します。両方のメソッドともそのアイテムの値をどのくらい増減させるかの増分をオプションの第２引数に指定できます。
@@ -142,6 +148,7 @@ Redisの設定についての詳細は、[Laravelドキュメントページ](/d
     Cache::decrement('key');
     Cache::decrement('key', $amount);
 
+<a name="retrieve-store"></a>
 #### 取得不可時更新
 
 キャッシュからアイテムを取得しようとして、指定したアイテムが存在しない場合は、デフォルト値を保存したい場合もあるでしょう。たとえば、全ユーザーをキャッシュから取得しようとし、存在していない場合はデータベースから取得しキャッシュへ追加したい場合です。`Cache::remember`メソッドを使用します。
@@ -158,6 +165,7 @@ Redisの設定についての詳細は、[Laravelドキュメントページ](/d
         return DB::table('users')->get();
     });
 
+<a name="retrieve-delete"></a>
 #### 取得後削除
 
 キャッシュからアイテムを取得した後に削除したい場合は、`pull`メソッドを使用します。`get`メソッドと同様にキャッシュにアイテムが存在していない場合は、`null`が返ります。
@@ -179,12 +187,14 @@ Redisの設定についての詳細は、[Laravelドキュメントページ](/d
 
     Cache::put('key', 'value', now()->addMinutes(10));
 
+<a name="store-if-not-present"></a>
 #### 非存在時保存
 
 `add`メソッドはキャッシュに保存されていない場合のみ、そのアイテムを保存します。キャッシュへ実際にアイテムが追加された場合は`true`が返ってきます。そうでなければ`false`が返されます。
 
     Cache::add('key', 'value', $seconds);
 
+<a name="storing-items-forever"></a>
 #### アイテムを永遠に保存
 
 `forever`メソッドはそのアイテムをキャッシュへ永遠に保存します。こうした値は有効期限が切れないため、`forget`メソッドを使用し、削除する必要があります。
@@ -275,6 +285,7 @@ Redisの設定についての詳細は、[Laravelドキュメントページ](/d
 <a name="lock-driver-prerequisites"></a>
 ### ドライバ事前要件
 
+<a name="atomic-locks-prerequisites-database"></a>
 #### データベース
 
 `database`キャッシュドライバを使用する場合は、キャッシュロックを含むテーブルを準備する必用があります。以下にテーブルの`Schema`定義の例を紹介します。

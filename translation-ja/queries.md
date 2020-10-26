@@ -35,6 +35,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
 <a name="retrieving-results"></a>
 ## 結果の取得
 
+<a name="retrieving-all-rows-from-a-table"></a>
 #### 全レコードの取得
 
 クエリを書くには`DB`ファサードの`table`メソッドを使います。`table`メソッドは指定したテーブルに対するクエリビルダインスタンスを返します。これを使いクエリに制約を加え、最終的な結果を取得するチェーンを繋げます。次に、最終的な結果を`get`で取得します。
@@ -67,6 +68,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
         echo $user->name;
     }
 
+<a name="retrieving-a-single-row-column-from-a-table"></a>
 #### テーブルから１カラム／１レコード取得
 
 データベーステーブルから１レコードのみ取得する必要がある場合は、`first`メソッドを使います。このメソッドは`stdClass`オブジェクトを返します。
@@ -83,6 +85,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
 
     $user = DB::table('users')->find(3);
 
+<a name="retrieving-a-list-of-column-values"></a>
 #### カラム値をリストで取得
 
 単一カラムの値をコレクションで取得したい場合は`pluck`メソッドを使います。以下の例では役割名(title)をコレクションで取得しています。
@@ -148,6 +151,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                     ->where('finalized', 1)
                     ->avg('price');
 
+<a name="determining-if-records-exist"></a>
 #### レコード存在の判定
 
 クエリの制約にマッチするレコードが存在するかを調べるため、`count`メソッドを使用する代わりに、`exists`や`doesntExist`メソッドを使うこともできます。
@@ -159,6 +163,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
 <a name="selects"></a>
 ## SELECT
 
+<a name="specifying-a-select-clause"></a>
 #### SELECT節の指定
 
 常にデータベースレコードの全カラムが必要ではないでしょう。クエリの`select`節を`select`メソッドで指定できます。
@@ -193,6 +198,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
 
 `DB::raw`を使用する代わりに、クエリのさまざまな箇所へSQL文を挿入する、以降のメソッドも使用できます。
 
+<a name="selectraw"></a>
 #### `selectRaw`
 
 `selectRaw`メソッドは、`addSelect(DB::raw(...))`に置き換えて使用できます。このメソッドは、第２引数へバインド値の配列を指定することも可能です。
@@ -201,6 +207,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                     ->selectRaw('price * ? as price_with_tax', [1.0825])
                     ->get();
 
+<a name="whereraw-orwhereraw"></a>
 #### `whereRaw / orWhereRaw`
 
 `whereRaw`と`orWhereRaw`メソッドは、クエリへ`where`節を挿入できます。これらのメソッドは、第２引数にバインド値の配列を指定することもできます。
@@ -209,6 +216,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                     ->whereRaw('price > IF(state = "TX", ?, 100)', [200])
                     ->get();
 
+<a name="havingraw-orhavingraw"></a>
 #### `havingRaw / orHavingRaw`
 
 `havingRaw`と`orHavingRaw`メソッドは、文字列を`having`節の値として指定するために使用します。両メソッドは、第２引数にオプションとして、バインドの配列を渡すことができます。
@@ -219,6 +227,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                     ->havingRaw('SUM(price) > ?', [2500])
                     ->get();
 
+<a name="orderbyraw"></a>
 #### `orderByRaw`
 
 `orderByRaw`メソッドは、文字列を`order by`節の値として指定するために使用します。
@@ -227,6 +236,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                     ->orderByRaw('updated_at - created_at DESC')
                     ->get();
 
+<a name="groupbyraw"></a>
 ### `groupByRaw`
 
 `groupByRaw`メソッドは、文字列を`group by`節の値として指定するために使用します。
@@ -239,6 +249,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
 <a name="joins"></a>
 ## JOIN
 
+<a name="inner-join-clause"></a>
 #### INNER JOIN文
 
 さらにクエリビルダはJOIN文を書くためにも使用できます。基本的な"INNER JOIN"を実行するには、クエリビルダインスタンスに`join`メソッドを使ってください。`join`メソッドの第１引数は結合したいテーブル名、それ以降の引数にはJOIN時のカラムの制約条件を指定します。一つのクエリで複数のテーブルを結合することもできます。
@@ -249,6 +260,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                 ->select('users.*', 'contacts.phone', 'orders.price')
                 ->get();
 
+<a name="left-join-right-join-clause"></a>
 #### LEFT JOIN／RIGHT JOIN文
 
 "INNER JOIN"の代わりに"LEFT JOIN"か"RIGHT JOIN"を実行したい場合は、`leftJoin`や`rightJoin`メソッドを使います。これらのメソッドの使い方は`join`メソッドと同じです。
@@ -261,6 +273,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                 ->rightJoin('posts', 'users.id', '=', 'posts.user_id')
                 ->get();
 
+<a name="cross-join-clause"></a>
 #### クロスジョイン文
 
 「クロスジョイン」を実行するときは、接合したいテーブル名を指定し、`crossJoin`メソッドを使ってください。クロスジョインにより、最初のテーブルと指定したテーブルとの、デカルト積を生成します。
@@ -269,6 +282,7 @@ LaravelクエリビルダはアプリケーションをSQLインジェクショ�
                 ->crossJoin('colors')
                 ->get();
 
+<a name="advanced-join-clauses"></a>
 #### 上級のJOIN文
 
 さらに上級なJOIN節を指定することもできます。そのためには`join`メソッドの第２引数に「クロージャ」を指定します。その「クロージャ」は`JOIN`節に制約を指定できるようにする`JoinClause`オブジェクトを受け取ります。
@@ -288,6 +302,7 @@ JOINに"where"節を使用したい場合はjoinの中で`where`や`orWhere`を�
             })
             ->get();
 
+<a name="subquery-joins"></a>
 #### サブクエリのJOIN
 
 サブクエリへクエリをJOINするために、`joinSub`、`leftJoinSub`、`rightJoinSub`メソッドを利用できます。各メソッドは３つの引数を取ります。サブクエリ、テーブルのエイリアス、関連するカラムを定義するクロージャです。
@@ -320,6 +335,7 @@ JOINに"where"節を使用したい場合はjoinの中で`where`や`orWhere`を�
 <a name="where-clauses"></a>
 ## WHERE節
 
+<a name="simple-where-clauses"></a>
 #### 単純なWHERE節
 
 `where`節をクエリに追加するには、クエリビルダインスタンスの`where`メソッドを使います。基本的な`where`の呼び出しでは３つの引数を使います。第１引数はカラム名です。第２引数はデータベースがサポートしているオペレーターです。第３引数はカラムに対して比較する値です。
@@ -353,6 +369,7 @@ JOINに"where"節を使用したい場合はjoinの中で`where`や`orWhere`を�
         ['subscribed', '<>', '1'],
     ])->get();
 
+<a name="or-statements"></a>
 #### OR節
 
 WHEREの結合にチェーンで`or`節をクエリに追加できます。`orWhere`メソッドは`where`メソッドと同じ引数を受け付けます。
@@ -374,6 +391,7 @@ WHEREの結合にチェーンで`or`節をクエリに追加できます。`orWh
 
     // SQL: select * from users where votes > 100 or (name = 'Abigail' and votes > 50)
 
+<a name="additional-where-clauses"></a>
 #### その他のWHERE節
 
 **whereBetween / orWhereBetween**
@@ -568,6 +586,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
 <a name="ordering-grouping-limit-and-offset"></a>
 ## 順序、グループ分け、制限、オフセット
 
+<a name="orderby"></a>
 #### orderBy
 
 `orderBy`メソッドは指定したカラムでクエリ結果をソートします。`orderBy`メソッドの最初の引数はソート対象のカラムで、第２引数はソートの昇順(`asc`)と降順(`desc`)をコントロールします。
@@ -583,6 +602,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
                     ->orderBy('email', 'asc')
                     ->get();
 
+<a name="latest-oldest"></a>
 #### latest／oldest
 
 `latest`と`oldest`メソッドにより、データの結果を簡単に整列できます。デフォルトで、結果は`created_at`カラムによりソートされます。ソートキーとしてカラム名を渡すこともできます。
@@ -591,6 +611,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
                     ->latest()
                     ->first();
 
+<a name="inrandomorder"></a>
 #### inRandomOrder
 
 `inRandomOrder`メソッドはクエリ結果をランダム順にする場合で使用します。たとえば、以下のコードはランダムにユーザーを一人取得します。
@@ -599,6 +620,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
                     ->inRandomOrder()
                     ->first();
 
+<a name="reorder"></a>
 #### reorder
 
 `reorder`メソッドは、既存のソート順をすべて削除します。オプションとして、新しいソート順を指定できます。例として、既存のソート順をすべて削除してみましょう。
@@ -613,6 +635,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
 
     $usersOrderedByEmail = $query->reorder('email', 'desc')->get();
 
+<a name="groupby-having"></a>
 #### groupBy / having
 
 `groupBy`と`having`メソッドはクエリ結果をグループへまとめるために使用します。`having`メソッドは`where`メソッドと似た使い方です。
@@ -631,6 +654,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
 
 より上級な`having`文については、[`havingRaw`](#raw-methods)メソッドを参照してください。
 
+<a name="skip-take"></a>
 #### skip / take
 
 クエリから限られた(`LIMIT`)数のレコードを受け取ったり、結果から指定した件数を飛ばしたりするには、`skip`と`take`メソッドを使います。
@@ -703,6 +727,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
 
 > {note} SQL Serverを除くすべてのデータベースでは、`upsert`メソッドの第２引数のカラムへ"primary"か"unique"なインデックスが必要です。
 
+<a name="auto-incrementing-ids"></a>
 #### 自動増分ID
 
 テーブルが自動増分IDを持っている場合、`insertGetId`メソッドを使うとレコードを挿入し、そのレコードのIDを返してくれます。
@@ -722,6 +747,7 @@ JSON配列を長さでクエリするには、`whereJsonLength`を使います�
                   ->where('id', 1)
                   ->update(['votes' => 1]);
 
+<a name="update-or-insert"></a>
 #### UPDATEかINSERT
 
 データベースへ一致するレコードが存在している場合は更新し、一致するレコードがない場合は新規追加したいことも起きます。このようなシナリオでは、`updateOrInsert`メソッドが使えます。`updateOrInsert`メソッドは２つの引数を取ります。見つけようとするレコードの条件の配列と、更新するカラム／値のペアの配列です。

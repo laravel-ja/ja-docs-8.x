@@ -17,6 +17,7 @@ Laravelのエンクリプタを使用する準備として、`config/app.php`設
 <a name="using-the-encrypter"></a>
 ## エンクリプタの使用
 
+<a name="encrypting-a-value"></a>
 #### 値の暗号化
 
 `Crypt`ファサードの`encryptString`ヘルパを使用し、値を暗号化できます。OpenSSLと`AES-256-CBC`アルゴリズムが使用され、すべての値は暗号化されます。さらに、全暗号化済み値はメッセージ認証コード(MAC)を使用し署名されますので、暗号化済み値の変更は感知されます。
@@ -49,6 +50,7 @@ Laravelのエンクリプタを使用する準備として、`config/app.php`設
         }
     }
 
+<a name="decrypting-a-value"></a>
 #### 値の復号
 
 `Crypt`ファサードの`decryptString`ヘルパにより、値を復号できます。MACが無効な場合など、その値が正しくない時は`Illuminate\Contracts\Encryption\DecryptException`が投げられます。

@@ -156,6 +156,7 @@ Laravelリソースルートは一行のコードで、典型的な「CRUD」ル
         'posts' => PostController::class,
     ]);
 
+<a name="actions-handled-by-resource-controller"></a>
 #### リソースコントローラにより処理されるアクション
 
 動詞      | URI                    | アクション       | ルート名
@@ -168,6 +169,7 @@ GET       | `/photos/{photo}/edit` | edit         | photos.edit
 PUT/PATCH | `/photos/{photo}`      | update       | photos.update
 DELETE    | `/photos/{photo}`      | destroy      | photos.destroy
 
+<a name="specifying-the-resource-model"></a>
 #### リソースモデルの指定
 
 ルートモデル結合を使用しているが、リソースコントローラのメソッドでタイプヒントされるモデルインスタンスを指定したい場合は、コントローラの生成時に`--model`オプションを使用します。
@@ -187,6 +189,7 @@ DELETE    | `/photos/{photo}`      | destroy      | photos.destroy
         'create', 'store', 'update', 'destroy'
     ]);
 
+<a name="api-resource-routes"></a>
 #### APIリソースルート
 
 APIに使用するリソースルートを宣言する場合、`create`や`edit`のようなHTMLテンプレートを提供するルートを除外したいことがよく起こります。そのため、これらの２ルートを自動的に除外する、`apiResource`メソッドが使用できます。
@@ -215,6 +218,7 @@ APIに使用するリソースルートを宣言する場合、`create`や`edit`
 
     /photos/{photo}/comments/{comment}
 
+<a name="scoping-nested-resources"></a>
 #### ネストしたリソースのスコープ
 
 Laravelの[暗黙的なモデル結合](/docs/{{version}}/routing#implicit-model-binding-scoping)機能は、依存解決された子モデルが親モデルに属していることが確約されるように、ネストされたバインディングのスコープを自動的に設定します。ネストされたリソースを定義するときに、`scoped`メソッドを使用することで、自動スコープを有効にするだけでなく、子リソースのどのフィールドを獲得するかLaravelに指示できます。
@@ -227,6 +231,7 @@ Laravelの[暗黙的なモデル結合](/docs/{{version}}/routing#implicit-model
 
     /photos/{photo}/comments/{comment:slug}
 
+<a name="shallow-nesting"></a>
 #### Shallowネスト
 
 子のIDがすでに一意な識別子になってる場合、親子両方のIDをURIに含める必要はまったくありません。主キーの自動増分のように、一意の識別子をURIセグメント中でモデルを識別するために使用しているのなら、「shallow（浅い）ネスト」を使用できます。
@@ -326,6 +331,7 @@ DELETE    | `/comments/{comment}`             | destroy      | comments.destroy
 <a name="dependency-injection-and-controllers"></a>
 ## 依存注入とコントローラ
 
+<a name="constructor-injection"></a>
 #### コンストラクターインジェクション
 
 全コントローラの依存を解決するために、Laravelの[サービスコンテナ](/docs/{{version}}/container)が使用されます。これにより、コントローラが必要な依存をコンストラクターにタイプヒントで指定できるのです。依存クラスは自動的に解決され、コントローラへインスタンスが注入されます。
@@ -357,6 +363,7 @@ DELETE    | `/comments/{comment}`             | destroy      | comments.destroy
 
 [Laravelの契約](/docs/{{version}}/contracts)もタイプヒントに指定できます。コンテナが依存解決可能であれば、タイプヒントで指定できます。 アプリケーションによりますが、依存をコントローラへ注入することで、より良いテスタビリティが得られるでしょう。
 
+<a name="method-injection"></a>
 #### メソッドインジェクション
 
 コンストラクターによる注入に加え、コントローラのメソッドでもタイプヒントにより依存を指定することもできます。メソッドインジェクションの典型的なユースケースは、コントローラメソッドへ`Illuminate\Http\Request`インスタンスを注入する場合です。

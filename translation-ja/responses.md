@@ -19,6 +19,7 @@
 <a name="creating-responses"></a>
 ## レスポンスの生成
 
+<a name="strings-arrays"></a>
 #### 文字列と配列
 
 当然ながらすべてのルートやコントローラは、ユーザーのブラウザに対し、何らかのレスポンスを返す必要があります。Laravelはレスポンスを返すためにさまざまな手段を用意しています。一番基本的なレスポンスは、ルートかコントローラから文字列を返します。フレームワークが自動的に、文字列を完全なHTTPレスポンスへ変換します。
@@ -35,6 +36,7 @@
 
 > {tip} [Eloquentコレクション](/docs/{{version}}/eloquent-collections)も返せることを知っていますか？　自動的にJSONへ変換されます。試してください！
 
+<a name="response-objects"></a>
 #### レスポンスオブジェクト
 
 通常、皆さんは単純な文字列や配列をルートアクションから返すだけじゃありませんよね。代わりに、`Illuminate\Http\Response`インスタンスか[ビュー](/docs/{{version}}/views)を返したいですよね。
@@ -65,6 +67,7 @@
                     'X-Header-Two' => 'Header Value',
                 ]);
 
+<a name="cache-control-middleware"></a>
 #### キャッシュコントロール・ミドルウェア
 
 ルートグループへ`Cache-Control`ヘッダを簡単に指定できるよう、Laravelは`cache.headers`を用意しています。ディレクティブのリストの中で`etag`が指定されていると、レスポンスコンテンツのMD5ハッシュが、ETag識別子へ自動的にセットされます。
@@ -142,6 +145,7 @@ Laravelにより生成されるクッキーは、クライアントにより変�
 
     return redirect()->route('profile', ['id' => 1]);
 
+<a name="populating-parameters-via-eloquent-models"></a>
 #### Eloquentモデルによる、パラメータの埋め込み
 
 Eloquentモデルの"ID"をルートパラメーターとしてリダイレクトする場合は、モデルをそのまま渡してください。IDは自動的にとり出されます。
@@ -248,6 +252,7 @@ JSONPレスポンスを生成したい場合は、`json`メソッドと`withCall
 
 > {note} ファイルダウンロードを管理しているSymfony HttpFoundationクラスは、ASCIIのダウンロードファイル名を指定するよう要求しています。
 
+<a name="streamed-downloads"></a>
 #### ストリームダウンロード
 
 操作するコンテンツをディスクへ書き込まずに、指定した操作の文字列レスポンスをダウンロード可能なレスポンスへ変えたい場合もあります。そうしたシナリオでは、`streamDownload`メソッドを使用します。このメソッドは引数として、コールバック、ファイル名、それにオプションとしてヘッダの配列を受け取ります。

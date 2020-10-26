@@ -27,6 +27,7 @@ LaravelはSQLを直接使用する場合でも、[Fluentクエリビルダ](/doc
 
 デフォルトでLaravelのサンプル[環境設定](/docs/{{version}}/configuration#environment-configuration)は、ローカルマシン上でLaravelでの開発を行うための便利な仮想マシンである[Laravel Homestead](/docs/{{version}}/homestead)用に設定してあります。ローカルのデータベースに合わせ、自由に変更してくだい。
 
+<a name="sqlite-configuration"></a>
 #### SQLite設定
 
 `touch database/database.sqlite`などのコマンドを使い、新しいSQLiteデータベースを作成した後、この新しいデータベースの絶対パスを環境変数へ設定します。
@@ -38,6 +39,7 @@ SQLiteで外部キー制約を有効にするには、`DB_FOREIGN_KEYS`環境変
 
     DB_FOREIGN_KEYS=true
 
+<a name="configuration-using-urls"></a>
 #### URLを使用したデータベース設定
 
 通常、データベース接続は`host`、`database`、`username`、`password`などのような複数の設定値を用いて設定します。これらの各設定値は、対応する環境変数を持っています。つまり、実働サーバ上でデータベース接続情報を設定する場合に、多くの環境変数を管理する必要があります。
@@ -85,6 +87,7 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
 
 `read`と`write`の配列には、メインの配列の値をオーバーライドしたいものだけ指定してください。この場合、`192.168.1.1`は"read"接続に利用され、一方`192.168.1.3`が"write"接続に利用されます。メインの`mysql`配列に含まれる、データベース接続情報、プレフィックス、文字セットなどその他のオプションは、両方の接続で共有されます。
 
+<a name="the-sticky-option"></a>
 #### `sticky`オプション
 
 `sticky`オプションは**オプショナル**値で、現在のリクエストサイクルでデータベースへ書き込まれたレコードを即時に読み込みます。`sticky`オプションが有効なとき、現在のリクエストサイクルにデータベースに対して「書き込み(write)」処理が実行されると、すべての「読み込み(read)」操作で"write"接続が使われるようになります。これにより、あるリクエストサイクルで書き込んだデータが、同じリクエストでは確実にデータベースから即時読み込まれます。
@@ -105,6 +108,7 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
 
 データベース接続の設定を済ませれば、`DB`ファサードを使用しクエリを実行できます。`DB`ファサードは `select`、`update`、`insert`、`delete`、`statement`のクエリタイプごとにメソッドを用意しています。
 
+<a name="running-a-select-query"></a>
 #### SELECTクエリの実行
 
 基本的なクエリを行うには、`DB`ファサードの`select`メソッドを使います。
@@ -139,30 +143,35 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
         echo $user->name;
     }
 
+<a name="using-named-bindings"></a>
 #### 名前付き結合の使用
 
 パラメーター結合に`?`を使う代わりに名前付きの結合でクエリを実行できます。
 
     $results = DB::select('select * from users where id = :id', ['id' => 1]);
 
+<a name="running-an-insert-statement"></a>
 #### INSERT文の実行
 
 `insert`文を実行するには、`DB`ファサードの`insert`メソッドを使います。`select`と同様に、このメソッドは第１引数にSQLクエリそのもの、第２引数に結合を取ります。
 
     DB::insert('insert into users (id, name) values (?, ?)', [1, 'Dayle']);
 
+<a name="running-an-update-statement"></a>
 #### UPDATE文の実行
 
 データベースの既存レコードの更新には、`update`メソッドを使います。このメソッドの返却値は影響を受けたレコード数です。
 
     $affected = DB::update('update users set votes = 100 where name = ?', ['John']);
 
+<a name="running-a-delete-statement"></a>
 #### DELETE文の実行
 
 データベースからレコードを削除するには、`delete`メソッドを使います。`update`と同様に、削除したレコード数が返されます。
 
     $deleted = DB::delete('delete from users');
 
+<a name="running-a-general-statement"></a>
 #### 通常のSQL文を実行する
 
 いつくかのデータベース文は値を返しません。こうしたタイプの操作には、`DB`ファサードの`statement`メソッドを使います。
@@ -219,6 +228,7 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
         DB::table('posts')->delete();
     });
 
+<a name="handling-deadlocks"></a>
 #### デッドロックの処理
 
 `transaction`メソッドは第２引数に、デッドロック発生時のトランザクション再試行回数を指定できます。試行回数を過ぎたら、例外が投げられます。
@@ -229,6 +239,7 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
         DB::table('posts')->delete();
     }, 5);
 
+<a name="manually-using-transactions"></a>
 #### 手動トランザクション
 
 トランザクションを自分で開始し、ロールバックとコミットを完全にコントロールしたい場合は、`DB`ファサードの`beginTransaction`メソッドを使います。

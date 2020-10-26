@@ -39,6 +39,7 @@ HTTP駆動のアプリケーションはステートレスのため、リクエ�
 <a name="driver-prerequisites"></a>
 ### ドライバの事前要件
 
+<a name="database"></a>
 #### データベース
 
 `database`セッションドライバを使う場合、セッションアイテムを含むテーブルを作成する必要があります。以下にこのテーブル宣言のサンプル「スキーマ」を示します。
@@ -58,6 +59,7 @@ HTTP駆動のアプリケーションはステートレスのため、リクエ�
 
     php artisan migrate
 
+<a name="redis"></a>
 #### Redis
 
 RedisセッションをLaravelで使用する前に、PECLによりPhpRedis PHP拡張、もしくはComposerで`predis/predis`パッケージ(~1.0)をインストールする必要があります。Redis設定の詳細は、[Laravelのドキュメント](/docs/{{version}}/redis#configuration)をご覧ください。
@@ -104,6 +106,7 @@ Laravelでセッションを操作するには、主に２つの方法があり�
         return 'default';
     });
 
+<a name="the-global-session-helper"></a>
 #### sessionグローバルヘルパ
 
 グローバルな`session` PHP関数で、セッションからデータを出し入れすることもできます。`session`ヘルパが文字列ひとつだけで呼び出されると、そのセッションキーに対する値を返します。ヘルパがキー／値ペアの配列で呼び出されると、それらの値はセッションへ保存されます。
@@ -121,12 +124,14 @@ Laravelでセッションを操作するには、主に２つの方法があり�
 
 > {tip} セッションをHTTPリクエストインスタンスを経由する場合と、グローバルな`session`ヘルパを使用する場合では、実践上の違いがあります。どんなテストケースであろうとも使用可能な、`assertSessionHas`メソッドを利用して、どちらの手法も[テスト可能](/docs/{{version}}/testing)です。
 
+<a name="retrieving-all-session-data"></a>
 #### 全セッションデータの取得
 
 セッション中の全データを取得する場合は、`all`メソッドを使います。
 
     $data = $request->session()->all();
 
+<a name="determining-if-an-item-exists-in-the-session"></a>
 #### セッション中のアイテム存在を確認
 
 セッションへ値が存在するか調べたい場合は、`has`メソッドを使います。その値が存在し、`null`でない場合は`true`が返ります。
@@ -152,12 +157,14 @@ Laravelでセッションを操作するには、主に２つの方法があり�
     // グローバルヘルパ使用
     session(['key' => 'value']);
 
+<a name="pushing-to-array-session-values"></a>
 #### 配列セッション値の追加
 
 `push`メソッドは新しい値を配列のセッション値へ追加します。たとえば`user.teams`キーにチーム名の配列が含まれているなら、新しい値を次のように追加できます。
 
     $request->session()->push('user.teams', 'developers');
 
+<a name="retrieving-deleting-an-item"></a>
 #### 取得後アイテムを削除
 
 `pull`メソッド一つで、セッションからアイテムを取得後、削除できます。

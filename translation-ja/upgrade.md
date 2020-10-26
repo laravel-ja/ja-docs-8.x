@@ -28,6 +28,7 @@
 <a name="upgrade-8.0"></a>
 ## 7.xから8.0へのアップグレード
 
+<a name="estimated-upgrade-time-15-minutes"></a>
 #### アップグレード見積もり時間：１５分
 
 > {note} 私達は、互換性を失う可能性がある変更を全部ドキュメントにしようとしています。しかし、変更点のいくつかは、フレームワークの明確ではない部分で行われているため、一部の変更が実際にアプリケーションに影響を与えてしまう可能性があります。
@@ -66,8 +67,10 @@
 
 最後にアプリケーションで使用してる、その他のサードパーティパッケージを調べ、Laravel8をサポートしているバージョンを確実に使用しているかを検証してください。
 
+<a name="collections"></a>
 ### コレクション
 
+<a name="the-isset-method"></a>
 #### `isset`メソッド
 
 **影響の可能性： 低い**
@@ -82,6 +85,7 @@
     // Laravel8.x - false
     isset($collection[0]);
 
+<a name="database"></a>
 ### Database
 
 <a name="seeder-factory-namespaces"></a>
@@ -123,6 +127,7 @@
         }
     },
 
+<a name="eloquent"></a>
 ### Eloquent
 
 <a name="model-factories"></a>
@@ -134,6 +139,7 @@ Laravelの[モデルファクトリ](/docs/{{version}}/database-testing＃creati
 
     composer require laravel/legacy-factories
 
+<a name="the-castable-interface"></a>
 #### `Castable`インターフェイス
 
 **影響の可能性： 低い**
@@ -142,14 +148,17 @@ Laravelの[モデルファクトリ](/docs/{{version}}/database-testing＃creati
 
     public static function castUsing(array $arguments);
 
+<a name="increment-decrement-events"></a>
 #### Increment／Decrementイベント
 
 **影響の可能性： 低い**
 
 Eloquentモデルインスタンスで`increment`または` decrement`メソッドの実行時に"update"と"save"で適切な関連モデルイベントが発行されるようになりました。
 
+<a name="events"></a>
 ### イベント
 
+<a name="the-dispatcher-contract"></a>
 #### `Dispatcher`契約
 
 **影響の可能性： 低い**
@@ -158,6 +167,7 @@ Eloquentモデルインスタンスで`increment`または` decrement`メソッ�
 
     public function listen($events, $listener = null);
 
+<a name="framework"></a>
 ### フレームワーク
 
 <a name="maintenance-mode-updates"></a>
@@ -180,26 +190,38 @@ Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration＃
 
 `php artisan down`コマンドの` --message`オプションを削除しました。別の方法として、選択したメッセージで[メンテナンスモードビューの事前レンダリング]（/docs/{{version}}/configuration＃maintenance-mode）の使用を検討してください。
 
+<a name="php-artisan-serve-no-reload-option"></a>
+#### The `php artisan serve --no-reload` Option
+
+**影響の可能性： 低い**
+
+`php artisanserve`コマンドに` --no-reload`オプションを追加しました。これにより、環境ファイルの変更が検出されたときにサーバをリロードしないように組み込みサーバに指示できます。このオプションは主にCI環境でLaravelDuskテストを実行するときに役立ちます。
+
+<a name="manager-app-property"></a>
 #### `$app`プロパティマネージャー
 
 **影響の可能性： 低い**
 
 以前非推奨になった `Illuminate\Support\Manager`クラスの`$app`プロパティを削除しました。このプロパティに依存している場合は、代わりに`$container`プロパティを使用してください。
 
+<a name="the-elixir-helper"></a>
 #### `elixir`ヘルパ
 
 **影響の可能性： 低い**
 
 以前に非推奨にした、`elixir`ヘルパを削除しました。このメソッドをまだ使用しているアプリケーションは、[Laravel Mix](https://github.com/JeffreyWay/laravel-mix)にアップグレードすることをお勧めします
 
+<a name="mail"></a>
 ### メール
 
+<a name="the-sendnow-method"></a>
 #### `sendNow`メソッド
 
 **影響の可能性： 低い**
 
 以前非推奨にした、`sendNow`メソッドを削除しました。代わりに、`send`メソッドを使用してください。
 
+<a name="pagination"></a>
 ### ペジネーション
 
 <a name="pagination-defaults"></a>
@@ -213,6 +235,7 @@ Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration＃
 
     Paginator::useBootstrap();
 
+<a name="queue"></a>
 ### キュー
 
 <a name="queue-retry-after-method"></a>
@@ -259,8 +282,10 @@ Laravel8.xの[ジョブのバッチ処理](/docs/{{version}}/queues＃job-batchi
 
 次に、`queue`設定ファイル内の`failed.driver`設定オプションを`database-uuids`に更新してください。
 
+<a name="routing"></a>
 ### ルーティング
 
+<a name="automatic-controller-namespace-prefixing"></a>
 #### コントローラ名前空間の自動プレフィクス
 
 **影響の可能性： 状況による**
@@ -335,16 +360,20 @@ Laravel8では、このプロパティをデフォルトで`null`に設定して
         }
     }
 
+<a name="scheduling"></a>
 ### スケジュール
 
+<a name="the-cron-expression-library"></a>
 #### `cron-expression`ライブラリ
 
 **影響の可能性： 低い**
 
 Laravelの依存パッケージである`dragonmantank/cron-expression`が、`2.x`から`3.x`へ更新されました。これにより、`cron-expression`ライブラリと直接操作していない限り、アプリケーションが壊れるような変化は起こらないはずです。このライブラリを直接やりとりする場合は、[変更ログ](https://github.com/dragonmantank/cron-expression/blob/master/CHANGELOG.md)を確認してください。
 
+<a name="session"></a>
 ### セッション
 
+<a name="the-session-contract"></a>
 #### `Session`契約
 
 **影響の可能性： 低い**
@@ -360,6 +389,7 @@ Laravelの依存パッケージである`dragonmantank/cron-expression`が、`2.
      */
     public function pull($key, $default = null);
 
+<a name="testing"></a>
 ### テスト
 
 <a name="decode-response-json-method"></a>
@@ -376,8 +406,10 @@ Laravelの依存パッケージである`dragonmantank/cron-expression`が、`2.
 
 `assertExactJson`メソッドは、比較する配列の数値キーが一致し、同じ順序であることを必要とするようになりました。配列の数値キーの順序を同じにすることなく、JSONを配列と比較したい場合は代わりに`assertSimilarJson`メソッドが使用できます。
 
+<a name="validation"></a>
 ### バリデーション
 
+<a name="database-rule-connections"></a>
 ### データベースルールの接続
 
 **影響の可能性： 低い**

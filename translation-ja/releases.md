@@ -27,6 +27,7 @@ Laravel6のようなLTSリリースでは、バグフィックスは２年間、
 
 Laravel8は、Laravel7.xで行われた向上に加え、以降の変更で構成されています。Laravel Jetstreamの導入、モデルファクトリクラスの導入、マイグレーションの圧縮の導入、ジョブバッチの導入、レート制限の向上、キューの向上、ダイナミックBladeコンポーネントの導入、Tailwindペジネーションビューの導入、時間テストヘルパの導入、`artisan serve`の向上、イベントリスナの向上、ならびに多くのバグフィックスとユーザービリティの向上です
 
+<a name="laravel-jetstream"></a>
 ### Laravel Jetstream
 
 _Laravel Jettreamは、[Taylor Otwell](https://github.com/taylorotwell)により書かれました_。
@@ -35,10 +36,12 @@ _Laravel Jettreamは、[Taylor Otwell](https://github.com/taylorotwell)により
 
 Jetstreamは[Tailwind CSS](https://tailwindcss.com)を使用してデザインされており、[Livewire](https://laravel-livewire.com)か[Inertia](https://inertiajs.com)のどちらかのスカフォールドを選択できます。
 
+<a name="models-directory"></a>
 ### モデルディレクトリ
 
 コミュニティからの圧倒的な要望により、デフォルトのLaravelアプリケーションのスケルトンに`app/Models`ディレクトリが含まれるようになりました。Eloquentモデルの新しいホームをお楽しみください。関連するジェネレータコマンドはすべて、モデルが`app/Models`ディレクトリ内に存在する仮定のもとに更新されました。ディレクトリが存在しない場合、フレームワークはモデルが`app`ディレクトリ内にあると仮定します。
 
+<a name="model-factory-classes"></a>
 ### モデルファクトリクラス
 
 _モデルファクトリクラスは、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_。
@@ -119,6 +122,7 @@ Eloquent[モデルファクトリ](/docs/{{version}}/data-testing#creating-facto
 
 リライトしたLaravelのファクトリは、皆さんに気に入ってもらえるような多くの機能が含まれています。モデルファクトリの詳細は、[データベーステストのドキュメント](/docs/{{version}}/databasetesting#creating-factories)を参照してください。
 
+<a name="migration-squashing"></a>
 ### マイグレーションの圧縮
 
 _マイグレーションの圧縮は、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
@@ -132,6 +136,7 @@ _マイグレーションの圧縮は、[Taylor Otwell](https://github.com/taylo
 
 このコマンドを実行すると、Laravelは「スキーマ」ファイルを`database/schema`ディレクトリに書き込みます。これにより、データベースをマイグレートしようとするときに他のマイグレーションは実行されず、Laravelは最初にスキーマファイルのＳＱＬを実行します。スキーマファイルのコマンドを実行した後、Laravelはスキーマダンプに圧縮されていない残りのマイグレーションを実行します。
 
+<a name="job-batching"></a>
 ### ジョブバッチ
 
 _ジョブバッチは、[Taylor Otwell](https://github.com/taylorotwell)と[Mohamed Said](https://github.com/themsaid)が貢献しました。_.
@@ -164,6 +169,7 @@ Laravelのジョブバッチ処理機能を使用すると、バッチジョブ�
 
 バッチジョブの詳細は、[キューのドキュメント](/docs/{{version}}/queues#job-batching)をお読みください。
 
+<a name="improved-rate-limiting"></a>
 ### レート制限の向上
 
 _レート制限の向上は、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
@@ -209,6 +215,7 @@ Laravelのリクエストレート制限機能は、以前のリリースの`thr
 
 レート制限の詳細は、[ルーティングドキュメント](/docs/{{version}}/routing#rate-limiting)を参照してください。
 
+<a name="improved-maintenance-mode"></a>
 ### メンテナンスモードの向上
 
 _メンテナンスモードの向上は[Spatie](https://spatie.be)からインスピレーションを受け、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
@@ -225,6 +232,7 @@ While in maintenance mode, you may use the `secret` option to specify a maintena
 
 この隠しルートにアクセスすると、アプリケーションの`/`ルートへリダイレクトします。ブラウザにクッキーが発行されれば、メンテナンスモードではないときと同じように、アプリケーションを通常通り閲覧できます。
 
+<a name="pre-rendering-the-maintenance-mode-view"></a>
 #### メンテナンスモードビューの事前レンダリング
 
 デプロイ時、`php artisan down`コマンドを使用する場合、Composerの依存関係またはその他の基礎コンポーネントの更新中にユーザーがアプリケーションへアクセスすることで、エラーが発生する可能性があります。これはアプリケーションがメンテナンスモードであることを確認し、テンプレートエンジンを使用してメンテナンスモードビューを表示するためには、Laravelフレームワークの重要な部分が起動されている必要があるためです。
@@ -233,6 +241,7 @@ While in maintenance mode, you may use the `secret` option to specify a maintena
 
     php artisan down --render="errors::503"
 
+<a name="closure-dispatch-chain-catch"></a>
 ### ディスパッチクロージャと`catch`チェーン
 
 _Catchの向上は[Mohamed Said](https://github.com/themsaid)が貢献しました_.
@@ -247,6 +256,7 @@ _Catchの向上は[Mohamed Said](https://github.com/themsaid)が貢献しまし�
         // このジョブは失敗した
     });
 
+<a name="dynamic-blade-components"></a>
 ### 動的Bladeコンポーネント
 
 _動的Bladeコンポーネントは、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
@@ -257,6 +267,7 @@ _動的Bladeコンポーネントは、[Taylor Otwell](https://github.com/taylor
 
 Bladeコンポーネントの詳細は、[Bladeのドキュメント]（/docs/{{version}}/blade＃components）をご覧ください。
 
+<a name="event-listener-improvements"></a>
 ### イベントリスナの向上
 
 _イベントリスナの向上は、[Taylor Otwell](https://github.com/taylorotwell)[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
@@ -299,6 +310,7 @@ _イベントリスナの向上は、[Taylor Otwell](https://github.com/taylorot
         // キュー済みリスナは失敗した
     }));
 
+<a name="time-testing-helpers"></a>
 ### 時間テストのヘルパ
 
 _時間テストのヘルパはRuby on Railsからインスピレーションを受け、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
@@ -326,16 +338,19 @@ _時間テストのヘルパはRuby on Railsからインスピレーションを
         $this->travelBack();
     }
 
+<a name="artisan-serve-improvements"></a>
 ### Artisan `serve`の向上
 
 _Artisan `serve`の向上は、[Taylor Otwell](https://github.com/taylorotwell)が貢献しました。_.
 
 Artisan `serve`コマンドは、ローカルの`.env`ファイル内で環境変数の変更が検出されたとき、自動でリロードするように改善されました。以前は、コマンドを手動で停止して再起動しなければなりませんでした。
 
+<a name="tailwind-pagination-views"></a>
 ### Tailwindペジネーションビュー
 
 Laravelのペジネータはデフォルトで[Tailwind CSS](https://tailwindcss.com)フレームワークを使用するように変更しました。Tailwind CSSは高度にカスタマイズできる低レベルなCSSフレームワークで、オーバーライドのために戦う必要のある煩わしい意見的なスタイルを使用せずに、お誂え向きのデザインを構築するために必要なすべてのビルディングブロックを提供してくれます。もちろん、Bootstrap３と４のビューも利用可能です。
 
+<a name="routing-namespace-updates"></a>
 ### ルートの名前空間の向上
 
 以前のリリースのLaravelでは、`RouteServiceProvider`は`$namespace`プロパティを持っていました。このプロパティの値は、コントローラのルート定義や`action`ヘルパ／`URL::action`メソッドの呼び出しに、自動でプレフィックスを付加していました。Laravel8.xでこのプロパティはデフォルトで`null`です。これは、Laravelは自動的に名前空間のプレフィクスを付けなくなったことを意味します。そのため、新しいLaravel8.xアプリケーションでは、コントローラルートの定義は標準的なPHPで呼び出し可能な構文を使って定義する必要があります。

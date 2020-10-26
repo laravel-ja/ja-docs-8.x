@@ -112,6 +112,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
 > {note} [Homestead仮想マシン](/docs/{{version}}/homestead)を使用している場合、このコマンドは仮想マシン内で実行してください。
 
+<a name="forcing-migrations-to-run-in-production"></a>
 #### 実働環境でのマイグレーション強制
 
 いくつかのマイグレーション操作は破壊的です。つまりデーターを失う可能性があります。実働環境(production)のデータベースに対し、こうしたコマンドが実行されることから保護するために、コマンド実行前に確認のプロンプトが表示されます。コマンド実行時のプロンプトを出さないためには、`--force`フラグを指定してください。
@@ -133,6 +134,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
     php artisan migrate:reset
 
+<a name="roll-back-migrate-using-a-single-command"></a>
 #### rollbackとmigrateの１コマンド実行
 
 `migrate:refresh`コマンドは全部のデータベースマイグレーションを最初にロールバックし、それから`migrate`コマンドを実行します。このコマンドはデータベース全体を作り直すために便利です。
@@ -146,6 +148,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
     php artisan migrate:refresh --step=5
 
+<a name="drop-all-tables-migrate"></a>
 #### 全テーブル削除後のマイグレーション
 
 `migrate:fresh`コマンドは、データベースから全テーブルをドロップします。次に、`migrate`コマンドを実行してください。
@@ -170,6 +173,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
 テーブル作成時には、テーブルのカラムを定義するためにスキーマビルダの[カラムメソッド](#creating-columns)をどれでも利用できます。
 
+<a name="checking-for-table-column-existence"></a>
 #### テーブル／カラムの存在チェック
 
 `hasTable`や`hasColumn`メソッドを使えば、テーブルやカラムの存在をチェックできます。
@@ -182,6 +186,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
         //
     }
 
+<a name="database-connection-table-options"></a>
 #### データベース接続とテーブル操作
 
 デフォルト接続以外のデータベース接続でスキーマ操作を行いたい場合は、`connection`メソッドを使ってください。
@@ -212,6 +217,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
     Schema::dropIfExists('users');
 
+<a name="renaming-tables-with-foreign-keys"></a>
 #### 外部キーを持つテーブルのリネーム
 
 テーブルのリネームを行う前に、Laravelの規約に基づいた名前の代わりに、マイグレーションファイル中で独自の名前付けた外部キー制約が存在していないか確認してください。そうしないと、外部キー制約名は古いテーブル名を参照してしまいます。
@@ -228,6 +234,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
         $table->string('email');
     });
 
+<a name="available-column-types"></a>
 #### 使用できるカラムタイプ
 
 スキーマビルダは、テーブルを構築する時に使用するさまざまなカラムタイプを持っています。
@@ -325,6 +332,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 `->generatedAs($expression)`  |  指定のシーケンスオプションで、識別カラムを生成(PostgreSQLのみ)
 `->always()`  |  識別カラムの入力を上書きするシーケンス値を定義(PostgreSQLのみ)
 
+<a name="default-expressions"></a>
 #### デフォルトExpression
 
 `default`修飾子は、値か`\Illuminate\Database\Query\Expression`インスタンスを引数に取ります。`Expression`インスタンスを使えば値をクオートしなくて済みますし、データベース特有の機能を使うこともできます。デフォルト値をJSONカラムに割り付ける必要があるとき、とくに便利です。
@@ -358,12 +366,14 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 <a name="modifying-columns"></a>
 ### カラム変更
 
+<a name="prerequisites"></a>
 #### 動作要件
 
 カラムを変更する前に、`composer.json`ファイルで`doctrine/dbal`を確実に追加してください。Doctrine DBALライブラリーは現在のカラムの状態を決め、必要な調整を行うSQLクエリを生成するために、使用しています。
 
     composer require doctrine/dbal
 
+<a name="updating-column-attributes"></a>
 #### カラム属性の変更
 
 `change`メソッドは存在するカラムのタイプと属性を更新します。たとえば`string`カラムの文字長を増やしたい場合です。`change`の実例を見てもらうため、`name`カラムのサイズを25から50へ増やしてみます。
@@ -380,6 +390,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
 > {note} 以降のカラムタイプのみ変更可能です：bigInteger、binary、boolean、date、dateTime、dateTimeTz、decimal、integer、json、longText、mediumText、smallInteger、string、text、time、unsignedBigInteger、unsignedInteger、unsignedSmallInteger、uuid
 
+<a name="renaming-columns"></a>
 #### カラム名変更
 
 カラム名を変更するには、`renameColumn`メソッドをスキーマビルダで使用してください。カラム名を変更する前に、`composer.json`ファイルで`doctrine/dbal`を依存パッケージとして追加してください。
@@ -407,6 +418,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
 > {note} SQLite使用時に、一つのマイグレーションによる複数カラム削除／変更はサポートされていません。
 
+<a name="available-command-aliases"></a>
 #### 利用可能な別名コマンド
 
 コマンド  |  説明
@@ -440,6 +452,7 @@ Laravelはテーブル名に基づき、インデックス名を付けます。�
 
     $table->unique('email', 'unique_email');
 
+<a name="available-index-types"></a>
 #### 使用可能なインデックスタイプ
 
 各インデックスメソッドは、オプションとして第２引数に、インデックス名を指定できます。省略した場合、テーブルとカラムから名前が決まるのと同様に、インデックスタイプが自動的に指定されます。
@@ -452,6 +465,7 @@ Laravelはテーブル名に基づき、インデックス名を付けます。�
 `$table->index('state');`  |  基本的なインデックス追加
 `$table->spatialIndex('location');`  |  空間インデックス追加(SQLite以外)
 
+<a name="index-lengths-mysql-mariadb"></a>
 #### インデックス長とMySQL／MariaDB
 
 Laravelはデータベース中への「絵文字」保存をサポートするため、デフォルトで`utf8mb4`文字セットを使っています。バージョン5.7.7より古いMySQLや、バージョン10.2.2より古いMariaDBを使用している場合、マイグレーションにより生成されるデフォルトのインデックス用文字列長を明示的に設定する必要があります。`AppServiceProvider`中で`Schema::defaultStringLength`を呼び出してください。

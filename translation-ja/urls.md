@@ -102,6 +102,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
         'unsubscribe', now()->addMinutes(30), ['user' => 1]
     );
 
+<a name="validating-signed-route-requests"></a>
 #### 署名付きルートリクエストの検査
 
 送信されてきたリクエストが有効な署名を持っているかを検査するには、送信された`Request`に対して、`hasValidSignature`メソッドを呼び出します。
@@ -178,6 +179,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
 
 一度`locale`パラメータに対するデフォルト値をセットしたら、`route`ヘルパを使いURLを生成する時に、値を渡す必要はもうありません。
 
+<a name="url-defaults-middleware-priority"></a>
 #### URLのデフォルトとミドルウェアの優先度
 
 URLのデフォルト値を設定すると、Laravelの暗黙的なモデルバインディングの処理を妨げる可能性があります。したがって、URLのデフォルトをLaravel自身の`SubstituteBindings`ミドルウェアの前に実行するよう設定するため、[ミドルウェアの優先度を設定する](https://laravel.com/docs/{{version}}/middleware#sorting-middleware)必要があります。それには、アプリケーションのHTTPカーネルの`$middlewarePriority`プロパティ内にある`SubstituteBindings`ミドルウェアの前にミドルウェアを確実に設置してください。
