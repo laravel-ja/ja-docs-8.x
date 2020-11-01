@@ -3,6 +3,8 @@
 - [イントロダクション](#introduction)
     - [動作の仕組み](#how-it-works)
 - [インストール](#installation)
+- [設定](#configuration)
+    - [デフォルトモデルのオーバーライド](#overriding-default-models)
 - [APIトークン認証](#api-token-authentication)
     - [APIトークン発行](#issuing-api-tokens)
     - [トークンのアビリティ](#token-abilities)
@@ -72,6 +74,36 @@ SPAの認証のためにSanctumを活用しようと計画している場合は�
 #### マイグレーションのカスタマイズ
 
 Sanctumのデフォルトマイグレーションを使用しない場合は、`AppServiceProvider`の`register`メソッドの中で、`Sanctum::ignoreMigrations`を必ず呼び出してください。デフォルトマイグレーションは、`php artisan vendor:publish --tag=sanctum-migrations`を使えばエクスポートできます。
+
+<a name="configuration"></a>
+## 設定
+
+<a name="overriding-default-models"></a>
+### デフォルトモデルのオーバーライド
+
+Sanctumが内部で使用する`PersonalAccessToken`モデルは自由に拡張できます。
+
+    use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
+
+    class PersonalAccessToken extends SanctumPersonalAccessToken
+    {
+        // ...
+    }
+
+次に、Sanctumが提供する`usePersonalAccessTokenModel`メソッドを介し、そのカスタムモデルを使用するようにSanctumに指示します。通常、このメソッドはサービスプロバイダのどれかで、`boot`メソッド内から呼び出す必要があります。
+
+    use App\Models\Passport\PersonalAccessToken;
+    use Laravel\Sanctum\Sanctum;
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Sanctum::usePersonalAccessTokenModel(Token::class);
+    }
 
 <a name="api-token-authentication"></a>
 ## APIトークン認証

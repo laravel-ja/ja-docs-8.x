@@ -162,7 +162,7 @@
 <a name="attribute-casting"></a>
 ## 属性キャスト
 
-モデルの`$casts`プロパティは属性を一般的なデータタイプへキャストする便利な手法を提供します。`$casts`プロパティは配列で、キーにはキャストする属性名を指定し、値にはそのカラムに対してキャストしたいタイプを指定します。サポートしているキャストタイプは`integer`、`real`、`float`、`double`、`decimal:<桁数>`、`string`、`boolean`、`object`、`array`、`collection`、`date`、`datetime`、`timestamp`です。`decimal`へキャストする場合は、桁数を`decimal:2`のように定義してください。
+モデルの`$casts`プロパティは属性を一般的なデータタイプへキャストする便利な手法を提供します。`$casts`プロパティは配列で、キーにはキャストする属性名を指定し、値にはそのカラムに対してキャストしたいタイプを指定します。サポートしているキャストタイプは`integer`、`real`、`float`、`double`、`decimal:<桁数>`、`string`、`boolean`、`object`、`array`、`collection`、`date`、`datetime`、`timestamp`、`encrypted`、`encrypted:object`、`encrypted:array`、`encrypted:collection`です。`decimal`へキャストする場合は、桁数を`decimal:2`のように定義してください。
 
 属性キャストのデモンストレーションとして、データベースには整数の`0`と`1`で保存されている`is_admin`属性を論理値にキャストしてみましょう。
 
@@ -323,14 +323,14 @@ Laravelには多様な利便性のあるキャストタイプが用意されて�
 
     $user->save();
 
-> {tip} 値オブジェクトを含むEloquentモデルをJSONが配列にシリアライズする場合は、値オブジェクトに`Illuminate\Contracts\Support\Arrayable`および` JsonSerializable`インターフェースを実装する必要があります。
+> {tip} 値オブジェクトを含むEloquentモデルをJSONが配列にシリアライズする場合は、値オブジェクトに`Illuminate\Contracts\Support\Arrayable`および` JsonSerializable`インターフェイスを実装する必要があります。
 
 <a name="array-json-serialization"></a>
 #### 配列／JSONシリアライズ化
 
-Eloquentモデルが`toArray`メソッドを使用し配列やJSONに変換される場合、カスタムキャスト値オブジェクトは、`Illuminate\Contracts\Support\Arrayable`および `JsonSerializable`インターフェースを実装しているならば、通常シリアル化されます。ただし、サードパーティライブラリが提供する値オブジェクトを使用する場合、こうしたインターフェイスをそのオブジェクトへ追加できないでしょう。
+Eloquentモデルが`toArray`メソッドを使用し配列やJSONに変換される場合、カスタムキャスト値オブジェクトは、`Illuminate\Contracts\Support\Arrayable`および `JsonSerializable`インターフェイスを実装しているならば、通常シリアル化されます。ただし、サードパーティライブラリが提供する値オブジェクトを使用する場合、こうしたインターフェイスをそのオブジェクトへ追加できないでしょう。
 
-そのため、カスタムキャストクラスが値オブジェクトのシリアル化の責務を担当するように指定できます。これには、カスタムクラスキャストが`Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes`インターフェイスを実装している必要があります。このインターフェースは、クラスに値オブジェクトのシリアル化された形式を返す`serialize`メソッドを持っている必要があることを示しています
+そのため、カスタムキャストクラスが値オブジェクトのシリアル化の責務を担当するように指定できます。これには、カスタムクラスキャストが`Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes`インターフェイスを実装している必要があります。このインターフェイスは、クラスに値オブジェクトのシリアル化された形式を返す`serialize`メソッドを持っている必要があることを示しています
 
     /**
      * 値のシリアライズ化した表現を取得

@@ -89,7 +89,7 @@
 <a name="pusher-compatible-laravel-websockets"></a>
 #### Pusher互換のLaravel　WebSocket
 
-[laravel-websockets](https://github.com/beyondcode/laravel-websockets)はPHPで実装された、Laravel用のPusher互換のWebSocketパッケージです。このパッケージは外部WebソケットプロバイダーやNodeを使用しなくてもLaravelブロードキャストの能力を最大限に活用できます。このパッケージのインストールと使用の詳細は、[公式ドキュメント]（https://beyondco.de/docs/laravel-websockets）を参照してください。
+[laravel-websockets](https://github.com/beyondcode/laravel-websockets)はPHPで実装された、Laravel用のPusher互換のWebSocketパッケージです。このパッケージは外部WebソケットプロバイダやNodeを使用しなくてもLaravelブロードキャストの能力を最大限に活用できます。このパッケージのインストールと使用の詳細は、[公式ドキュメント]（https://beyondco.de/docs/laravel-websockets）を参照してください。
 
 <a name="redis"></a>
 #### Redis

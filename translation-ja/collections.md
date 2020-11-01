@@ -1889,7 +1889,27 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
         ]
     */
 
-コレクション値をどのようにソートするかを決めるため、コールバックを渡すこともできます。
+このメソッドは第２引数に、[ソートフラグ](https://www.php.net/manual/en/function.sort.php)を受け取ります。
+
+    $collection = collect([
+        ['title' => 'Item 1'],
+        ['title' => 'Item 12'],
+        ['title' => 'Item 3'],
+    ]);
+
+    $sorted = $collection->sortBy('title', SORT_NATURAL);
+
+    $sorted->values()->all();
+
+    /*
+        [
+            ['title' => 'Item 1'],
+            ['title' => 'Item 3'],
+            ['title' => 'Item 12'],
+        ]
+    */
+
+もしくは、コレクションの値をどのようにソートするかを決める独自のコールバックを渡します。
 
     $collection = collect([
         ['name' => 'Desk', 'colors' => ['Black', 'Mahogany']],

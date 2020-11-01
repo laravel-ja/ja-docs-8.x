@@ -31,7 +31,7 @@ API構築時、Eloquentモデルと、アプリケーションユーザーに対
 
 コレクションリソースを生成するには、リソース生成時に`--collection`フラグを指定してください。もしくは、リソース名へ`Collection`を含め、Laravelへコレクションリソースを生成するように指示できます。コレクションリソースは、`Illuminate\Http\Resources\Json\ResourceCollection`クラスを拡張します。
 
-    php artisan make:resource Users --collection
+    php artisan make:resource User --collection
 
     php artisan make:resource UserCollection
 

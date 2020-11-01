@@ -67,7 +67,7 @@ Telescopeをローカル環境でのみ使用する場合は、`--dev`フラグ�
      */
     public function register()
     {
-        if ($this->app->isLocal()) {
+        if ($this->app->environment('local')) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
@@ -168,7 +168,7 @@ Telescopeはデフォルトで、ダッシュボードを`/telescope`で表示�
         $this->hideSensitiveRequestDetails();
 
         Telescope::filter(function (IncomingEntry $entry) {
-            if ($this->app->isLocal()) {
+            if ($this->app->environment('local')) {
                 return true;
             }
 
@@ -196,7 +196,7 @@ Telescopeはデフォルトで、ダッシュボードを`/telescope`で表示�
         $this->hideSensitiveRequestDetails();
 
         Telescope::filterBatch(function (Collection $entries) {
-            if ($this->app->isLocal()) {
+            if ($this->app->environment('local')) {
                 return true;
             }
 

@@ -196,6 +196,22 @@ ScoutはAlgoliaを使用する場合、自動的にユーザーを識別しま�
 
     php artisan scout:flush "App\Models\Post"
 
+<a name="modifying-the-import-query"></a>
+#### インポートクエリの変更
+
+バッチインポートで全モデルを取得するために使用されるクエリを変更する場合は、モデルに`makeAllSearchableUsing`メソッドを定義してください。これはモデルをインポートする前に、必要になる可能性のあるイエガーリレーションの読み込みを追加するのに最適な場所です。
+
+    /**
+     * 全モデルを検索可能にするときの、モデル取得に使用するクエリを変更
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function makeAllSearchableUsing($query)
+    {
+        return $query->with('author');
+    }
+
 <a name="adding-records"></a>
 ### レコード追加
 

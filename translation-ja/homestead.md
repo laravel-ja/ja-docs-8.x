@@ -25,6 +25,7 @@
     - [複数のPHPバージョン](#multiple-php-versions)
     - [Webサービス](#web-servers)
     - [メール](#mail)
+    - [Laravel Dusk](#laravel-dusk)
 - [デバッグとプロファイリング](#debugging-and-profiling)
     - [XdebugによるWebリクエストのデバッグ](#debugging-web-requests)
     - [CLIアプリケーションのデバッグ](#debugging-cli-applications)
@@ -646,6 +647,16 @@ HomesteadはNginxをデフォルトのWebサーバとして利用しています
 ### Mail
 
 Homesteadは、デフォルトで`1025`ポートをリッスンする、Postfixメールトランスファーエージェントを用意しています。そのため、`localhost`の`1025`ポートに対して、`smtp`メールドライバーを使用するように、アプリケーションへ指示できます。その結果、すべての送信メールはPostfixにより処理され、Mailhogにより補足されます。送信済みメールを確認するには、Webブラウザで[http://localhost:8025](http://localhost:8025)を開いてください。
+
+<a name="laravel-dusk"></a>
+### Laravel Dusk
+
+Homesteadで[Laravel Dusk](/docs/{{version}}/dusk)テストを実行するには、Homesteadの設定で[`webdriver`機能](#installing-optional-features)を有効にします。
+
+      features:
+          - webdriver: true
+
+`webdriver`機能を完全にインストールするため、後にHomestead仮想マシンをプロビジョンし忘れないでください。
 
 <a name="debugging-and-profiling"></a>
 ## デバッグとプロファイリング

@@ -68,4 +68,4 @@ Laravelはユニットテストも考慮して構築されています。実際�
 
 `phpunit`コマンドで使用できる引数はすべてArtisan `test`コマンドにも渡せます。
 
-    php artisan test --group=feature --stop-on-failure
+    php artisan test --testsuite=Feature --stop-on-failure
