@@ -29,7 +29,7 @@
 
     use Illuminate\Support\Facades\Http;
 
-    $response = Http::get('http://test.com');
+    $response = Http::get('http://example.com');
 
 `get`メソッドは`Illuminate\Http\Client\Response`のインスタンスを返します。これはレスポンスを調べるために使用できるさまざまなメソッドを持っています。
 
@@ -46,14 +46,14 @@
 
 `Illuminate\Http\Client\Response`オブジェクトは、レスポンス上のJSONレスポンスデータへ直接アクセスできるように、PHPの`ArrayAccess`インターフェイスも実装しています。
 
-    return Http::get('http://test.com/users/1')['name'];
+    return Http::get('http://example.com/users/1')['name'];
 
 <a name="request-data"></a>
 ### リクエストデータ
 
 もちろん、`POST`、`PUT`、`PATCH`を使用する場合は、リクエストと追加のデータを一緒に送るのが一般的です。そのため、これらのメソッドは第２引数にデータの配列を受け取ります。データはデフォルトで`application/json`コンテンツタイプを使用して送信されます。
 
-    $response = Http::post('http://test.com/users', [
+    $response = Http::post('http://example.com/users', [
         'name' => 'Steve',
         'role' => 'Network Administrator',
     ]);
@@ -63,7 +63,7 @@
 
 `GET`リクエストの作成時はクエリ文字列をURLに直接追加するか、キー／値ペアの配列を第２引数として`get`メソッドに渡します。
 
-    $response = Http::get('http://test.com/users', [
+    $response = Http::get('http://example.com/users', [
         'name' => 'Taylor',
         'page' => 1,
     ]);
@@ -73,7 +73,7 @@
 
 `application/x-www-form-urlencoded`コンテンツタイプを使用してデータを送信したい場合は、リクエストを作成する前に`asForm`メソッドを呼び出す必要があります。
 
-    $response = Http::asForm()->post('http://test.com/users', [
+    $response = Http::asForm()->post('http://example.com/users', [
         'name' => 'Sara',
         'role' => 'Privacy Consultant',
     ]);
@@ -85,7 +85,7 @@
 
     $response = Http::withBody(
         base64_encode($photo), 'image/jpeg'
-    )->post('http://test.com/photo');
+    )->post('http://example.com/photo');
 
 <a name="multi-part-requests"></a>
 #### マルチパートリクエスト
@@ -94,7 +94,7 @@
 
     $response = Http::attach(
         'attachment', file_get_contents('photo.jpg'), 'photo.jpg'
-    )->post('http://test.com/attachments');
+    )->post('http://example.com/attachments');
 
 ファイルのコンテンツ内容をそのまま渡す代わりに、ストリームリソースも指定できます。
 
@@ -102,7 +102,7 @@
 
     $response = Http::attach(
         'attachment', $photo, 'photo.jpg'
-    )->post('http://test.com/attachments');
+    )->post('http://example.com/attachments');
 
 <a name="headers"></a>
 ### ヘッダ
@@ -112,7 +112,7 @@
     $response = Http::withHeaders([
         'X-First' => 'foo',
         'X-Second' => 'bar'
-    ])->post('http://test.com/users', [
+    ])->post('http://example.com/users', [
         'name' => 'Taylor',
     ]);
 
@@ -200,7 +200,7 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 
     $response = Http::withOptions([
         'debug' => true,
-    ])->get('http://test.com/users');
+    ])->get('http://example.com/users');
 
 <a name="testing"></a>
 ## テスト
@@ -292,14 +292,14 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 
     Http::withHeaders([
         'X-First' => 'foo',
-    ])->post('http://test.com/users', [
+    ])->post('http://example.com/users', [
         'name' => 'Taylor',
         'role' => 'Developer',
     ]);
 
     Http::assertSent(function ($request) {
         return $request->hasHeader('X-First', 'foo') &&
-               $request->url() == 'http://test.com/users' &&
+               $request->url() == 'http://example.com/users' &&
                $request['name'] == 'Taylor' &&
                $request['role'] == 'Developer';
     });
@@ -308,13 +308,13 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 
     Http::fake();
 
-    Http::post('http://test.com/users', [
+    Http::post('http://example.com/users', [
         'name' => 'Taylor',
         'role' => 'Developer',
     ]);
 
     Http::assertNotSent(function (Request $request) {
-        return $request->url() === 'http://test.com/posts';
+        return $request->url() === 'http://example.com/posts';
     });
 
 もしくは、リクエストがまったく送信されないことをアサートしたい場合には、`assertNothingSent`メソッドを使用してください。

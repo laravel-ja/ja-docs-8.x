@@ -815,12 +815,12 @@ Laravel HorizonやLaravel Telescopeなどの一部のツールは、バッチに
 
     Bus::batch([
         [
-            new ReleasePodcast(1);
-            new SendPodcastReleaseNotification(1);
+            new ReleasePodcast(1),
+            new SendPodcastReleaseNotification(1),
         ],
         [
-            new ReleasePodcast(2);
-            new SendPodcastReleaseNotification(2);
+            new ReleasePodcast(2),
+            new SendPodcastReleaseNotification(2),
         ],
     ])->dispatch();
 

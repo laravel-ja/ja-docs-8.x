@@ -28,6 +28,7 @@
     - [セレクタの範囲指定](#scoping-selectors)
     - [要素の待機](#waiting-for-elements)
     - [要素のビュー内へのスクロール](#scrolling-an-element-into-view)
+    - [JavaScriptの実行](#executing-javascript)
     - [Veuアサーションの作成](#making-vue-assertions)
 - [使用可能なアサート](#available-assertions)
 - [ページ](#pages)
@@ -83,7 +84,7 @@ Laravel Duskにデフォルトで含まれるChromeDriverとは別のバージ�
     php artisan dusk:chrome-driver
 
     # OSに合う、指定バージョンのChromeDriverのインストール
-    php artisan dusk:chrome-driver 74
+    php artisan dusk:chrome-driver 86
 
     # 全OSをサポートしている、指定バージョンのChromeDriverのインストール
     php artisan dusk:chrome-driver --all
@@ -512,7 +513,7 @@ Duskはフォームと入力要素を操作する、さまざまなメソッド�
 
 ラジオボタンのオプションを「選択」するには、`radio`メソッドを使用します。他の関連する多くのメソッドと同様に、完全なセレクタは必要ありません。完全に一致するセレクタが見つからない場合、Duskは`name`と`value`属性に一致するラジオボタンを探します。
 
-    $browser->radio('version', 'php7');
+    $browser->radio('version', 'php8');
 
 <a name="attaching-files"></a>
 ### 添付ファイル
@@ -776,6 +777,18 @@ Duskにある数多くの「待機」メソッドは、`waitUsing`メソッド�
 
     $browser->scrollIntoView('selector')
             ->click('selector');
+
+<a name="executing-javascript"></a>
+### JavaScriptの実行
+
+ブラウザでJavaScriptを実行するには、`script`メソッドを使います。
+
+    $output = $browser->script('document.documentElement.scrollTop = 0');
+
+    $output = $browser->script([
+        'document.body.scrollTop = 0',
+        'document.documentElement.scrollTop = 0',
+    ]);
 
 <a name="making-vue-assertions"></a>
 ### Vueアサーションの作成
@@ -1698,7 +1711,7 @@ DustテストにCircleCIを使用する場合、以下の設定ファイルを�
 
 Duskのテストを[Codeship](https://codeship.com)で実行するには、以下のコマンドをCodeshipプロジェクトへ追加してください。以下のコマンドはひとつの参考例です。必要に応じて、自由にコマンドを追加してください。
 
-    phpenv local 7.2
+    phpenv local 7.3
     cp .env.testing .env
     mkdir -p ./bootstrap/cache
     composer install --no-interaction --prefer-dist
@@ -1797,4 +1810,4 @@ Duskのテスト実行に[Githubアクション](https://github.com/features/act
             uses: actions/upload-artifact@v2
             with:
               name: console
-              path: tests/Browser/console  
+              path: tests/Browser/console

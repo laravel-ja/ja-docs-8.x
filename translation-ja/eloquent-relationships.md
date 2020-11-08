@@ -20,8 +20,8 @@
     - [存在するリレーションのクエリ](#querying-relationship-existence)
     - [存在しないリレーションのクエリ](#querying-relationship-absence)
     - [ポリモーフィックリレーションのクエリ](#querying-polymorphic-relationships)
-    - [関連するモデルのカウント](#counting-related-models)
-    - [ポリモーフィックリレーションで関連モデルを数える](#counting-related-models-on-polymorphic-relationships)
+    - [関連するモデルの集計](#aggregating-related-models)
+    - [ポリモーフィックリレーションのモデル集計](#aggregating-related-models-on-polymorphic-relationships)
 - [Eagerロード](#eager-loading)
     - [制約Eager Loads](#constraining-eager-loads)
     - [遅延Eagerロード](#lazy-eager-loading)
@@ -1056,7 +1056,10 @@ Eloquentリレーションはすべてメソッドとして定義されている
     })->get();
 
 <a name="counting-related-models"></a>
-### 関連するモデルのカウント
+<a name="aggregating-related-models-related-models"></a>
+### 関連するモデルの集計
+
+#### 関連モデルのカウント
 
 リレーション結果の件数を実際にレコードを読み込むことなく知りたい場合は、`withCount`メソッドを使います。件数は結果のモデルの`{リレーション名}_count`カラムに格納されます。
 
@@ -1111,6 +1114,22 @@ Eagerロードのクエリに追加の制約を指定する必要がある場合
     $book->loadCount(['reviews' => function ($query) {
         $query->where('rating', 5);
     }])
+
+#### その他の集計関数
+
+Eloquentは、`withCount`メソッドに加え、`withMin`、`withMax`、`withAvg`、`withSum`も提供しています。これらのメソッドは、結果のモデルへ`{relation} _ {function} _ {column}`カラムを配置します。一例を確認してください。
+
+    $posts = App\Models\Post::withSum('comments', 'votes')->get();
+
+    foreach ($posts as $post) {
+        echo $post->comments_sum_votes;
+    }
+
+このような追加の集計操作は、すでに取得しているEloquentモデルでも実行できます。
+
+    $post = App\Models\Post::first();
+
+    $post->loadSum('comments', 'votes');
 
 <a name="counting-related-models-on-polymorphic-relationships"></a>
 ### ポリモーフィックリレーションで関連モデルを数える

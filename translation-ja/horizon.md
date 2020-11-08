@@ -135,6 +135,12 @@ Horizonプロセスを`horizon:pause` Artisanコマンドで一時停止した�
 
     php artisan horizon:continue
 
+`horizo​​n：pause-supervisor`、` horizo​​n：continue-supervisor` Artisanコマンドを使用して、特定のHorizo​​nスーパーバイザー（ワーカーグループ）を一時停止、続行することもできます。
+
+    php artisan horizon:pause-supervisor supervisor-1
+
+    php artisan horizon:continue-supervisor supervisor-1
+
 `horizon:status` Artisanコマンドにより、Horizonプロセスの現在の状態を確認できます。
 
     php artisan horizon:status

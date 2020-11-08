@@ -251,7 +251,7 @@
 
     $chunks = $collection->chunk(4);
 
-    $chunks->toArray();
+    $chunks->all();
 
     // [[1, 2, 3, 4], [5, 6, 7]]
 
@@ -276,7 +276,7 @@
         return $current === $chunk->last();
     });
 
-    $chunks->toArray();
+    $chunks->all();
 
     // [['A', 'A'], ['B', 'B'], ['C', 'C', 'C'], ['D']]
 
@@ -880,7 +880,7 @@
 
     $grouped = $collection->groupBy('account_id');
 
-    $grouped->toArray();
+    $grouped->all();
 
     /*
         [
@@ -900,7 +900,7 @@
         return substr($item['account_id'], -3);
     });
 
-    $grouped->toArray();
+    $grouped->all();
 
     /*
         [
@@ -1219,7 +1219,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
         return [$item['department'] => $item['name']];
     });
 
-    $grouped->toArray();
+    $grouped->all();
 
     /*
         [
@@ -2033,7 +2033,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
 
     $groups = $collection->split(3);
 
-    $groups->toArray();
+    $groups->all();
 
     // [[1, 2], [3, 4], [5]]
 
@@ -2146,7 +2146,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
     collect([2, 4, 3, 1, 5])
         ->sort()
         ->tap(function ($collection) {
-            Log::debug('Values after sorting', $collection->values()->toArray());
+            Log::debug('Values after sorting', $collection->values()->all());
         })
         ->shift();
 

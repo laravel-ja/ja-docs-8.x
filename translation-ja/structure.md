@@ -63,7 +63,7 @@ Laravelのデフォルトアプリケーション構造はアプリケーショ�
 <a name="the-resources-directory"></a>
 #### resourcesディレクトリ
 
-`resources`ディレクトリはビューやアセットの元ファイル（LESS、SASS、JavaScript）で構成されています。また、すべての言語ファイルも配置します。
+`resources`ディレクトリはCSS、JavaScriptなどのビューやアセットの元ファイルで構成されています。また、すべての言語ファイルも配置します。
 
 <a name="the-routes-directory"></a>
 #### routesディレクトリ

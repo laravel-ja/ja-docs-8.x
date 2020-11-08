@@ -45,11 +45,15 @@ local環境では`APP_DEBUG`環境変数を`true`に設定すべきでしょう�
         });
     }
 
-`reportable`メソッドを使用しカスタム例外レポートコールバックを登録する場合でも、Laravelはアプリケーションのデフォルトログ設定を使い例外をログします。デフォルトログスタックへその例外が伝わるのを止めたい場合は、レポートコールバックの定義時に`stop`メソッドを使用してください。
+`reportable`メソッドを使用しカスタム例外レポートコールバックを登録する場合でも、Laravelはアプリケーションのデフォルトログ設定を使い例外をログします。デフォルトログスタックへその例外が伝わるのを止めたい場合は、レポートコールバックの定義時に`stop`メソッドを使用するか、コールバックから`false`を返してください。
 
     $this->reportable(function (CustomException $e) {
         //
     })->stop();
+
+    $this->reportable(function (CustomException $e) {
+        return false;
+    });
 
 > {tip} 指定した例外に対する例外レポートをカスタマイズするには、[reportable例外](/docs/{{version}}/errors#renderable-exceptions)を使用することも一考してください。
 

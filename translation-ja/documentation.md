@@ -2,7 +2,6 @@
     - [リリースノート](/docs/{{version}}/releases)
     - [アップグレードガイド](/docs/{{version}}/upgrade)
     - [貢献ガイド](/docs/{{version}}/contributions)
-    - [APIドキュメント](/api/8.x)
 - ## 準備
     - [インストール](/docs/{{version}}/installation)
     - [設定](/docs/{{version}}/configuration)
@@ -75,7 +74,7 @@
     - [ブラウザテスト](/docs/{{version}}/dusk)
     - [データベース](/docs/{{version}}/database-testing)
     - [モック](/docs/{{version}}/mocking)
-- ## 公式パッケージ
+- ## パッケージ
     - [Cashier (Stripe)](/docs/{{version}}/billing)
     - [Cashier (Paddle)](/docs/{{version}}/cashier-paddle)
     - [Cashier (Mollie)](https://github.com/laravel/cashier-mollie)
@@ -88,3 +87,4 @@
     - [Scout](/docs/{{version}}/scout)
     - [Socialite](/docs/{{version}}/socialite)
     - [Telescope](/docs/{{version}}/telescope)
+- [API Documentation](/api/8.x)

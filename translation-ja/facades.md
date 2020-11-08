@@ -60,8 +60,9 @@ Laravelのファサードはすべて、`Illuminate\Support\Facades`名前空間
              ->with('key')
              ->andReturn('value');
 
-        $this->visit('/cache')
-             ->see('value');
+        $response = $this->get('/cache');
+
+        $response->assertSee('value');
     }
 
 <a name="facades-vs-helper-functions"></a>
@@ -94,8 +95,9 @@ Laravelのファサードはすべて、`Illuminate\Support\Facades`名前空間
              ->with('key')
              ->andReturn('value');
 
-        $this->visit('/cache')
-             ->see('value');
+        $response = $this->get('/cache');
+
+        $response->assertSee('value');
     }
 
 <a name="how-facades-work"></a>
