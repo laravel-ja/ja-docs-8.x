@@ -656,6 +656,8 @@ Mailableのテンプレートをデザインしているとき、Bladeテンプ�
         return new App\Mail\InvoicePaid($invoice);
     });
 
+> {note} [インライン添付ファイル]（＃inline-attachments）は、Mailableがブラウザでプレビューされているときにはレンダーされません。Mailableをプレビューするには、[MailHog](https://github.com/mailhog/MailHog)や[HELO](https://usehelo.com)などのメールテストアプリケーションへ送信する必要があります。
+
 <a name="localizing-mailables"></a>
 ## Mailableのローカライズ
 

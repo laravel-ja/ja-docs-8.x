@@ -6,6 +6,7 @@
 - [ジョブの作成](#creating-jobs)
     - [ジョブクラスの生成](#generating-job-classes)
     - [クラス構成](#class-structure)
+    - [一意なジョブ](#unique-jobs)
 - [ジョブミドルウェア](#job-middleware)
     - [レート制限](#rate-limiting)
     - [ジョブ多重起動の防止](#preventing-job-overlaps)
@@ -207,6 +208,86 @@ Redisキューを使用する場合、ワーカのループの繰り返しとRed
     {
         $this->podcast = $podcast->withoutRelations();
     }
+
+<a name="unique-jobs"></a>
+### 一意なジョブ
+
+> {note} 一意なジョブは、[locks](/docs/{{version}}/cache#atomic-locks)をサポートするキャッシュドライバが必要です。
+
+特定のジョブでどんなときも１つのインスタンスのみがキューにあることを確実にしたい場合があります。そのためには、ジョブクラスに`ShouldBeUnique`インターフェイスを実装します。
+
+    <?php
+
+    use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Contracts\Queue\ShouldBeUnique;
+
+    class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
+    {
+        ...
+    }
+
+上記の例では、`UpdateSearchIndex`ジョブは一意です。そのため、ジョブの別のインスタンスがすでにキューにあり、処理が完了していない場合、ジョブの新しいディスパッチは無視されます。
+
+場合により、ジョブを一意にする特定の「キー」を定義したい場合や、時間が過ぎるとジョブが一意でなくなるタイムアウトを指定したいこともあるでしょう。これを実現するには、ジョブクラスで`uniqueId`および`uniqueFor`プロパティまたはメソッドを定義します。
+
+    <?php
+
+    use App\Product;
+    use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Contracts\Queue\ShouldBeUnique;
+
+    class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
+    {
+        /**
+         * 製品インスタンス
+         *
+         * @var \App\Product
+         */
+        public $product;
+
+        /**
+        * ジョブの一意のロックを開放する秒数
+        *
+        * @var int
+        */
+        public $uniqueFor = 3600;
+
+        /**
+        * ジョブの一意なID
+        *
+        * @return string
+        */
+        public function uniqueId()
+        {
+            return $this->product->id;
+        }
+    }
+
+上記の例では、`UpdateSearchIndex`ジョブは製品ＩＤにより一意になります。そのため、同じ製品ＩＤを持つジョブの新しいディスパッチは、既存のジョブの処理が完了するまで無視されます。さらに、既存のジョブが１時間以内に処理されない場合、一意のロックが解放され、同じ一意のキーを持つ別のジョブをキューにディスパッチできます。
+
+<a name="unique-job-locks"></a>
+#### 一意なジョブのロック
+
+`ShouldBeUnique`ジョブがディスパッチされると裏で、Laravelは`uniqueId`キーを使用して[lock](/docs/{{version}}/cache#atomic-locks)を取得しようとします。ロックが取得されない場合、ディスパッチは無視されます。このロックはジョブが処理を完了するか、すべての再試行に失敗すると解放されます。デフォルトでLaravelはデフォルトのキャッシュドライバを使用してこのロックを取得します。ロックを取得するために別のドライバを使用したい場合は、使用する必要のあるキャッシュドライバを返す`uniqueVia`メソッドを定義してください。
+
+    use Illuminate\Support\Facades\Cache;
+
+    class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
+    {
+        ...
+
+        /**
+        * 一意なジョブをロックするためのキャッシュドライバの取得
+        *
+        * @return \Illuminate\Contracts\Cache\Repository
+        */
+        public function uniqueVia()
+        {
+            return Cache::driver('redis');
+        }
+    }
+
+> {tip} ジョブの同時処理のみを制限する必要がある場合は、代わりに[`WithoutOverlapping`](/docs/{{version}}/queues#preventing-job-overlaps)ジョブミドルウェアを使用してください。
 
 <a name="job-middleware"></a>
 ## ジョブミドルウェア
