@@ -803,6 +803,11 @@ JSONカラムを更新するときは、JSONオブジェクトの適切なキー
 
     DB::table('users')->truncate();
 
+<a name="table-truncation-and-postgresql"></a>
+#### Table Truncation & PostgreSQL
+
+PostgreSQLデータベースを切り捨てる場合、`CASCADE`動作が適用されます。つまり、他のテーブルの外部キーに関連付けしたレコードも全部削除されることを意味します。
+
 <a name="pessimistic-locking"></a>
 ## 悲観的ロック
 

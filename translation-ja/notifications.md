@@ -406,7 +406,7 @@ Laravelの各通知は、（通常、`app/Notifications`ディレクトリに設
                     ]);
     }
 
-> {tip} Mailableオブジェクトにファイルを添付するのとは異なり、`attachFromStorage`を使用してストレージディスクからファイルを直接添付できません。ストレージディスク上のファイルへの絶対パスを指定して`attach`メソッドを使用する必要があります。もしくは、`toMail`メソッドから[mailable](/docs/{{version}}/mail#generating-mailables)を返すこともできます。
+> {tip} Unlike attaching files in mailable objects, you may not attach a file directly from the storage disk using `attachFromStorage`. You should rather use the `attach` method with an absolute path to the file on the storage disk. Alternatively, you could return a [mailable](/docs/{{version}}/mail#generating-mailables) from the `toMail` method.
 
 <a name="raw-data-attachments"></a>
 #### 生データの添付

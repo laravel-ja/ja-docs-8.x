@@ -160,7 +160,7 @@ Laravelの全ルートは、`routes`ディレクトリ下に設置されてい�
 
     Route::get('user/{id}/{name}', function ($id, $name) {
         //
-    })->whereNumeric('id')->whereAlpha('name');
+    })->whereNumber('id')->whereAlpha('name');
 
     Route::get('user/{id}', function ($id) {
         //

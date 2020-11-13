@@ -102,7 +102,7 @@ Sanctumが内部で使用する`PersonalAccessToken`モデルは自由に拡張�
      */
     public function boot()
     {
-        Sanctum::usePersonalAccessTokenModel(Token::class);
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
     }
 
 <a name="api-token-authentication"></a>

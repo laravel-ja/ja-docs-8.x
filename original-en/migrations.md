@@ -60,7 +60,7 @@ When you execute this command, Laravel will write a "schema" file to your `datab
 
 You should commit your database schema file to source control so that other new developers on your team may quickly create your application's initial database structure.
 
-> {note} Migration squashing is only available for the MySQL, PostgreSQL, and SQLite databases. Of course, you may not use a MySQL / PostgreSQL database dump in combination with an in-memory SQLite database during testing.
+> {note} Migration squashing is only available for the MySQL, PostgreSQL, and SQLite databases. However, database dumps may not be restored to in-memory SQLite databases.
 
 <a name="migration-structure"></a>
 ## Migration Structure
@@ -328,6 +328,7 @@ Modifier  |  Description
 `->storedAs($expression)`  |  Create a stored generated column (MySQL)
 `->unsigned()`  |  Set INTEGER columns as UNSIGNED (MySQL)
 `->useCurrent()`  |  Set TIMESTAMP columns to use CURRENT_TIMESTAMP as default value
+`->useCurrentOnUpdate()`  |  Set TIMESTAMP columns to use CURRENT_TIMESTAMP when a record is updated
 `->virtualAs($expression)`  |  Create a virtual generated column (MySQL)
 `->generatedAs($expression)`  |  Create an identity column with specified sequence options (PostgreSQL)
 `->always()`  |  Defines the precedence of sequence values over input for an identity column (PostgreSQL)

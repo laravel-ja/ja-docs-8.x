@@ -60,7 +60,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 
 データベーススキーマはソース管理のコミットに含めるべきでしょう。それによりチームに入った別の新しい開発者がアプリケーションの初期データベース構造を簡単に生成できます。
 
-> {note} マイグレーションの圧縮はMySQL、PostgreSQL、SQLiteデータベースでのみ利用可能です。もちろんテスト時は、MySQL／PostgreSQLのデータベースダンプをSQLiteのインメモリーデータベースと組み合わせての使用はできません。
+> {note} マイグレーションの圧縮はMySQL、PostgreSQL、およびSQLiteデータベースでのみ使用できます。ただし、データベースダンプはインメモリSQLiteデータベースへは復元されないでしょう。
 
 <a name="migration-structure"></a>
 ## マイグレーション構造
@@ -328,6 +328,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
 `->storedAs($expression)`  |  stored generatedカラムを生成(MySQLのみ)
 `->unsigned()`  |  整数カラムを符号なしに設定(MySQLのみ)
 `->useCurrent()`  |  TIMESTAMPカラムのデフォルト値をCURRENT_TIMESTAMPに指定
+`->useCurrentOnUpdate()`  |  レコード更新時にCURRENT_TIMESTAMPを使用するようにTIMESTAMPカラムを設定
 `->virtualAs($expression)`  |  virtual generatedカラムを生成(MySQLのみ)
 `->generatedAs($expression)`  |  指定のシーケンスオプションで、識別カラムを生成(PostgreSQLのみ)
 `->always()`  |  識別カラムの入力を上書きするシーケンス値を定義(PostgreSQLのみ)
