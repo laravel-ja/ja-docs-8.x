@@ -1313,6 +1313,27 @@ Eloquentは、`withCount`メソッドに加え、`withMin`、`withMax`、`withAv
 
 > {note} `limit`と`take`クエリビルダメソッドは、Eagerロードの制約時には使用できません。
 
+<a name="constraining-eager-loading-of-morph-to-relationships"></a>
+#### `MorphTo`リレーションのEagerロードの制約
+
+`MorphTo`リレーションをEagerロードする場合、Eloquentは複数のクエリを実行して、関連するモデルの異なるタイプをそれぞれ取得します。`MorphTo`リレーションの` constrain`メソッドを使用し、各クエリの条件を絞られます。
+
+    use Illuminate\Database\Eloquent\Builder;
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+    $comments = Comment::with(['commentable' => function (MorphTo $morphTo) {
+        $morphTo->constrain([
+            Post::class => function (Builder $query) {
+                $query->whereNull('hidden_at');
+            },
+            Video::class => function (Builder $query) {
+                $query->where('type', 'educational');
+            },
+        ]);
+    }])->get();
+
+この例で、Eloquentは非表示にされていないポストと、`type`値が"educational"な動画のみEagerロードします。
+
 <a name="lazy-eager-loading"></a>
 ### 遅延Eagerロード
 

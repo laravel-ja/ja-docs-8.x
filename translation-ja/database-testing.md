@@ -121,7 +121,7 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
 
 ご覧のとおり、もっとも基本的な形式のファクトリはLaravelの基本ファクトリクラスを拡張し、`model`プロパティと`definition`メソッドを定義するクラスです。`definition`メソッドは、ファクトリを使用してモデルを作成するときに適用する必要がある属性値のデフォルトのセットを返します。
 
-`faker`プロパティにより、ファクトリは[Faker](https://github.com/fzaninotto/Faker) PHPライブラリにアクセスできます。これによりテスト用のさまざまな種類のランダムデータを簡単に生成できます。
+`faker`プロパティにより、ファクトリは[Faker](https://github.com/FakerPHP/Faker) PHPライブラリにアクセスできます。これによりテスト用のさまざまな種類のランダムデータを簡単に生成できます。
 
 > {tip} Fakerのローケルは、`config/app.php`設定ファイルの`faker_locale`オプションで指定できます。
 
