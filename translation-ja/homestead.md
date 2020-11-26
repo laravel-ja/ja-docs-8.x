@@ -59,8 +59,10 @@ HomesteadはWindowsやMac、Linuxシステム上で実行でき、NginxやPHP、
 </style>
 
 <div id="software-list" markdown="1">
-- Ubuntu 18.04
+- Ubuntu 18.04 (`master`ブランチ)
+- Ubuntu 20.04 (`20.04`ブランチ)
 - Git
+- PHP 8.0
 - PHP 7.4
 - PHP 7.3
 - PHP 7.2

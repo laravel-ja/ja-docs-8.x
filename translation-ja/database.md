@@ -7,6 +7,7 @@
 - [SQLクエリの実行](#running-queries)
 - [クエリイベントのリッスン](#listening-for-query-events)
 - [データベーストランザクション](#database-transactions)
+- [データベースCLIへの接続](#connecting-to-the-database-cli)
 
 <a name="introduction"></a>
 ## イントロダクション
@@ -255,3 +256,14 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
     DB::commit();
 
 > {tip} `DB`ファサードのトランザクションメソッドは、[クエリビルダ](/docs/{{version}}/queries)と[Eloquent ORM](/docs/{{version}}/eloquent)のトランザクションを両方共にコントロールします。
+
+<a name="connecting-to-the-database-cli"></a>
+## データベースCLIへの接続
+
+データベースCLIに接続する場合は、`db` Artisanコマンドを使用します。
+
+    php artisan db
+
+必要に応じ、データベース接続名を指定し、デフォルト以外のデータベースに接続できます。
+
+    php artisan db mysql

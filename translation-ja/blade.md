@@ -139,7 +139,7 @@ JavaScriptの変数を初期化するために、配列をビューに渡してJ
         var app = <?php echo json_encode($array); ?>;
     </script>
 
-その際、`json_encode`を使う代わりに、`@json`ディレクティブを使うことができます。`@json`ディレクティブは、PHPの`json_encode`関数と同じ引数を受けます。
+その際、`json_encode`を使う代わりに、`@json`ディレクティブを使うことができます。`@json`ディレクティブは、PHPの`json_encode`関数と同じ引数を受けます。デフォルトで`@json`ディレクティブは`JSON_HEX_TAG`、`JSON_HEX_APOS`、`JSON_HEX_AMP`、`JSON_HEX_QUOT`フラグを付けて、`json_encode`関数を呼び出します。
 
     <script>
         var app = @json($array);
@@ -503,6 +503,12 @@ HTMLフォームでは、`PUT`、`PATCH`、`DELETE`リクエストを作成で�
     php artisan make:component Alert
 
 `make:component`コマンドは、コンポーネントのためのビューテンプレートも生成します。このビューは`resources/views/components`ディレクトリに生成されます。
+
+サブディレクトリにコンポーネントを作成することもできます。
+
+    php artisan make:component Forms/Input
+
+上記のコマンドは、`App\View\Components\Forms`ディレクトリに`Input`コンポーネントを作成し、ビューを`resources/views/components/forms`ディレクトリに配置します。
 
 <a name="manually-registering-package-components"></a>
 #### パッケージコンポーネントの登録

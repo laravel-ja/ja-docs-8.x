@@ -111,7 +111,7 @@ Redisブロードキャスタがイベントを発行すると、そのイベン
 
 RedisブロードキャスタとSocket.IOサーバをペアリングする場合、アプリケーションへSocket.IO JavaScriptクライアントライブラリをインクルードする必要があります。NPMパッケージマネージャにより、インストールできます。
 
-    npm install --save-dev socket.io-client
+    npm install --save-dev socket.io-client@2
 
 次に、`socket.io`コネクタと`host`を指定し、Echoをインスタンス化します。
 
@@ -670,9 +670,9 @@ Laravelアプリケーションにまったく関係ないイベントを他の�
 
 ブロードキャストチャンネルを使用する通知の設定を終えたら、Echoの`notification`メソッドを使用し、ブロードキャストイベントをリッスンできます。チャンネル名は、通知を受けるエンティティのクラス名と一致している必要があることを覚えておいてください。
 
-    Echo.private('App.User.' + userId)
+    Echo.private(`App.Models.User.${userId}`)
         .notification((notification) => {
             console.log(notification.type);
         });
 
-上記の例の場合、「ブロードキャスト」チャンネルを通じ、`App\Models\User`インスタンスへ送られる通知は、全部コールバックにより受け取られます。`App.User.{id}`チャンネルのチャンネル認可コールバックは、Laravelフレームワークに用意されている、デフォルトの`BroadcastServiceProvider`に含まれています。
+上記の例の場合、「ブロードキャスト」チャンネルを通じ、`App\Models\User`インスタンスへ送られる通知は、全部コールバックにより受け取られます。`App.Models.User.{id}`チャンネルのチャンネル認可コールバックは、Laravelフレームワークに用意されている、デフォルトの`BroadcastServiceProvider`に含まれています。

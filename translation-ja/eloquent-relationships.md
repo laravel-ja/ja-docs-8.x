@@ -21,7 +21,7 @@
     - [存在しないリレーションのクエリ](#querying-relationship-absence)
     - [ポリモーフィックリレーションのクエリ](#querying-polymorphic-relationships)
     - [関連するモデルの集計](#aggregating-related-models)
-    - [ポリモーフィックリレーションのモデル集計](#aggregating-related-models-on-polymorphic-relationships)
+    - [ポリモーフィックリレーションで関連モデルを数える](#counting-related-models-on-polymorphic-relationships)
 - [Eagerロード](#eager-loading)
     - [制約Eager Loads](#constraining-eager-loads)
     - [遅延Eagerロード](#lazy-eager-loading)
@@ -1055,10 +1055,10 @@ Eloquentリレーションはすべてメソッドとして定義されている
         $query->where('title', 'like', 'foo%');
     })->get();
 
-<a name="counting-related-models"></a>
-<a name="aggregating-related-models-related-models"></a>
+<a name="aggregating-related-models"></a>
 ### 関連するモデルの集計
 
+<a name="counting-related-models"></a>
 #### 関連モデルのカウント
 
 リレーション結果の件数を実際にレコードを読み込むことなく知りたい場合は、`withCount`メソッドを使います。件数は結果のモデルの`{リレーション名}_count`カラムに格納されます。

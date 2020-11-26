@@ -144,9 +144,18 @@ Laravelの各通知は、（通常、`app/Notifications`ディレクトリに設
 
 通知の配信を遅らせたい場合、`delay`メソッドを通知のインスタンスへチェーンしてください。
 
-    $when = now()->addMinutes(10);
+    $delay = now()->addMinutes(10);
 
-    $user->notify((new InvoicePaid($invoice))->delay($when));
+    $user->notify((new InvoicePaid($invoice))->delay($delay));
+
+特定のチャンネルの遅​​延量を指定するため、配列を`delay`メソッドに渡せます。
+
+    $user->notify((new InvoicePaid($invoice))->delay([
+        'mail' => now()->addMinutes(5),
+        'sms' => now()->addMinutes(10),
+    ]));
+
+通知をキューに入れると、受信者とチャンネルの組み合わせごとにジョブが作成され、キューに投入されます。たとえば、通知に３つの受信者と２つのチャンネルがある場合、６つのジョブがキューにディスパッチされます。
 
 <a name="customizing-notification-channel-queues"></a>
 #### 通知チャンネルキューのカスタマイズ

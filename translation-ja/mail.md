@@ -46,16 +46,16 @@ MailgunとPostmarkなど、APIベースドライバはシンプルでSMTPサー�
 Mailgunドライバを使用する場合、最初にGuzzleをインストールしてください。それから`config/mail.php`設定ファイル中の`default`オプションを`mailgun`に設定してください。次に`config/services.php`設定ファイルが以下のオプションを含んでいるか確認してください。
 
     'mailgun' => [
-        'domain' => 'your-mailgun-domain',
-        'secret' => 'your-mailgun-key',
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
     ],
 
 "US" [Mailgunリージョン](https://documentation.mailgun.com/en/latest/api-intro.html#mailgun-regions)を使用しない場合は、`services`設定ファイルで、リージョンのエンドポイントを定義してください。
 
     'mailgun' => [
-        'domain' => 'your-mailgun-domain',
-        'secret' => 'your-mailgun-key',
-        'endpoint' => 'api.eu.mailgun.net',
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.eu.mailgun.net'),
     ],
 
 <a name="postmark-driver"></a>
@@ -68,7 +68,7 @@ Postmarkドライバを使用する場合は、ComposerでPostmarkのSwiftMailer
 続いて、Guzzleをインストールし、`config/mail.php`設定ファイルの`default`オプションを`postmark`へ設定してください。最後に、`config/services.php`設定ファイルに、以下の内容を確実に含めてください。
 
     'postmark' => [
-        'token' => 'your-postmark-token',
+        'token' => env('POSTMARK_TOKEN'),
     ],
 
 <a name="ses-driver"></a>
@@ -81,17 +81,17 @@ Amazon SESドライバを使う場合、Amazon AWS SDK for PHPをインストー
 次に`config/mail.php`設定ファイルの`default`オプションを`ses`に設定します。それから`config/services.php`設定ファイルが以下の内容になっているか確認してください。
 
     'ses' => [
-        'key' => 'your-ses-key',
-        'secret' => 'your-ses-secret',
-        'region' => 'ses-region',  // e.g. us-east-1
+        'key' => env('AWS_ACCESS_KEY_ID'),
+        'secret' => env('AWS_SECRET_ACCESS_KEY'),
+        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
 SESの`SendRawEmail`リクエストを実行する時に、[追加オプション](https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-email-2010-12-01.html#sendrawemail)を含めたい場合は、`ses`設定の中に`options`配列を定義してください。
 
     'ses' => [
-        'key' => 'your-ses-key',
-        'secret' => 'your-ses-secret',
-        'region' => 'ses-region',  // e.g. us-east-1
+        'key' => env('AWS_ACCESS_KEY_ID'),
+        'secret' => env('AWS_SECRET_ACCESS_KEY'),
+        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
         'options' => [
             'ConfigurationSetName' => 'MyConfigurationSet',
             'Tags' => [

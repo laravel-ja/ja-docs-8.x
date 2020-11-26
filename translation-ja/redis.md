@@ -155,7 +155,7 @@ PhpRedis拡張は、`config/database.php`の中で`REDIS_CLIENT`環境変数の�
 
     'RedisManager' => Illuminate\Support\Facades\Redis::class,
 
-デフォルトの`host`、`port`、`database`、`password`オプションに加え、PhpRedisは`persistent`、`prefix`、`read_timeout`、`timeout`、`context`追加オプションをサポートしています。`config/database.php`設定ファイル中のRedisサーバ設定に、これらのオプションを追加してください。
+デフォルトの`host`、`port`、`database`、`password`オプションに加え、PhpRedisは`persistent`、`prefix`、`read_timeout`、`retry_interval`、`timeout`、`context`追加オプションをサポートしています。`config/database.php`設定ファイル中のRedisサーバ設定に、これらのオプションを追加してください。
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
