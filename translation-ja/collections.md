@@ -166,6 +166,7 @@
 [sortKeysDesc](#method-sortkeysdesc)
 [splice](#method-splice)
 [split](#method-split)
+[splitIn](#method-splitin)
 [sum](#method-sum)
 [take](#method-take)
 [takeUntil](#method-takeuntil)
@@ -2036,6 +2037,19 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
     $groups->all();
 
     // [[1, 2], [3, 4], [5]]
+
+<a name="method-splitin"></a>
+#### `splitIn()` {#collection-method}
+
+`splitIn`メソッドは、コレクションを指定された数のグループに分割します。最終グループ以外を完全に埋め、残りを最終グループに割り当てます。
+
+    $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+    $groups = $collection->splitIn(3);
+
+    $groups->all();
+
+    // [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10]]
 
 <a name="method-sum"></a>
 #### `sum()` {#collection-method}

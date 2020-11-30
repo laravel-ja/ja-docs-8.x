@@ -77,7 +77,7 @@ ValetとHomesteadのどちらを選んでも、Laravelの開発環境に向け�
 
 <div class="content-list" markdown="1">
 - `brew update`で最新バージョンの[Homebrew](https://brew.sh/)をインストール、もしくはアップデートしてください。
-- Homebrewを使い、`brew install php`でPHP7.4をインストールしてください。
+- Homebrewを使い、`brew install php`でPHP8.0をインストールしてください。
 - [Composer](https://getcomposer.org)をインストールしてください。
 - `composer global require laravel/valet`でValetをインストールしてください。`~/.composer/vendor/bin`ディレクトリが実行パスに含まれていることを確認してください。
 - `valet install`コマンドを実行してください。これによりValetとDnsMasqがインストール／設定され、システム起動時に起動されるValetのデーモンが登録されます。

@@ -162,6 +162,10 @@ Laravelの全ルートは、`routes`ディレクトリ下に設置されてい�
         //
     })->whereNumber('id')->whereAlpha('name');
 
+    Route::get('user/{name}', function ($name) {
+        //
+    })->whereAlphaNumeric('name');
+
     Route::get('user/{id}', function ($id) {
         //
     })->whereUuid('id');

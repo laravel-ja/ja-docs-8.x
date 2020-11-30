@@ -179,6 +179,24 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
 
     DB::statement('drop table users');
 
+<a name="running-an-unprepared-statement"></a>
+#### プリペアドステートメントを使用しない実行
+
+値をバインドせずにSQLステートメントを実行したい場合があります。それには`DB`ファサードの`unprepared`メソッドを使用します。
+
+    DB::unprepared('update users set votes = 100 where name = "Dries"');
+
+> {note} unpreparedステートメントはパラメーターをバインドしないため、SQLインジェクションに対して脆弱である可能性を持っています。unpreparedステートメント内でユーザーが制御する値の使用を許してはいけません。
+
+<a name="implicit-commits-in-transactions"></a>
+#### 暗黙のコミット
+
+トランザクション内で `DB`ファサードの`statement`および`unprepared`メソッドを使用する場合、[暗黙のコミット](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html)を引き起こすステートメントを回避するように注意する必要があります。そうしたステートメントにより、データベースエンジンはトランザクション全体を間接的にコミットし、Laravelはデータベースのトランザクションレベルを認識しなくなります。このようなステートメントの例は、データベーステーブルの作成です。
+
+    DB::unprepared('create table a (col varchar(1) null)');
+
+暗黙的なコミットをトリガーする[すべてのステートメントのリスト](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html)は、MySQLのマニュアルを参照してください。
+
 <a name="listening-for-query-events"></a>
 ## クエリイベントのリッスン
 
