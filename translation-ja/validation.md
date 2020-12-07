@@ -810,9 +810,13 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
 <a name="rule-distinct"></a>
 #### distinct
 
-対象が配列の時、フィールドに重複した値がないことをバリデートします。
+配列のバリデーション時、フィールドに重複した値がないことをバリデートします。
 
     'foo.*.id' => 'distinct'
+
+バリデーションルールの引数に`ignore_case`を追加して、大文字と小文字の違いを無視するルールを加えられます。
+
+    'foo.*.id' => 'distinct:ignore_case'
 
 <a name="rule-email"></a>
 #### email

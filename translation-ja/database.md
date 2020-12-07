@@ -40,6 +40,11 @@ SQLiteで外部キー制約を有効にするには、`DB_FOREIGN_KEYS`環境変
 
     DB_FOREIGN_KEYS=true
 
+<a name="mssql-configuration"></a>
+#### Microsoft SQLサーバ設定
+
+Microsoft SQLサーバデータベースを使用するには、`sqlsrv`および`pdo_sqlsrv` PHP拡張機能と、Microsoft SQL ODBCドライバなどの必要な依存関係をすべて確実にインストールしてください。
+
 <a name="configuration-using-urls"></a>
 #### URLを使用したデータベース設定
 

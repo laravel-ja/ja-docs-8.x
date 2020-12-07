@@ -538,6 +538,7 @@ Laravelはデータベースレベルの整合性を強制するために、テ�
 
     $table->foreignId('user_id')
           ->constrained()
+          ->onUpdate('cascade')
           ->onDelete('cascade');
 
 追加の[カラム修飾子](#column-modifiers)は`constrained`より前で呼び出してください。

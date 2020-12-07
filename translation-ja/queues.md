@@ -370,6 +370,7 @@ handleメソッドの中でレート制限をする代わりに、レート制�
 
 たとえば、プレミアムな顧客は無制限にする一方で、普通のユーザーには１時間に１回のデータバックアップを許したい場合があるとしましょう。これを実現するには、`AppServiceProvider`で`RateLimiter`を定義します。
 
+    use Illuminate\Cache\RateLimiting\Limit;
     use Illuminate\Support\Facades\RateLimiter;
 
     RateLimiter::for('backups', function ($job) {

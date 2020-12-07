@@ -983,6 +983,8 @@ Eloquentリレーションはすべてメソッドとして定義されている
         $query->where('content', 'like', 'foo%');
     }, '>=', 10)->get();
 
+> {note} 現在、Eloquentはデータベース間をまたぐリレーションのクエリをサポートしていません。リレーションは同じデータベース内に存在する必要があります。
+
 <a name="querying-relationship-absence"></a>
 ### 存在しないリレーションのクエリ
 
