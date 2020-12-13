@@ -210,6 +210,7 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
         // モデルをテストで使用…
     }
 
+`count`メソッドを使って多数のモデルを一括作成できます。
 You may create a collection of many models using the `count` method:
 
     // Create three App\Models\User instances...
