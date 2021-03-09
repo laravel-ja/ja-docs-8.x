@@ -2,7 +2,7 @@
 
 - [イントロダクション](#introduction)
 - [基礎](#the-basics)
-    - [URL生成の基礎](#generating-basic-urls)
+    - [URLの生成](#generating-urls)
     - [現在のURLへのアクセス](#accessing-the-current-url)
 - [名前付きルートのURL](#urls-for-named-routes)
     - [署名付きURL](#signed-urls)
@@ -12,15 +12,15 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelは、アプリケーションに対するURL生成の手助けする、数多くのヘルパを提供しています。これは主に、テンプレートやAPIレスポンスでリンクを構築したり、アプリケーションの他の部分へのリダイレクトレスポンスを生成したりするのに役立ちます。
+Laravelは、アプリケーションのURLを生成するのに役立つヘルパをいくつか提供しています。これらのヘルパは、主にテンプレートとAPIレスポンスでリンクを構築するとき、またはアプリケーションの別の部分へのリダイレクトレスポンスを生成するときに役立ちます。
 
 <a name="the-basics"></a>
 ## 基礎
 
-<a name="generating-basic-urls"></a>
-### URL生成の基礎
+<a name="generating-urls"></a>
+### URLの生成
 
-`url`ヘルパは、アプリケーションに対する任意のURLを生成するために使用されます。生成されるURLには自動的に、現在のリクエストのスキーム（HTTP／HTTPS）とホストが使用されます。
+`url`ヘルパは、アプリケーションの任意のURLを生成するために使用します。生成したURLは、アプリケーションが処理している現在のリクエストのスキーム(HTTPまたはHTTPS)とホストを自動的に使用します。
 
     $post = App\Models\Post::find(1);
 
@@ -51,7 +51,7 @@ Laravelは、アプリケーションに対するURL生成の手助けする、�
 <a name="urls-for-named-routes"></a>
 ## 名前付きルートのURL
 
-`route`ヘルパは、名前付きルートへのURLを生成するために使用します。名前付きルートにより、定義したルートの実際のURLを指定せずともURLを生成できます。ですから、ルートのURLを変更しても、`route`関数の呼び出しを変更する必要はありません。例として以下のように、アプリケーションが次のルートを持っていると想像してください。
+`route`ヘルパは、[名前付きルート](/docs/{{version}}/routing#named-routes)へのURLを生成するためにも使用できます。名前付きルートを使用すると、ルートで定義する実際のURLと結合せずにURLを生成できます。したがって、ルートのURLが変更された場合でも、`route`関数の呼び出しを変更する必要はありません。たとえば、アプリケーションに次のように定義されたルートが含まれているとします。
 
     Route::get('/post/{post}', function () {
         //
@@ -63,17 +63,7 @@ Laravelは、アプリケーションに対するURL生成の手助けする、�
 
     // http://example.com/post/1
 
-ルート定義のパラメーターに対応していないその他の配列パラメーターは、URLのクエリ文字列に追加されます。
-
-    echo route('post.show', ['post' => 1, 'search' => 'rocket']);
-
-    // http://example.com/post/1?search=rocket
-
-[Eloquentモデル](/docs/{{version}}/eloquent)の主キーを使用するURLを生成することもよくあると思います。そのため、Eloquentモデルをパラメータ値として渡すことができます。`route`ヘルパは、そのモデルの主キーを自動的に取り出します。
-
-    echo route('post.show', ['post' => $post]);
-
-`route`ヘルパは、複数のパラメータを伴うルートのURLを生成するためにも使用できます。
+もちろん、`route`ヘルパを使用して、複数のパラメーターを持つルートのURLを生成することもできます。
 
     Route::get('/post/{post}/comment/{comment}', function () {
         //
@@ -82,6 +72,19 @@ Laravelは、アプリケーションに対するURL生成の手助けする、�
     echo route('comment.show', ['post' => 1, 'comment' => 3]);
 
     // http://example.com/post/1/comment/3
+
+ルートの定義パラメータに対応しない過剰な配列要素は、URLのクエリ文字列として追加されます。
+
+    echo route('post.show', ['post' => 1, 'search' => 'rocket']);
+
+    // http://example.com/post/1?search=rocket
+
+<a name="eloquent-models"></a>
+#### Eloquent Models
+
+[Eloquentモデル](/docs/{{version}}/eloquent)の主キーを使用するURLを生成することもよくあると思います。そのため、Eloquentモデルをパラメータ値として渡すことができます。`route`ヘルパは、そのモデルの主キーを自動的に取り出します。
+
+    echo route('post.show', ['post' => $post]);
 
 <a name="signed-urls"></a>
 ### 署名付きURL
@@ -94,7 +97,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
 
     return URL::signedRoute('unsubscribe', ['user' => 1]);
 
-一定期間で無効になる署名URLを生成したい場合は、`temporarySignedRoute`メソッドを使用します。
+指定する時間が経過すると期限切れになる一時的な署名付きルートURLを生成する場合は、`temporarySignedRoute`メソッドを使用します。Laravelが一時的な署名付きルートURLを検証するとき、署名付きURLにエンコードされている有効期限のタイムスタンプが経過していないことを確認します。
 
     use Illuminate\Support\Facades\URL;
 
@@ -117,7 +120,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
         // ...
     })->name('unsubscribe');
 
-もしくは、`Illuminate\Routing\Middleware\ValidateSignature`ミドルウェアをそのルートへ指定します。用意していない場合、このミドルウェアをHTTPカーネルの`routeMiddleware`配列で指定してください。
+もしくは、`Illuminate\Routing\Middleware\ValidateSignature`[ミドルウェア](/docs/{{version}}/middleware)をルートに割り当てることもできます。このミドルウェアにHTTPカーネルの`routeMiddleware`配列のキーを割り当てていない場合は、割り当てる必要があります。
 
     /**
      * アプリケーションルートのミドルウェア
@@ -130,7 +133,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
     ];
 
-このミドルウェアをカーネルへ登録できたら、ルートで指定できます。送信されたリクエストは有効な署名を持っていない場合、このミドルウェアは自動的に`403`エラーレスポンスを返します。
+ミドルウェアをカーネルに登録したら、それをルートにアタッチできます。受信リクエストに有効な署名がない場合、ミドルウェアは自動的に`403`HTTPレスポンスを返します。
 
     Route::post('/unsubscribe/{user}', function (Request $request) {
         // ...
@@ -145,7 +148,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
 
     $url = action([HomeController::class, 'index']);
 
-コントローラメソッドが、ルートパラメータを受け取る場合、この関数の第２引数として渡すことができます。
+コントローラメソッドがルートパラメータを受け入れる場合、関数の２番目の引数としてルートパラメータの連想配列を渡せます。
 
     $url = action([UserController::class, 'profile'], ['id' => 1]);
 
@@ -169,6 +172,13 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
 
     class SetDefaultLocaleForUrls
     {
+        /**
+         * 受信リクエストの処理
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @param  \Closure  $next
+         * @return \Illuminate\Http\Response
+         */
         public function handle($request, Closure $next)
         {
             URL::defaults(['locale' => $request->user()->locale]);

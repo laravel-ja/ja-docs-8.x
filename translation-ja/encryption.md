@@ -7,12 +7,12 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelのエンクリプタ(encrypter)はOpenSSLを使い、AES-256とAES-128暗号化を提供しています。Laravelに組み込まれている暗号化機能を使用し、「自前」の暗号化アルゴリズムに走らないことを強く推奨します。Laravelの全暗号化済み値は、メッセージ認証コード(MAC)を使用し署名され、一度暗号化されると値を変更できません。
+Laravelの暗号化サービスは、AES-256およびAES-128暗号化を使用してOpenSSLを介してテキストを暗号化および復号化するためのシンプルで便利なインターフェイスを提供します。Laravelの暗号化された値はすべて、メッセージ認証コード(MAC)を使用して署名されているため、暗号化された値の基になる値を変更したり改ざんしたりすることはできません。
 
 <a name="configuration"></a>
 ## 設定
 
-Laravelのエンクリプタを使用する準備として、`config/app.php`設定ファイルの`key`オプションをセットしてください。`php artisan key:generate`コマンドを使用し、このキーを生成すべきです。このArtisanコマンドはPHPの安全なランダムバイトジェネレータを使用し、キーを作成します。この値が確実に指定されていないと、Laravelにより暗号化された値は、すべて安全ではありません。
+Laravelの暗号化を使用する前に、`config/app.php`設定ファイルで`key`設定オプションを設定する必要があります。この設定値は、`APP_KEY`環境変数が反映されます。`php artisan key:generate`コマンドを使用してこの変数の値を生成する必要があります。これは、`key:generate`コマンドがPHPの安全なランダムバイトジェネレーターを使用して、アプリケーションの暗号的に安全なキーを構築するためです。通常、`APP_KEY`環境変数の値は、[Laravelのインストール](/docs/{{version}}/インストール)中に生成されます。
 
 <a name="using-the-encrypter"></a>
 ## エンクリプタの使用
@@ -20,7 +20,7 @@ Laravelのエンクリプタを使用する準備として、`config/app.php`設
 <a name="encrypting-a-value"></a>
 #### 値の暗号化
 
-`Crypt`ファサードの`encryptString`ヘルパを使用し、値を暗号化できます。OpenSSLと`AES-256-CBC`アルゴリズムが使用され、すべての値は暗号化されます。さらに、全暗号化済み値はメッセージ認証コード(MAC)を使用し署名されますので、暗号化済み値の変更は感知されます。
+`Crypt`ファサードが提供する`encryptString`メソッドを使用して値を暗号化できます。暗号化された値はすべて、OpenSSLとAES-256-CBC暗号を使用して暗号化されます。さらに、暗号化されたすべての値は、メッセージ認証コード(MAC)で署名されます。統合されたメッセージ認証コードは、悪意のあるユーザーにより改ざんされた値の復号化を防ぎます。
 
     <?php
 
@@ -31,21 +31,18 @@ Laravelのエンクリプタを使用する準備として、`config/app.php`設
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Crypt;
 
-    class UserController extends Controller
+    class DigitalOceanTokenController extends Controller
     {
         /**
-         * ユーザーの秘密のメッセージを保存
+         * ユーザーのDigitalOceanAPIトークンを保存
          *
-         * @param  Request  $request
-         * @param  int  $id
-         * @return Response
+         * @param  \Illuminate\Http\Request  $request
+         * @return \Illuminate\Http\Response
          */
-        public function storeSecret(Request $request, $id)
+        public function storeSecret(Request $request)
         {
-            $user = User::findOrFail($id);
-
-            $user->fill([
-                'secret' => Crypt::encryptString($request->secret),
+            $request->user()->fill([
+                'token' => Crypt::encryptString($request->token),
             ])->save();
         }
     }
@@ -53,7 +50,7 @@ Laravelのエンクリプタを使用する準備として、`config/app.php`設
 <a name="decrypting-a-value"></a>
 #### 値の復号
 
-`Crypt`ファサードの`decryptString`ヘルパにより、値を復号できます。MACが無効な場合など、その値が正しくない時は`Illuminate\Contracts\Encryption\DecryptException`が投げられます。
+`Crypt`ファサードが提供する`decryptString`メソッドを使用して値を復号化できます。メッセージ認証コードが無効な場合など、値を適切に復号化できない場合、`Illuminate\Contracts\Encryption\DecryptException`を投げます。
 
     use Illuminate\Contracts\Encryption\DecryptException;
     use Illuminate\Support\Facades\Crypt;

@@ -280,7 +280,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 <a name="method-array-accessible"></a>
 #### `Arr::accessible()` {#collection-method .first-collection-method}
 
-`Arr::accessible`メソッドは指定値が配列アクセス可能であるかをチェックします。
+`Arr::accessible`メソッドは、指定した値が配列アクセス可能かどうかを判別します。
 
     use Illuminate\Support\Arr;
     use Illuminate\Support\Collection;
@@ -364,7 +364,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 <a name="method-array-divide"></a>
 #### `Arr::divide()` {#collection-method}
 
-`Arr::divide`メソッドは２つの配列を返します。一つは指定した配列のキー、もう一方は値です。
+`Arr::divide`メソッドは２つの配列を返します。１つは指定した配列のキーを含み、もう１つは値を含みます。
 
     use Illuminate\Support\Arr;
 
@@ -477,7 +477,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     // 100
 
-`Arr::get`メソッドは、指定キーが存在しない場合に返すデフォルト値も指定できます。
+`Arr::get`メソッドはデフォルト値も引数に取ります。これは、指定したキーが配列で存在しない場合に返されます。
 
     use Illuminate\Support\Arr;
 
@@ -647,7 +647,13 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     use Illuminate\Support\Arr;
 
-    $array = ['name' => 'Taylor', 'order' => ['column' => 'created_at', 'direction' => 'desc']];
+    $array = [
+        'name' => 'Taylor',
+        'order' => [
+            'column' => 'created_at',
+            'direction' => 'desc'
+        ]
+    ];
 
     Arr::query($array);
 
@@ -664,9 +670,9 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     $random = Arr::random($array);
 
-    // 4 - (ランダムに取得された値)
+    // 4 - (retrieved randomly)
 
-第２引数として、返すアイテム数を任意に指定することもできます。この引数を指定した場合、たとえ一つだけ取得したいときでも配列で返されることに注意してください。
+オプションの２番目の引数に返すアイテム数を指定することもできます。この引数を指定すると、アイテムが１つだけ必要な場合でも、配列が返されることに注意してください。
 
     use Illuminate\Support\Arr;
 
@@ -711,7 +717,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     // ['Chair', 'Desk', 'Table']
 
-指定したクロージャの結果に基づき、ソートすることもできます。
+指定するクロージャの結果で配列を並べ替えることもできます。
 
     use Illuminate\Support\Arr;
 
@@ -736,7 +742,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 <a name="method-array-sort-recursive"></a>
 #### `Arr::sortRecursive()` {#collection-method}
 
-`Arr::sortRecursive`メソッドは、数値の下位配列に対し`sort`機能、連想配列の下位配列に対し`ksort`を使用し、配列を再帰的にソートします。
+`Arr::sortRecursive`メソッドは、数値インデックス付きサブ配列の場合は`sort`関数を使用し、連想サブ配列の場合は`ksort`関数を使用して、配列を再帰的に並べ替えます。
 
     use Illuminate\Support\Arr;
 
@@ -759,7 +765,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 <a name="method-array-where"></a>
 #### `Arr::where()` {#collection-method}
 
-`Arr::where`は指定されたクロージャで、配列をフィルタリングします。
+`Arr::where`メソッドは、指定したクロージャを使用して配列をフィルタリングします。
 
     use Illuminate\Support\Arr;
 
@@ -774,7 +780,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 <a name="method-array-wrap"></a>
 #### `Arr::wrap()` {#collection-method}
 
-`Arr::wrap`メソッドは、指定値を配列中にラップします。指定値が配列中に存在している場合は、変更されません。
+`Arr::wrap`メソッドは、指定した値を配列にラップします。指定した値がすでに配列にある場合は、変更せずに返します。
 
     use Illuminate\Support\Arr;
 
@@ -784,13 +790,11 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     // ['Laravel']
 
-NULL値を指定すると、空の配列が返ってきます。
+指定値が`null`の場合、空の配列を返します。
 
     use Illuminate\Support\Arr;
 
-    $nothing = null;
-
-    $array = Arr::wrap($nothing);
+    $array = Arr::wrap(null);
 
     // []
 
@@ -868,7 +872,7 @@ NULL値を指定すると、空の配列が返ってきます。
 
     // ['products' => ['desk' => ['price' => 200]]]
 
-この関数はアスタリスクもワイルドカードとして受け取り、それに応じてターゲットにデータを埋め込みます。
+この関数は、アスタリスクを使用したワイルドカードも受け入れ、それに応じてターゲットに値を設定します。
 
     $data = [
         'products' => [
@@ -884,15 +888,15 @@ NULL値を指定すると、空の配列が返ってきます。
             'products' => [
                 ['name' => 'Desk 1', 'price' => 200],
                 ['name' => 'Desk 2', 'price' => 200],
-            ],
+            ]
         ]
     */
 
-デフォルトでは、既存の値をオーバーライドします。存在しない場合のみ値を設定したい場合は、第４引数に`false`を指定してください。
+デフォルトでは、既存の値はすべて上書きされます。値が存在しない場合にのみ値をセットする場合は、関数の4番目の引数に`false`を渡してください。
 
     $data = ['products' => ['desk' => ['price' => 100]]];
 
-    data_set($data, 'products.desk.price', 200, false);
+    data_set($data, 'products.desk.price', 200, $overwrite = false);
 
     // ['products' => ['desk' => ['price' => 100]]]
 
@@ -924,7 +928,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-app-path"></a>
 #### `app_path()` {#collection-method}
 
-`app_path`関数は、`app`ディレクトリへの完全パスを取得します。また、`app_path`関数は、ファイルパスをアプリケーションディレクトリからの相対位置で渡し、完全なパスを生成することもできます。
+`app_path`関数は、アプリケーションの`app`ディレクトリの完全修飾パスを返します。`app_path`関数を使用して、アプリケーションディレクトリに関連するファイルへの完全修飾パスを生成することもできます。
 
     $path = app_path();
 
@@ -933,7 +937,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-base-path"></a>
 #### `base_path()` {#collection-method}
 
-`base_path`関数は、プロジェクトルートの完全パスを返します。`base_path`関数はさらに、指定されたプロジェクトルートディレクトリからの相対パスから絶対パスを生成します。
+`base_path`関数は、アプリケーションのルートディレクトリへの完全修飾パスを返します。`base_path`関数を使用して、プロジェクトのルートディレクトリに関連する特定のファイルへの完全修飾パスを生成することもできます。
 
     $path = base_path();
 
@@ -942,7 +946,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-config-path"></a>
 #### `config_path()` {#collection-method}
 
-`config_path`関数は、`config`ディレクトリの完全パスを返します。さらに、アプリケーションの設定ディレクトリ中の指定ファイルへの完全パスを生成することもできます。
+`config_path`関数は、アプリケーションの`config`ディレクトリへの完全修飾パスを返します。`config_path`関数を使用して、アプリケーションの構成ディレクトリ内の特定のファイルへの完全修飾パスを生成することもできます。
 
     $path = config_path();
 
@@ -951,7 +955,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-database-path"></a>
 #### `database_path()` {#collection-method}
 
-`database_path`関数は、`database`ディレクトリの完全パスを返します。さらに、データベースディレクトリ中の指定ファイルへの完全パスを生成することもできます。
+`database_path`関数は、アプリケーションの`database`ディレクトリへの完全修飾パスを返します。`database_path`関数を使用して、データベースディレクトリ内の特定のファイルへの完全修飾パスを生成することもできます。
 
     $path = database_path();
 
@@ -967,7 +971,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-public-path"></a>
 #### `public_path()` {#collection-method}
 
-`public_path`関数は、`public`ディレクトリの完全パスを返します。さらに、publicディレクトリ中の指定ファイルへの完全パスを生成することもできます。
+`public_path`関数は、アプリケーションの`public`ディレクトリへの完全修飾パスを返します。`public_path`関数を使用して、パブリックディレクトリ内の特定のファイルへの完全修飾パスを生成することもできます。
 
     $path = public_path();
 
@@ -976,7 +980,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-resource-path"></a>
 #### `resource_path()` {#collection-method}
 
-`resource_path`関数は、`resources`ディレクトリの完全パスを返します。さらに、リソースディレクトリ中の指定ファイルへの完全パスを生成することもできます。
+`resource_path`関数は、アプリケーションの`resources`ディレクトリへの完全修飾パスを返します。`resource_path`関数を使用して、リソースディレクトリ内の特定のファイルへの完全修飾パスを生成することもできます。
 
     $path = resource_path();
 
@@ -985,7 +989,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-storage-path"></a>
 #### `storage_path()` {#collection-method}
 
-`storage_path`関数は、`storage`ディレクトリの完全パスを返します。さらに、ストレージディレクトリ中の指定ファイルへの完全パスを生成することもできます。
+`storage_path`関数は、アプリケーションの`storage`ディレクトリへの完全修飾パスを返します。`storage_path`関数を使用して、ストレージディレクトリ内の特定のファイルへの完全修飾パスを生成することもできます。
 
     $path = storage_path();
 
@@ -1114,7 +1118,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-contains"></a>
 #### `Str::contains()` {#collection-method}
 
-`Str::contains`メソッドは指定文字列が、２つ目の文字列を含んでいるか判定します。（大文字小文字の区別あり）
+`Str::contains`メソッドは、指定文字列に指定値が含まれているかどうかを判別します。このメソッドは大文字と小文字を区別します。
 
     use Illuminate\Support\Str;
 
@@ -1122,7 +1126,7 @@ NULL値を指定すると、空の配列が返ってきます。
 
     // true
 
-指定文字列に値のどれかが含まれているかを判定するために、値の配列を渡すことも可能です。
+値の配列を渡して、指定文字列に配列内の値が含まれているかどうかを判断することもできます。
 
     use Illuminate\Support\Str;
 
@@ -1133,7 +1137,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-contains-all"></a>
 #### `Str::containsAll()` {#collection-method}
 
-`Str::containsAll`メソッドは、指定配列の値すべてが文字列に含まれているかを判定します。
+`Str::containsAll`メソッドは、指定文字列に指定配列のすべての値が含まれているかどうかを判別します。
 
     use Illuminate\Support\Str;
 
@@ -1153,7 +1157,7 @@ NULL値を指定すると、空の配列が返ってきます。
     // true
 
 
-もしくは値の配列を渡し、文字列が指定値のいずれかで終わるかを判定できます。
+値の配列を渡し、指定文字列が配列内の値のいずれかで終わるかどうかを判断することもできます。
 
     use Illuminate\Support\Str;
 
@@ -1168,7 +1172,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-finish"></a>
 #### `Str::finish()` {#collection-method}
 
-`Str::finish`メソッドは指定文字列の最後が、２つ目の引数の値で終了していない場合、その値を追加します。
+`Str::finish`メソッドは、指定値で終わっていない場合、その値の単一のインスタンスを文字列に追加します。
 
     use Illuminate\Support\Str;
 
@@ -1183,7 +1187,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-is"></a>
 #### `Str::is()` {#collection-method}
 
-`Str::is`メソッドは指定した文字列がパターンに一致しているかを判定します。アスタリスクが使用されると、ワイルドカードとして利用されます。
+`Str::is`メソッドは、指定文字列が指定パターンに一致するかどうかを判別します。アスタリスクをワイルドカード値として使用できます。
 
     use Illuminate\Support\Str;
 
@@ -1250,7 +1254,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-limit"></a>
 #### `Str::limit()` {#collection-method}
 
-`Str::limit`メソッドは、指定した長さへ文字列を切り詰めます。
+`Str::limit`メソッドは、指定文字列を指定する長さへ切り捨てます。
 
     use Illuminate\Support\Str;
 
@@ -1258,7 +1262,7 @@ NULL値を指定すると、空の配列が返ってきます。
 
     // The quick brown fox...
 
-また、第３引数として、最長文字列数を超えた場合に末尾へ追加する、文字列を渡すこともできます。
+メソッドに３番目の引数を渡し、切り捨てる文字列の末尾へ追加する文字列を変更できます。
 
     use Illuminate\Support\Str;
 
@@ -1280,7 +1284,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-ordered-uuid"></a>
 #### `Str::orderedUuid()` {#collection-method}
 
-`Str::orderedUuid`メソッドはインデックスのついたデータベースカラムへ効率的に保存される、「タイムスタンプ先行」のUUIDを生成します。
+`Str::orderedUuid`メソッドは、インデックス付きデータベース列に効率的に格納できる「タイムスタンプファースト」UUIDを生成します。このメソッドを使用して生成した各UUIDは、以前にこのメソッドを使用して生成されたUUIDの後にソートされます。
 
     use Illuminate\Support\Str;
 
@@ -1289,7 +1293,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-padboth"></a>
 #### `Str::padBoth()` {#collection-method}
 
-`Str::padBoth`メソッドは、PHPの`str_pad`関数のラッパーで、文字列の両脇を別の文字列で埋めます。
+`Str::padBoth`メソッドは、PHPの`str_pad`関数をラップし、最後の文字列が目的の長さに達するまで、文字列の両側を別の文字列でパディングします。
 
     use Illuminate\Support\Str;
 
@@ -1304,7 +1308,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-padleft"></a>
 #### `Str::padLeft()` {#collection-method}
 
-`Str::padBoth`メソッドは、PHPの`str_pad`関数のラッパーで、文字列の左端を別の文字列で埋めます。
+`String::padLeft`メソッドは、PHPの`str_pad`関数をラップし、最後の文字列が目的の長さに達するまで、文字列の左側を別の文字列でパディングします。
 
     use Illuminate\Support\Str;
 
@@ -1319,7 +1323,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-padright"></a>
 #### `Str::padRight()` {#collection-method}
 
-`Str::padBoth`メソッドは、PHPの`str_pad`関数のラッパーで、文字列の右端を別の文字列で埋めます。
+`String::padRight`メソッドは、PHPの`str_pad`関数をラップし、最後の文字列が目的の長さに達するまで、文字列の右側を別の文字列でパディングします。
 
     use Illuminate\Support\Str;
 
@@ -1334,7 +1338,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-plural"></a>
 #### `Str::plural()` {#collection-method}
 
-`Str::plural`メソッドは単語一文字の文字列の単数形を複数形へ変換します。このメソッドは現在英語のみサポートしています。
+`Str::plural`メソッドは単数形の単語文字列を複数形に変換します。この関数は現在、英語のみをサポートしています。
 
     use Illuminate\Support\Str;
 
@@ -1442,7 +1446,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-start"></a>
 #### `Str::start()` {#collection-method}
 
-`Str::start`メソッドは文字列が指定値から始まっていない場合、先頭にその文字列を追加します。
+`Str::start`メソッドは、文字列が指定値で開始されていない場合、その値の単一インスタンスを文字列の前に追加します。
 
     use Illuminate\Support\Str;
 
@@ -1457,7 +1461,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-starts-with"></a>
 #### `Str::startsWith()` {#collection-method}
 
-`Str::startsWith`メソッドは指定した文字列が、２番めの引数の文字列で始まっているか判定します。
+`Str::startsWith`メソッドは指定文字列が、２番めの引数の文字列で始まっているか判定します。
 
     use Illuminate\Support\Str;
 
@@ -1532,7 +1536,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-str-words"></a>
 #### `Str::words()` {#collection-method}
 
-`Str::words`メソッドは、文字列のワード数を制限します。
+`Str::words`メソッドは、文字列内の単語数を制限します。3番目の引数で、切り捨てた文字列の末尾に追加する文字列を指定できます。
 
     use Illuminate\Support\Str;
 
@@ -1552,7 +1556,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="method-trans-choice"></a>
 #### `trans_choice()` {#collection-method}
 
-`trans_choice`関数は、指定した指定値を数値を元に翻訳します。
+`trans_choice`関数は、数値をもとにし、指定翻訳キーを翻訳します。
 
     echo trans_choice('messages.notifications', $unreadCount);
 
@@ -1561,7 +1565,7 @@ NULL値を指定すると、空の配列が返ってきます。
 <a name="fluent-strings"></a>
 ## Fluent文字列
 
-Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指向で、複数の文字列操作をチェーンできるインターフェイスを提供します。古典的な文字列操作に比較すると、複数の文字列操作を読みやすい文法で使用できます。
+Fluent文字列は読み書きしやすい（fluent）、オブジェクト指向で、複数の文字列操作をチェーンできるインターフェイスを提供します。古典的な文字列操作に比較すると、複数の文字列操作を読みやすい文法で使用できます。
 
 <a name="method-fluent-str-after"></a>
 #### `after` {#collection-method}
@@ -1662,7 +1666,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-contains"></a>
 #### `contains` {#collection-method}
 
-`contains`メソッドは、文字列が指定値を含んでいるか判定します。（大文字小文字の区別あり）
+`contains`メソッドは、指定された文字列に指定された値が含まれているかどうかを判別します。このメソッドは大文字と小文字を区別します。
 
     use Illuminate\Support\Str;
 
@@ -1670,7 +1674,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 
     // true
 
-指定文字列に値のどれかが含まれているかを判定するために、値の配列を渡すことも可能です。
+値の配列を渡して、指定文字列に配列内の値が含まれているかどうかを判断することもできます。
 
     use Illuminate\Support\Str;
 
@@ -1681,7 +1685,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-contains-all"></a>
 #### `containsAll` {#collection-method}
 
-`containsAll`メソッドは、指定配列の値を文字列がすべて含んでいるか判定します。
+`containsAll`メソッドは、指定文字列に指定配列のすべての値が含まれているかどうかを判別します。
 
     use Illuminate\Support\Str;
 
@@ -1700,7 +1704,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 
     // '/foo/bar'
 
-オプションとして、削除したいディレクトリレベル数を指定できます。
+必要に応じて、文字列から削除するディレクトリレベル数を指定できます。
 
     use Illuminate\Support\Str;
 
@@ -1719,7 +1723,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 
     // true
 
-もしくは値の配列を渡し、文字列が指定値のいずれかで終わるかを判定できます。
+値の配列を渡し、指定文字列が配列内の値のいずれかで終わるかどうかを判断することもできます。
 
     use Illuminate\Support\Str;
 
@@ -1756,7 +1760,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-finish"></a>
 #### `finish` {#collection-method}
 
-`finish`メソッドは、文字列の最後が指定値で終了していない場合、その値を追加します。
+`finish`メソッドは、文字列が指定値で終わっていない場合、その値の単一のインスタンスを追加します。
 
     use Illuminate\Support\Str;
 
@@ -1771,7 +1775,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-is"></a>
 #### `is` {#collection-method}
 
-`is`メソッドは、文字列が指定パターンに一致しているかを判定します。アスタリスクが使用されると、ワイルドカードとして利用されます。
+`is`メソッドは、指定文字列が指定パターンに一致するかどうかを判別します。アスタリスクはワイルドカード値として使用できます
 
     use Illuminate\Support\Str;
 
@@ -1854,7 +1858,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-limit"></a>
 #### `limit` {#collection-method}
 
-`limit`メソッドは、文字列を指定長で切り捨てます。
+`limit`メソッドは、指定文字列を指定した長さに切り捨てます。
 
     use Illuminate\Support\Str;
 
@@ -1862,7 +1866,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 
     // The quick brown fox...
 
-また、第２引数として、最長文字列数を超えた場合に末尾へ追加する、文字列を渡すこともできます。
+２番目の引数を渡して、切り捨てた文字列の末尾に追加する文字列を変更することもできます。
 
     use Illuminate\Support\Str;
 
@@ -1884,7 +1888,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-ltrim"></a>
 #### `ltrim` {#collection-method}
 
-`ltrim`メソッドは、指定文字列の左側をトリムします。
+`ltrim`メソッドは、文字列の左側をトリムします。
 
     use Illuminate\Support\Str;
 
@@ -1935,7 +1939,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-padboth"></a>
 #### `padBoth` {#collection-method}
 
-`padBoth`メソッドは、PHPの`str_pad`関数のラッパーで、文字列の両端を別の文字列で埋めます。
+`padBoth`メソッドはPHPの`str_pad`関数をラップし、最後の文字列が目的の長さに達するまで、文字列の両側を別の文字列でパディングします。
 
     use Illuminate\Support\Str;
 
@@ -1950,7 +1954,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-padleft"></a>
 #### `padLeft` {#collection-method}
 
-`padBoth`メソッドは、PHPの`str_pad`関数のラッパーで、文字列の左端を別の文字列で埋めます。
+`padLeft`メソッドはPHPの`str_pad`関数をラップし、最後の文字列が目的の長さに達するまで、文字列の左側を別の文字列でパディングします。
 
     use Illuminate\Support\Str;
 
@@ -1965,7 +1969,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-padright"></a>
 #### `padRight` {#collection-method}
 
-`padBoth`メソッドは、PHPの`str_pad`関数のラッパーで、文字列の右端を別の文字列で埋めます。
+`padRight`メソッドはPHPの`str_pad`関数をラップし、最後の文字列が目的の長さに達するまで、文字列の右側を別の文字列でパディングします。
 
     use Illuminate\Support\Str;
 
@@ -1980,7 +1984,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-plural"></a>
 #### `plural` {#collection-method}
 
-`plural`メソッドは、単語の単数形を複数形に変換します。この関数は現在英語のみをサポートしています。
+`plural`メソッドは、単数形の単語文字列を複数形に変換します。この関数は現在、英語のみをサポートしています。
 
     use Illuminate\Support\Str;
 
@@ -2064,7 +2068,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 <a name="method-fluent-str-replace-matches"></a>
 #### `replaceMatches` {#collection-method}
 
-`replaceMatches`メソッドは、指定したパターンに一致する文字列をすべて置き換えます。
+`replaceMatches`メソッドは、パターンに一致する文字列のすべての部分を、指定した置換文字列で置き換えます。
 
     use Illuminate\Support\Str;
 
@@ -2072,7 +2076,7 @@ Fluent文字列はより読み書きしやすい(fluent)、オブジェクト指
 
     // '15015551000'
 
-replaceMatches`メソッドは、パターンが文字列と一致するたびに実行するクロージャを渡すこともでき、クロージャの中で置換ロジックを実行後、置換する値を返します。
+`replaceMatches`メソッドは、指定したパターンに一致する文字列の各部分で呼び出されるクロージャも受け入れます。これにより、クロージャ内で置換ロジックを実行し、置換した値を返せます。
 
     use Illuminate\Support\Str;
 
@@ -2085,7 +2089,7 @@ replaceMatches`メソッドは、パターンが文字列と一致するたび�
 <a name="method-fluent-str-rtrim"></a>
 #### `rtrim` {#collection-method}
 
-`rtrim`メソッドは、指定文字列の右側をトリムします。
+`rtrim`メソッドは、指定した文字列の右側をトリムします。
 
     use Illuminate\Support\Str;
 
@@ -2148,7 +2152,7 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 <a name="method-fluent-str-start"></a>
 #### `start` {#collection-method}
 
-`start`メソッドは文字列が指定値から始まっていないとき、先頭にその文字列を追加します。
+`start`メソッドは、文字列が指定値で開始されていない場合、その値の単一のインスタンスを追加します。
 
     use Illuminate\Support\Str;
 
@@ -2248,7 +2252,7 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 <a name="method-fluent-str-when"></a>
 #### `when` {#collection-method}
 
-`when`メソッドは指定条件がtrueの場合に、指定クロージャを実行します。クロージャはFluentな文字列インスタンスを引数に受け取ります。
+`when`メソッドは指定条件が`true`の場合、指定したクロージャを呼び出します。クロージャは、fluent文字列インスタンスを受け取ります。
 
     use Illuminate\Support\Str;
 
@@ -2259,12 +2263,12 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 
     // 'Taylor Otwell'
 
-`when`メソッドの第３引数として別のクロージャを渡せます。条件パラメータが`false`と評価された場合、このクロージャを実行します。
+必要であれば、３番目のパラメータとして別のクロージャを`when`メソッドに渡せます。このクロージャは、条件パラメータが`false`と評価された場合に実行します。
 
 <a name="method-fluent-str-when-empty"></a>
 #### `whenEmpty` {#collection-method}
 
-`whenEmpty`メソッドは、文字列が空の場合に、指定したクロージャを実行します。クロージャが値を返すと、それが`whenEmpty`の戻り値になります。クロージャが値を返さない場合は、Fluent文字列インスタンスを返します。
+文字列が空の場合、`whenEmpty`メソッドは指定されたクロージャを呼び出します。クロージャが値を返す場合、その値を`whenEmpty`メソッドも返します。クロージャが値を返さない場合、fluent文字列インスタンスを返します。
 
     use Illuminate\Support\Str;
 
@@ -2277,7 +2281,7 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 <a name="method-fluent-str-words"></a>
 #### `words` {#collection-method}
 
-`words`メソッドは、文字列をワード数で制限します。
+`words`メソッドは、文字列内の単語数を制限します。必要に応じ、切り捨てた文字列に追加する文字列を指定できます。
 
     use Illuminate\Support\Str;
 
@@ -2291,7 +2295,9 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 <a name="method-action"></a>
 #### `action()` {#collection-method}
 
-The `action` function generates a URL for the given controller action:
+`action`関数は、指定されたコントローラアクションのURLを生成します。
+
+    use App\Http\Controllers\HomeController;
 
     $url = action([HomeController::class, 'index']);
 
@@ -2302,11 +2308,11 @@ The `action` function generates a URL for the given controller action:
 <a name="method-asset"></a>
 #### `asset()` {#collection-method}
 
-`asset`関数は、現在のリクエストのスキーマ(HTTPかHTTPS)を使い、アセットへのURLを生成します。
+`asset`関数は、現在のリクエストのスキーマ（HTTPかHTTPS）を使い、アセットへのURLを生成します。
 
     $url = asset('img/photo.jpg');
 
-`.env`ファイルの`ASSET_URL`変数で、アセットURLホストを設定できます。Amazon S3のような外部サービスへ、アセットをホストする場合に便利です。
+`.env`ファイルで`ASSET_URL`変数を設定することにより、アセットURLホストを設定できます。これは、AmazonS3や別のCDNなどの外部サービスでアセットをホストする場合に役立ちます。
 
     // ASSET_URL=http://example.com/assets
 
@@ -2315,17 +2321,17 @@ The `action` function generates a URL for the given controller action:
 <a name="method-route"></a>
 #### `route()` {#collection-method}
 
-`route`関数は指定された名前付きルートへのURLを生成します。
+`route`関数は、指定した[名前付きルート](/docs/{{version}}/routing#named-routes)のURLを生成します。
 
-    $url = route('routeName');
+    $url = route('route.name');
 
-ルートにパラメーターを受け付ける場合は第２引数で指定します
+ルートがパラメーターを受け入れる場合は、それらを関数の２番目の引数として渡すことができます。
 
-    $url = route('routeName', ['id' => 1]);
+    $url = route('route.name', ['id' => 1]);
 
-`route`関数はデフォルトとして絶対URLを生成します。相対URLを生成したい場合は、第３引数に`false`を渡してください。
+デフォルトでは、`route`関数は絶対URLを生成します。相対URLを生成する場合は、関数の３番目の引数として`false`を渡してください。
 
-    $url = route('routeName', ['id' => 1], false);
+    $url = route('route.name', ['id' => 1], false);
 
 <a name="method-secure-asset"></a>
 #### `secure_asset()` {#collection-method}
@@ -2337,7 +2343,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-secure-url"></a>
 #### `secure_url()` {#collection-method}
 
-`secure_url`関数は、指定したパスへの完全なHTTPS URLを生成します。
+`secure_url`関数は、指定されたパスへの完全修飾HTTPS　URLを生成します。関数の２番目の引数で追加のURLセグメントを渡すことができます。
 
     $url = secure_url('user/profile');
 
@@ -2370,7 +2376,7 @@ The `action` function generates a URL for the given controller action:
 
     abort(403);
 
-また、ブラウザに送信する必要がある例外のメッセージとカスタムレスポンスヘッダを渡すこともできます。
+ブラウザに送信する必要のある例外のメッセージとカスタムHTTP応答ヘッダを指定することもできます。
 
     abort(403, 'Unauthorized.', $headers);
 
@@ -2381,7 +2387,7 @@ The `action` function generates a URL for the given controller action:
 
     abort_if(! Auth::user()->isAdmin(), 403);
 
-`abort`メソッドと同様に、例外のレスポンステキストを第３引数に、カスタムレスポンスヘッダを第４引数に指定することもできます。
+`abort`メソッドと同様に、例外の応答テキストを３番目の引数として指定し、カスタム応答ヘッダの配列を４番目の引数として関数に指定することもできます。
 
 <a name="method-abort-unless"></a>
 #### `abort_unless()` {#collection-method}
@@ -2390,7 +2396,7 @@ The `action` function generates a URL for the given controller action:
 
     abort_unless(Auth::user()->isAdmin(), 403);
 
-`abort`メソッドと同様に、例外のレスポンステキストを第３引数に、カスタムレスポンスヘッダを第４引数に指定することもできます。
+`abort`メソッドと同様に、例外の応答テキストを３番目の引数として指定し、カスタム応答ヘッダの配列を４番目の引数として関数に指定することもできます。
 
 <a name="method-app"></a>
 #### `app()` {#collection-method}
@@ -2406,7 +2412,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-auth"></a>
 #### `auth()` {#collection-method}
 
-`auth`関数は、[authenticator](/docs/{{version}}/authentication)のインスタンスを返します。利便のため、代わりに`Auth`ファサードを使用することもできます。
+`auth`関数は、[Authenticator](/docs/{{version}}/authentication)インスタンスを返します。`Auth`ファサードの代わりに使用できます。
 
     $user = auth()->user();
 
@@ -2419,21 +2425,21 @@ The `action` function generates a URL for the given controller action:
 
 `back`関数はユーザーの直前のロケーションへの[リダイレクトHTTPレスポンス](/docs/{{version}}/responses#redirects)を生成します。
 
-    return back($status = 302, $headers = [], $fallback = false);
+    return back($status = 302, $headers = [], $fallback = '/');
 
     return back();
 
 <a name="method-bcrypt"></a>
 #### `bcrypt()` {#collection-method}
 
-`bcrypt`関数は指定値をBcryptを使用し[ハッシュ](/docs/{{version}}/hashing)化します。`Hash`ファサードの代用として使用できます。
+`bcrypt`関数はBcryptを使用して指定された値を[ハッシュ](/docs/{{version}}/hashing)します。この関数は、`Hash`ファサードの代わりに使用できます。
 
     $password = bcrypt('my-secret-password');
 
 <a name="method-blank"></a>
 #### `blank()` {#collection-method}
 
-`blank`関数は指定値が空白（"blank"）であることを判定して返します。
+`blank`関数は、指定された値が「空白」であるかどうかを判別します。
 
     blank('');
     blank('   ');
@@ -2456,6 +2462,8 @@ The `action` function generates a URL for the given controller action:
 `broadcast`関数は、指定した[イベント](/docs/{{version}}/events)をリスナへ[ブロードキャスト](/docs/{{version}}/broadcasting)します。
 
     broadcast(new UserRegistered($user));
+
+    broadcast(new UserRegistered($user))->toOthers();
 
 <a name="method-cache"></a>
 #### `cache()` {#collection-method}
@@ -2495,7 +2503,7 @@ The `action` function generates a URL for the given controller action:
 
     $value = config('app.timezone', $default);
 
-キー／値ペアの配列を渡すことにより、実行時に設定変数をセットできます。
+キー／値ペアの配列を渡すことにより、実行時に設定変数を設定できます。ただし、この関数は現在のリクエストの設定値にのみ影響し、実際の設定値は更新しないことに注意してください。
 
     config(['app.debug' => true]);
 
@@ -2563,7 +2571,6 @@ The `action` function generates a URL for the given controller action:
 
     $env = env('APP_ENV');
 
-    // APP_ENVがセットされていない場合、'production'が返る
     $env = env('APP_ENV', 'production');
 
 > {note} 開発期間中に`config:cache`コマンドを実行する場合は、設定ファイルの中で必ず`env`関数だけを使用してください。設定ファイルがキャッシュされると、`.env`ファイルはロードされなくなり、`env`関数の呼び出しはすべて`null`を返します。
@@ -2571,14 +2578,14 @@ The `action` function generates a URL for the given controller action:
 <a name="method-event"></a>
 #### `event()` {#collection-method}
 
-`event`関数は指定した[イベント](/docs/{{version}}/events)をリスナに対して発行します
+`event`関数は、指定した[イベント](/docs/{{version}}/events)をリスナにディスパッチします。
 
     event(new UserRegistered($user));
 
 <a name="method-filled"></a>
 #### `filled()` {#collection-method}
 
-`filled`関数は、指定値が空白（"blank"）でないことを判定して返します。
+`filled`関数は、指定された値が「空白」でないかどうかを判別します。
 
     filled(0);
     filled(true);
@@ -2598,7 +2605,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-info"></a>
 #### `info()` {#collection-method}
 
-`info`関数は[ログ](/docs/{{version}}/logging)へ情報(information)を書き出します。
+`info`関数は、アプリケーションの[log](/docs/{{version}}/logging)に情報を書き込みます。
 
     info('Some helpful information!');
 
@@ -2640,7 +2647,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-old"></a>
 #### `old()` {#collection-method}
 
-`old`関数はセッションにフラッシュデーターとして保存されている[直前の入力値](/docs/{{version}}/requests#old-input)を[取得](/docs/{{version}}/requests#retrieving-input)します。
+`old`関数はセッションに一時保持データーとして保存されている[直前の入力値](/docs/{{version}}/requests#old-input)を[取得](/docs/{{version}}/requests#retrieving-input)します。
 
     $value = old('value');
 
@@ -2655,7 +2662,7 @@ The `action` function generates a URL for the given controller action:
 
     {!! old('name', optional($user)->name) !!}
 
-`optional`関数は、第２引数にクロージャを受け付けます。クロージャは最初の引数がNULLでなかった場合に、呼び出されます。
+`optional`関数は、２番目の引数としてクロージャも受け入れます。最初の引数として指定された値がnullでない場合、クロージャが呼び出されます。
 
     return optional(User::find($id), function ($user) {
         return $user->name;
@@ -2673,7 +2680,7 @@ The `action` function generates a URL for the given controller action:
 
 `redirect`関数は、[リダイレクトHTTPレスポンス](/docs/{{version}}/responses#redirects)を返します。引数無しで呼び出した場合は、リダイレクタインスタンスを返します。
 
-    return redirect($to = null, $status = 302, $headers = [], $secure = null);
+    return redirect($to = null, $status = 302, $headers = [], $https = null);
 
     return redirect('/home');
 
@@ -2689,7 +2696,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-request"></a>
 #### `request()` {#collection-method}
 
-`request`関数は現在の[リクエスト](/docs/{{version}}/requests)インスタンスを返すか、入力アイテムを取得します。
+`request`関数は、現在の[request](/docs/{{version}}/requests)インスタンスを返すか、現在のリクエストから入力フィールドの値を取得します。
 
     $request = request();
 
@@ -2704,7 +2711,7 @@ The `action` function generates a URL for the given controller action:
         return $this->method();
     });
 
-`rescue`関数には第2引数を渡すことができます。クロージャ実行時に例外が発生した場合、第2引数に渡した値が返されるデフォルトの値になります。
+`rescue`関数に２番目の引数を渡すこともできます。この引数は、クロージャの実行で例外が発生した場合に返す「デフォルト」値です。
 
     return rescue(function () {
         return $this->method();
@@ -2719,7 +2726,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-resolve"></a>
 #### `resolve()` {#collection-method}
 
-`resolve`関数は[サービスコンテナ](/docs/{{version}}/container)を使い、指定されたクラスやインターフェイスの名前から、そのインスタンス自身を依存解決します。
+`resolve`関数は、[サービスコンテナ](/docs/{{version}}/container)を使用して、指定したクラスまたはインターフェイス名をインスタンスへ依存解決します。
 
     $api = resolve('HelpSpot\API');
 
@@ -2735,7 +2742,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-retry"></a>
 #### `retry()` {#collection-method}
 
-`retry`関数は指定された最大試行回数を過ぎるまで、指定されたコールバックを実行します。コールバックが例外を投げなければ、返却値が返されます。コールバックが例外を投げた場合は、自動的にリトライされます。最大試行回数を超えると、例外が投げられます。
+`retry`関数は指定された最大試行回数を過ぎるまで、指定されたコールバックを実行します。コールバックが例外を投げなければ、返却値を返します。コールバックが例外を投げた場合は、自動的にリトライします。最大試行回数を超えると、例外を投げます。
 
     return retry(5, function () {
         // 実行間で500ms空け、５回試行する
@@ -2761,7 +2768,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-tap"></a>
 #### `tap()` {#collection-method}
 
-`tap`関数は引数を２つ取ります。アビリティの`$value`とクロージャです。`$value`はクロージャに渡され、それから`tap`関数により返されます。クロージャから返す値は無視されます。
+`tap`関数は、任意の`$value`とクロージャの２つの引数を受け入れます。`$value`はクロージャに渡され、`tap`関数によって返されます。クロージャの戻り値は関係ありません。
 
     $user = tap(User::first(), function ($user) {
         $user->name = 'taylor';
@@ -2769,7 +2776,7 @@ The `action` function generates a URL for the given controller action:
         $user->save();
     });
 
-`tap`関数でクロージャを指定しない場合、渡した`$value`のメソッドを呼び出せます。メソッド呼び出しの戻り値は常に`$value`になり、メソッドが実際に返す値とは無関係です。たとえば、Eloquentの`update`メソッドは、通常整数値を返します。しかし、`update`メソッドを`tap`関数にチェーンして呼び出すことで、メソッドにモデル自身を返すように強制できます。
+`tap`関数にクロージャが渡されない場合は、指定した`$value`で任意のメソッドを呼び出せます。呼び出すメソッドの戻り値は、メソッドがその定義で実際に何を返すかに関係なく、常に`$value`になります。たとえば、Eloquentの`update`メソッドは通常、整数を返します。しかし、`tap`関数を介して`update`メソッド呼び出しをチェーンすることで、メソッドへモデル自体を返すように強制できます。
 
     $user = tap($user)->update([
         'name' => $name,
@@ -2792,7 +2799,7 @@ The `action` function generates a URL for the given controller action:
     throw_if(
         ! Auth::user()->isAdmin(),
         AuthorizationException::class,
-        'You are not allowed to access this page'
+        'You are not allowed to access this page.'
     );
 
 <a name="method-throw-unless"></a>
@@ -2805,7 +2812,7 @@ The `action` function generates a URL for the given controller action:
     throw_unless(
         Auth::user()->isAdmin(),
         AuthorizationException::class,
-        'You are not allowed to access this page'
+        'You are not allowed to access this page.'
     );
 
 <a name="method-today"></a>
@@ -2825,7 +2832,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-transform"></a>
 #### `transform()` {#collection-method}
 
-`transform`関数は、指定値が[blank](#method-blank)でない場合に指定値を「クロージャ」で実行し、実行結果を返します。
+`transform`関数は、値が[空白]（＃method-blank）でない場合、指定値に対してクロージャを実行し、クロージャの戻り値を返します。
 
     $callback = function ($value) {
         return $value * 2;
@@ -2835,23 +2842,23 @@ The `action` function generates a URL for the given controller action:
 
     // 10
 
-デフォルト値か「クロージャ」を第３引数として渡すこともできます。この値は指定値がblankの場合に返されます。
+デフォルト値またはクロージャは、関数の３番目の引数として渡せます。指定値が空白の場合、この値をが返します。
 
     $result = transform(null, $callback, 'The value is blank');
 
-    // The value is blank
+    // 値は空白
 
 <a name="method-validator"></a>
 #### `validator()` {#collection-method}
 
-`validator`関数は、指定した引数で新しい[バリデータ](/docs/{{version}}/validation)インスタンスを生成します。利便のため、`Validator`ファサードを代わりに使うこともできます。
+`validator`関数は、引数を使用して新しい[バリデータ](/docs/{{version}}/validation)インスタンスを作成します。`Validator`ファサードの代わりに使用できます。
 
     $validator = validator($data, $rules, $messages);
 
 <a name="method-value"></a>
 #### `value()` {#collection-method}
 
-`value`関数は指定値を返します。「クロージャ」を関数に渡した場合は実行し、結果を返します。
+`value`関数は、指定値を返します。ただし、関数へクロージャを渡すと、クロージャが実行され、その戻り値を返します。
 
     $result = value(true);
 
@@ -2873,7 +2880,7 @@ The `action` function generates a URL for the given controller action:
 <a name="method-with"></a>
 #### `with()` {#collection-method}
 
-`with`関数は指定値を返します。「クロージャ」を第２引数へ渡した場合は実行し、その結果を返します。
+`with`関数は、指定値を返します。関数の２番目の引数としてクロージャを渡たすと、クロージャが実行され、その戻り値を返します。
 
     $callback = function ($value) {
         return (is_numeric($value)) ? $value * 2 : 0;

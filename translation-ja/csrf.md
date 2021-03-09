@@ -1,37 +1,74 @@
 # CSRF保護
 
 - [イントロダクション](#csrf-introduction)
-- [URIの除外](#csrf-excluding-uris)
+- [CSRFリクエストの防止](#preventing-csrf-requests)
+    - [除外URI](#csrf-excluding-uris)
 - [X-CSRF-Token](#csrf-x-csrf-token)
 - [X-XSRF-Token](#csrf-x-xsrf-token)
 
 <a name="csrf-introduction"></a>
 ## イントロダクション
 
-Laravelでは、[クロス・サイト・リクエスト・フォージェリ](https://ja.wikipedia.org/wiki/%E3%82%AF%E3%83%AD%E3%82%B9%E3%82%B5%E3%82%A4%E3%83%88%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%95%E3%82%A9%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%AA)(CSRF)からアプリケーションを簡単に守れます。クロス・サイト・リクエスト・フォージェリは悪意のあるエクスプロイトの一種であり、信頼できるユーザーになり代わり、認められていないコマンドを実行します。
+クロスサイトリクエストフォージェリは、認証済みユーザーに代わって不正なコマンドを実行する、悪意のある攻撃の一種です。幸いに、Laravelを使用すれば、[クロスサイトリクエストフォージェリ](https://en.wikipedia.org/wiki/Cross-site_request_forgery)（CSRF）攻撃からアプリケーションを簡単に保護できます。
 
-Laravelは、アプリケーションにより管理されているアクティブなユーザーの各セッションごとに、CSRF「トークン」を自動的に生成しています。このトークンを認証済みのユーザーが、実装にアプリケーションに対してリクエストを送信しているのかを確認するために利用します。
+<a name="csrf-explanation"></a>
+#### 脆弱性の説明
 
-アプリケーションでHTMLフォームを定義する場合は常に、CSRF保護ミドルウェアがリクエストを検証できるように、隠しCSRFトークンフィールドをそのフォームへ含める必要があります。トークンを生成するには、`@csrf` Bladeディレクティブが使用できます。
+あなたがクロスサイトリクエストフォージェリを知らない場合に備え、この脆弱性を悪用する方法の例を説明しましょう。アプリケーションに、認証済みユーザーの電子メールアドレスを変更するための`POST`リクエストを受け入れる`/user/email`ルートがあるとします。ほとんどの場合、このルートでは、`email`入力フィールドにユーザーが使用を開始したいメールアドレスが含まれている必要があります。
+
+CSRF保護がないと、悪意のあるWebサイトがアプリケーションの`/user/email`ルートを指すHTMLフォームを作成し、悪意のあるユーザー自身の電子メールアドレスを送信する可能性があります。
+
+    <form action="https://your-application.com/user/email" method="POST">
+        <input type="email" value="malicious-email@example.com">
+    </form>
+
+    <script>
+        document.forms[0].submit();
+    </script>
+
+悪意のあるWebサイトがページの読み込み時にフォームを自動的に送信する場合、悪意のあるユーザーは、アプリケーションの疑いを持たないユーザーを誘惑してWebサイトにアクセスするだけで、あなたのアプリケーションの電子メールアドレスが変更されます。
+
+この脆弱性を防ぐには、すべての受信`POST`、`PUT`、`PATCH`、`DELETE`リクエストを調べて、悪意のあるアプリケーションがアクセスできないシークレットセッション値を確認する必要があります。
+
+<a name="preventing-csrf-requests"></a>
+## CSRFリクエストの防止
+
+Laravelは、アプリケーションによって管理されているアクティブな[ユーザーセッション](/docs/{{version}}/session)ごとにCSRF「トークン」を自動的に生成します。このトークンは、認証済みユーザーが実際にアプリケーションへリクエストを行っているユーザーであることを確認するために使用されます。このトークンはユーザーのセッションに保存され、セッションが再生成されるたびに変更されるため、悪意のあるアプリケーションはこのトークンへアクセスできません。
+
+現在のセッションのCSRFトークンには、リクエストのセッションまたは`csrf_token`ヘルパ関数を介してアクセスできます。
+
+    use Illuminate\Http\Request;
+
+    Route::get('/token', function (Request $request) {
+        $token = $request->session()->token();
+
+        $token = csrf_token();
+
+        // ...
+    });
+
+アプリケーションでHTMLフォームを定義するときはいつでも、CSRF保護ミドルウェアがリクエストを検証できるように、フォームに非表示のCSRF`_token`フィールドを含める必要があります。便利なように、`@csrf` Bladeディレクティブを使用して、非表示のトークン入力フィールドを生成できます。
 
     <form method="POST" action="/profile">
         @csrf
-        ...
+
+        <!-- Equivalent to... -->
+        <input type="hidden" name="_token" value="{{ csrf_token() }}" />
     </form>
 
-`web`ミドルウェアグループに含まれている、`VerifyCsrfToken` [ミドルウェア](/docs/{{version}}/middleware)が、リクエスト中のトークンとセッションに保存されているトークンが一致するか、確認しています。
+`web`ミドルウェアグループへデフォルトで含まれている`App\Http\Middleware\VerificationCsrfToken`[ミドルウェア](/docs/{{version}}/ミドルウェア)は、リクエスト入力のトークンがセッションに保存されたトークンと一致するかを自動的に検証します。この２トークンが一致すれば、認証済みユーザーがリクエストを開始したことがわかります。
 
-<a name="csrf-tokens-javascript"></a>
-#### CSRFトークンとJavaScript
+<a name="csrf-tokens-and-spas"></a>
+### CSRFトークンとSPA
 
-JacaScriptで駆動するアプリケーションを構築する場合、JavaScript HTTPライブラリーに対し、すべての送信リクエストへCSRFトークンを自動的に追加させると便利です。`resources/js/bootstrap.js`ファイルの中でデフォルトとして、Axios HTTPライブラリにより暗号化された`XSRF-TOKEN`クッキーの値を用い`X-XSRF-TOKEN`ヘッダを自動的に送信しています。このライブラリを使用しない場合、自身のアプリケーションでこの振る舞いを用意する必要があります。
+LaravelをAPIバックエンドとして利用するSPAを構築している場合は、APIによる認証とCSRFの脆弱性からの保護について、[Laravel　Sanctumドキュメント](/docs/{{version}}/sanctum)を参照してください。
 
 <a name="csrf-excluding-uris"></a>
-## URIの除外
+### CSRF保護から除外するURI
 
-一連のURIをCSRF保護より除外したい場合もあります。たとえば、[Stripe](https://stripe.com)を課金処理に採用しており、そのWebフックシステムを利用している時、LaravelのCSRF保護よりWebフック処理ルートを除外する必要があるでしょう。なぜならルートに送るべきCSRFトークンがどんなものか、Stripeは知らないからです。
+場合により、一連のURIをCSRF保護から除外したいことが起きます。たとえば、[Stripe](https://stripe.com)を使用して支払いを処理し、そのWebhookシステムを利用している場合、StripeはどのCSRFトークンをルートへ送るのか認識していないため、Stripe　WebフックハンドラルートをCSRF保護から除外する必要があります。
 
-通常、この種のルートは`RouteServiceProvider`が`routes/web.php`ファイル中の全ルートへ適用する、`web`ミドルウェアから外しておくべきです。しかし、`VerifyCsrfToken`ミドルウェアの`$except`プロパティへ、そうしたURIを追加することによっても、ルートを除外できます。
+通常、これらの種類のルートは`routes/web.php`ファイル中で、`App\Providers\RouteServiceProvider`がすべてのルートへ適用する`web`ミドルウェアグループの外側に配置する必要があります。ただし、`VerifyCsrfToken`ミドルウェアの`$except`プロパティにURIを追加してルートを除外することもできます。
 
     <?php
 
@@ -42,7 +79,7 @@ JacaScriptで駆動するアプリケーションを構築する場合、JavaScr
     class VerifyCsrfToken extends Middleware
     {
         /**
-         * CSRFバリデーションから除外するURI
+         * CSRF検証から除外するURI
          *
          * @var array
          */
@@ -53,16 +90,16 @@ JacaScriptで駆動するアプリケーションを構築する場合、JavaScr
         ];
     }
 
-> {tip} [テスト実行時](/docs/{{version}}/testing)には、自動的にCSRFミドルウェアは無効になります。
+> {tip} 利便性向上のため、[テスト実行](/docs/{{version}}/tests)時に、CSRFミドルウェアはすべてのルートで自動的に無効になります。
 
 <a name="csrf-x-csrf-token"></a>
 ## X-CSRF-TOKEN
 
-さらに追加でPOSTパラメーターとしてCSRFトークンを確認したい場合は、Laravelの`VerifyCsrfToken`ミドルウェアが`X-CSRF-TOKEN`リクエストヘッダもチェックします。たとえば、HTML中の`meta`タグにトークンを保存します。
+POSTパラメータとしてCSRFトークンをチェックすることに加えて、`App\Http\Middleware\VerifyCsrfToken`ミドルウェアは`X-CSRF-TOKEN`リクエストヘッダもチェックします。たとえば、トークンはHTMLの`meta`タグに含められます。
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-`meta`タグを作成したら、jQueryのようなライブラリーで、全リクエストヘッダにトークンを追加できます。この手法によりAJAXベースのアプリケーションにシンプルで便利なCSRF保護を提供できます。
+次にjQueryなどのライブラリで、すべてのリクエストヘッダへトークンを自動的に追加するように指示できます。これにより、レガシーJavaScriptテクノロジーを使用して、AJAXベースのアプリケーションにシンプルで便利なCSRF保護を提供しています。
 
     $.ajaxSetup({
         headers: {
@@ -73,8 +110,8 @@ JacaScriptで駆動するアプリケーションを構築する場合、JavaScr
 <a name="csrf-x-xsrf-token"></a>
 ## X-XSRF-TOKEN
 
-LaravelはCSRFトークンをフレームワークにより生成され、リクエストに含まれる`XSRF-TOKEN`暗号化クッキーの中に保存します。このクッキーの値を`X-XSRF-TOKEN`リクエストヘッダにセットすることが可能です。
+Laravelはフレームワークが生成する各レスポンスに含める`XSRF-TOKEN`暗号化クッキーへ、現在のCSRFトークンを保存します。クッキー値を使用して、`X-XSRF-TOKEN`リクエストヘッダを設定できます。
 
-いくつかのJavaScriptフレームワークや、AngularとAxiosのようなライブラリーでは、自動的に値をsame-originリクエストの`X-XSRF-TOKEN`ヘッダに設定するため、利便性を主な目的としてこのクッキーを送ります。
+AngularやAxiosなどの一部のJavaScriptフレームワークとライブラリは、同じオリジンのリクエストでその値を自動的に`X-XSRF-TOKEN`ヘッダへ配置するため、このクッキーは主に開発者の利便性のために送信されます。
 
-> {tip} 自動的に送信するために、`resources/js/bootstrap.js`ファイルはデフォルトでAxios HTTPライブラリを含んでいます。
+> {tip} デフォルトで、`resources/js/bootstrap.js`ファイルにはAxios HTTPライブラリが含まれており、`X-XSRF-TOKEN`ヘッダを自動的に送信します。

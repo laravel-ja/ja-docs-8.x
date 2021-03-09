@@ -1,57 +1,57 @@
 # パスワードリセット
 
 - [イントロダクション](#introduction)
-    - [モデルの検討事項](#model-preparation)
-    - [データベースの検討事項](#database-preparation)
-- [ルート定義](#routing)
+    - [モデルの準備](#model-preparation)
+    - [データベース準備](#database-preparation)
+- [ルート](#routing)
     - [パスワードリセットリンクの要求](#requesting-the-password-reset-link)
-    - [パスワードリセット](#resetting-the-password)
+    - [パスワードのリセット](#resetting-the-password)
 - [カスタマイズ](#password-customization)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-大抵のWebアプリケーションはパスワードをリセットする手段を提供しています。それぞれのアプリケーションで何度も実装する代わりに、Laravelはパスワードリマインダを送り、パスワードリセットを実行する便利な方法を提供しています。
+ほとんどのWebアプリケーションは、ユーザーが忘れたパスワードをリセットする方法を提供します。Laravelでは、構築するすべてのアプリケーションでこれを手動で再実装する必要はなく、パスワードリセットリンクを送信してパスワードを安全にリセットするための便利なサービスを提供しています。
 
-> {tip} さっそく始めたいですか？ [Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）を真新しいLaravelアプリケーションにインストールしてください。データベースをマイグレートしたら、ブラウザでアプリケーションの`/register`、もしくはアプリケーションに割り付けた他のURLに移動します。Jetstreamはパスワードのリセットを含め、認証システム全体のスカフォールドを受け持ちます。
+> {tip} さっそく始めたいですか？Laravel[アプリケーションスターターキット](/docs/{{version}}/starter-kits)を新しいLaravelアプリケーションにインストールしてください。Laravelのスターターキットは、忘れたパスワードのリセットを含む、認証システム全体のスカフォールドの面倒を見ています。
 
 <a name="model-preparation"></a>
-### モデルの検討事項
+### モデルの準備
 
-Laravelのパスワードリセット機能を使用する前に、`App\Models\User`モデルで`Illuminate\Notifications\Notifiable`トレイトを使用する必要があります。通常このトレイトは、Laravelに含まれているデフォルトの`App\Models\User`モデルに最初から含まれています。
+Laravelのパスワードリセット機能を使用する前に、アプリケーションの`App\Models\User`モデルで`Illuminate\Notifications\Notizable`トレイトを使用する必要があります。通常、このトレイトは、新しいLaravelアプリケーションで作成されるデフォルトの`App\Models\User`モデルに最初から含まれています。
 
-モデルが、`Illuminate\Contracts\Auth\CanResetPassword`契約を実装していることを確認します。フレームワークに含まれている`App\Models\User`モデルははじめからこのインターフェイスを実装しており、インターフェイスの実装に必要なメソッドを取り込むために`Illuminate\Auth\Passwords\CanResetPassword`トレイトを使用しています。
+次に、`App\Models\User`モデルが`Illuminate\Contracts\Auth\CanResetPassword`コントラクトを実装していることを確認します。フレームワークに含まれている`App\Models\User`モデルは、最初からこのインターフェイスを実装しており、`Illuminate\Auth\Passwords\CanResetPassword`トレイトを使用して、インターフェイスの実装に必要なメソッドを持っています。
 
 <a name="database-preparation"></a>
-### データベースの検討事項
+### データベース準備
 
-アプリケーションのパスワードリセットトークンを保存するためのテーブルを作成する必要があります。このテーブルのマイグレーションは、デフォルトのLaravelインストールに含まれているため、データベースマイグレーションを実行してこのテーブルを作成するだけです。
+アプリケーションのパスワードリセットトークンを保存するためのテーブルを作成する必要があります。このテーブルのマイグレーションはデフォルトのLaravelアプリケーションに含まれているため、データベースをマイグレーションするだけでこのテーブルを作成できます。
 
     php artisan migrate
 
 <a name="routing"></a>
-## ルート定義
+## ルート
 
-ユーザーがパスワードをリセットできるようにするためのサポートを適切に実装するには、ルートを２つ定義する必要があります。まず、ユーザーが自分のメールアドレスを介してパスワードリセットリンクをリクエストできるようにするためのルートです。２つ目はユーザーが電子メールで送信されたパスワードリセットリンクにアクセスしたら、実際にパスワードをリセットするためのルートが必要です。
+ユーザーがパスワードをリセットできるようにするためのサポートを適切に実装するには、ルートをいくつか定義する必要があります。最初に、ユーザーが自分の電子メールアドレスを介してパスワードリセットリンクをリクエストできるようにするためのルートのペアが必要になります。２つ目は、ユーザーが電子メールで送られてきたパスワードリセットリンクにアクセスしてパスワードリセットフォームに記入した後、実際にパスワードをリセットするためのルートが必要になります。
 
 <a name="requesting-the-password-reset-link"></a>
 ### パスワードリセットリンクの要求
 
 <a name="the-password-reset-link-request-form"></a>
-#### パスワードリセットリンク要求フォーム
+#### パスワードリセットリンクリクエストフォーム
 
-最初に、パスワードリセットリンクを要求するために必要なルートを定義します。そのために、パスワードリセットリンクリクエストフォームを含むビューを返すルートを定義します。
+まず、パスワードリセットリンクをリクエストするために必要なルートを定義します。手始めに、パスワードリセットリンクリクエストフォームを使用してビューを返すルートを定義します。
 
     Route::get('/forgot-password', function () {
         return view('auth.forgot-password');
-    })->middleware(['guest'])->name('password.request');
+    })->middleware('guest')->name('password.request');
 
-このルートによって返されるビューには、 `email`フィールドを含むフォームが必要です。これにより、ユーザーは特定のメールアドレスのパスワードリセットリンクをリクエストできます。
+このルートによって返されるビューには、`email`フィールドを含むフォームが必要です。これにより、ユーザーは特定の電子メールアドレスのパスワードリセットリンクをリクエストできます。
 
 <a name="password-reset-link-handling-the-form-submission"></a>
-#### フォーム送信の処理
+#### フォーム送信処理
 
-次に、「パスワードを忘れた」ビューからのフォーム要求を処理するルートを定義します。このルートは、電子メールアドレスを検証し、該当するユーザーへパスワードリセットリクエストを送る責務を負います。
+次に、「パスワードを忘れた」ビューからのフォーム送信リクエストを処理するルートを定義します。このルートは、電子メールアドレスを検証し、対応するユーザーにパスワードリセットリクエストを送信する責任があります。
 
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Password;
@@ -66,32 +66,34 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
         return $status === Password::RESET_LINK_SENT
                     ? back()->with(['status' => __($status)])
                     : back()->withErrors(['email' => __($status)]);
-    })->middleware(['guest'])->name('password.email');
+    })->middleware('guest')->name('password.email');
 
-先へ進む前に、このルートの詳細を確認しましょう。まず、リクエストの `email`属性が検証されます。 次に、Laravelの組み込みの（`Password`ファサードによる）「パスワードブローカ」を使用し、パスワードリセットリンクをユーザーに送信します。パスワードブローカーは、指定されたフィールド（この場合はメールアドレス）でユーザーを取得し、Laravelの組み込み[通知システム](/docs/{{version}}/notifications)を介してパスワードリセットリンクをユーザーに送ります。
+先に進む前に、このルートをさらに詳しく調べてみましょう。最初に、リクエストの`email`属性が検証されます。次に、Laravelの組み込みの「パスワードブローカ」(`Password`ファサードが返す)を使用して、パスワードリセットリンクをユーザーに送信します。パスワードブローカは、指定するフィールド(この場合はメールアドレス)でユーザーを取得し、Laravelの組み込み[通知システム](/docs/{{version}}/notifications)を介してユーザーにパスワードリセットリンクを送信します。
 
-`sendResetLink`メソッドは「ステータス」スラッグを返します。このステータスはリクエストのステータスに関するユーザーフレンドリーなメッセージを翻訳して表示するために、Laravelの[多言語化](/docs/{{version}}/localization)ヘルパを使用します。パスワードリセットステータスの翻訳は、アプリケーションの `resources/lang/{lang}/passwords.php`言語ファイルにの内容で行われます。ステータススラグの可能な各値のエントリは、`passwords`言語ファイル内にあります。
+`sendResetLink`メソッドは「ステータス」スラッグを返します。このステータスは、リクエストのステータスに関するユーザーフレンドリーなメッセージを表示するために、Laravelの[多言語化](/docs/{{version}}/localization)ヘルパを使用して変換できます。パスワードリセットステータスの変換は、アプリケーションの`resources/lang/{lang}/passwords.php`言語ファイルによって決定されます。ステータススラッグの可能な各値のエントリは、`passwords`言語ファイル内にあります。
 
-> {tip} パスワードのリセットを自前で実装する場合は、ビューのコンテンツとルートを自分で定義する必要があります。必要なすべての認証および検証ロジックを含むスカフォールドが必要な場合は、[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）をチェックしてください。
+`Password`ファサードの`sendResetLink`メソッドを呼び出すときに、Laravelがアプリケーションのデータベースからユーザーレコードを取得する方法をどのように知っているのか疑問に思われるかもしれません。Laravelパスワードブローカは、認証システムの「ユーザープロバイダ」を利用してデータベースレコードを取得します。パスワードブローカが使用するユーザープロバイダは、`config/auth.php`設定ファイルの`passwords`設定配列内で設定します。カスタムユーザープロバイダの作成の詳細については、[認証ドキュメント](/docs/{{version}}/authentication#adding-custom-user-providers)を参照してください。
+
+> {tip} パスワードのリセットを手動で実装する場合は、ビューの内容とルートを自分で定義する必要があります。必要なすべての認証および検証ロジックを含むスカフォールドが必要な場合は、[Laravelアプリケーションスターターキット](/docs/{{version}}/starter-kits)を確認してください。
 
 <a name="resetting-the-password"></a>
-### パスワードリセット
+### パスワードのリセット
 
 <a name="the-password-reset-form"></a>
 #### パスワードリセットフォーム
 
-次に、ユーザーがメールで送られてきたパスワードリセットリンクをクリックして、新しいパスワードを入力し実際にパスワードをリセットするのに必要なルートを定義します。まず、ユーザーがパスワード再設定リンクをクリックしたときに表示されるパスワード再設定フォームを表示するルートを定義しましょう。このルートは後でパスワードリセットリクエストを確認するために使用する `token`パラメーターを受け取ります。
+次に、電子メールで送信されたパスワードリセットリンクをユーザーがクリックして新しいパスワードを入力したときに、実際にパスワードをリセットするために必要なルートを定義します。まず、ユーザーがパスワードのリセットリンクをクリックしたときに表示されるパスワードのリセットフォームを表示するルートを定義しましょう。このルートは、後でパスワードリセットリクエストを確認するために使用する`token`パラメータを受け取ります。
 
     Route::get('/reset-password/{token}', function ($token) {
         return view('auth.reset-password', ['token' => $token]);
-    })->middleware(['guest'])->name('password.reset');
+    })->middleware('guest')->name('password.reset');
 
-このルートによって返されるビューには、 `email`フィールド、` password`フィールド、`password_confirmation`フィールド、および非表示でルートが受け取るシークレットトークンの値を含む`token`フィールドを持つフォームが必要です。
+このルートが返すビューにより、`email`フィールド、`password`フィールド、`password_confirmation`フィールド、および非表示の`token`フィールドを含むフォームを表示します。これにはルートが受け取る秘密の`$token`の値が含まれている必要があります。
 
 <a name="password-reset-handling-the-form-submission"></a>
 #### フォーム送信の処理
 
-もちろん、パスワードリセットフォームの送信内容を実際に処理するためのルートを定義する必要があります。このルートは、受信リクエストの検証とデータベース内のユーザーのパスワードの更新の責務を負います。
+もちろん、パスワードリセットフォームの送信を実際に処理するためルートを定義する必要もあります。このルートは、受信リクエストのバリデーションとデータベース内のユーザーのパスワードの更新を担当します。
 
     use Illuminate\Auth\Events\PasswordReset;
     use Illuminate\Http\Request;
@@ -121,49 +123,57 @@ Laravelのパスワードリセット機能を使用する前に、`App\Models\U
 
         return $status == Password::PASSWORD_RESET
                     ? redirect()->route('login')->with('status', __($status))
-                    : back()->withErrors(['email' => __($status)]);
-    })->middleware(['guest'])->name('password.update');
+                    : back()->withErrors(['email' => [__($status)]]);
+    })->middleware('guest')->name('password.update');
 
-先へ進む前に、このルートをさらに詳しく見てみましょう。まず、リクエストの`token`、`email`、`password`属性が検証されます。 次に、Laravel組み込みの（`Password`ファサードによる）「パスワードブローカー」を使用し、パスワードリセットリクエストの認証情報を検証します。
+先に進む前に、このルートをさらに詳しく調べてみましょう。最初に、リクエストの`token`、`email`、および`password`属性がバリデーションされます。次に、Laravelの組み込みの「パスワードブローカ」(`Password`ファサードが返す)を使用して、パスワードリセットリクエストの資格情報を検証します。
 
-パスワードブローカーに提供されたトークン、メールアドレス、パスワードが有効な場合、`reset`メソッドに渡されたクロージャが実行されます。ユーザーインスタンスと平文テキストパスワードを受け取るこのクロージャ内で、データベース上のユーザーパスワードを更新します。
+パスワードブローカに与えられたトークン、電子メールアドレス、およびパスワードが有効である場合、`reset`メソッドに渡されたクロージャが呼び出されます。ユーザーインスタンスとパスワードリセットフォームに提供された平文テキストのパスワードを受け取るこのクロージャ内で、データベース内のユーザーのパスワードを更新します。
 
-`reset`メソッドは「ステータス」スラグを返します。このステータスは、リクエストのステータスに関してユーザーにわかりやすいメッセージを翻訳し表示するために、Laravelの[多言語化](/docs/{{version}}/localization)ヘルパを使用します。パスワードリセットステータスの翻訳内容は、アプリケーションの`resources/lang/{lang}/passwords.php`言語ファイル内にあります。ステータススラグの指定可能な各値のエントリは、`passwords`言語ファイル内にあります。
+`reset`メソッドは「ステータス」スラッグを返します。このステータスは、リクエストのステータスに関するユーザーフレンドリーなメッセージを表示するために、Laravelの[多言語化](/docs/{{version}}/localization)ヘルパを使用して変換できます。パスワードリセットステータスの変換は、アプリケーションの`resources/lang/{lang}/passwords.php`言語ファイルによって決定されます。ステータススラッグの各値のエントリは、`passwords`言語ファイル内にあります。
+
+先に進む前に、`Password`ファサードの`reset`メソッドを呼び出すときに、Laravelがアプリケーションのデータベースからユーザーレコードを取得する方法をどのように知っているのか疑問に思われるかもしれません。Laravelパスワードブローカーは、認証システムの「ユーザープロバイダ」を利用してデータベースレコードを取得します。パスワードブローカが使用するユーザープロバイダは、`config/auth.php`設定ファイルの`passwords`設定配列内で設定しています。カスタムユーザープロバイダの作成の詳細については、[認証ドキュメント](/docs/{{version}}/authentication#adding-custom-user-providers)を参照してください。
 
 <a name="password-customization"></a>
 ## カスタマイズ
 
 <a name="reset-link-customization"></a>
-#### リセットリンクカスタマイズ
+#### リセットリンクのカスタマイズ
 
-`ResetPassword`通知クラスが提供する`createUrlUsing`メソッドを使用して、パスワードリセットリンクのURLをカスタマイズできます。このメソッドは、通知を受信するユーザーのインスタンスとパスワードリセットリンクトークンを引数に取るクロージャを受け入れます。通常、このメソッドはサービスプロバイダの`boot`メソッドで呼び出す必要があります。
+`ResetPassword`通知クラスが提供する`createUrlUsing`メソッドを使用して、パスワードリセットリンクURLをカスタマイズできます。このメソッドは、通知を受信して​​いるユーザーインスタンスとパスワードリセットリンクトークンを受信するクロージャを受け入れます。通常、このメソッドは、`App\Providers\AuthServiceProvider`サービスプロバイダの`boot`メソッドから呼び出す必要があります。
 
     use Illuminate\Auth\Notifications\ResetPassword;
 
     /**
-     * 全アプリケーションサービスの初期化処理
+     * 全認証／承認サービスの登録
      *
      * @return void
      */
     public function boot()
     {
-        ResetPassword::createUrlUsing(function ($notifiable, string $token) {
-            return 'https://example.com/auth/reset-password?token='.$token;
+        $this->registerPolicies();
+
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            return 'https://example.com/reset-password?token='.$token;
         });
     }
 
 <a name="reset-email-customization"></a>
-#### リセットメールのカスタマイズ
+#### リセットメールカスタマイズ
 
-パスワードリセットリンクをユーザーへ送るために使用する、通知クラスは簡単に変更できます。手始めに、`User`モデルの`sendPasswordResetNotification`メソッドをオーバーライドしましょう。このメソッドの中で、皆さんが選んだ通知クラスを使用し、通知を送信できます。パスワードリセット`$token`は、メソッドの第1引数として受け取ります。
+パスワードリセットリンクをユーザーに送信するために使用する通知クラスは簡単に変更できます。それには、`App\Models\User`モデルの`sendPasswordResetNotification`メソッドをオーバーライドします。このメソッド内で、自分で作成した[通知クラス](/docs/{{version}}/notifys)を使用して通知を送信できます。パスワードリセット`$token`は、メソッドが受け取る最初の引数です。この`$token`を使用して、パスワードリセットURLを作成し、ユーザーに通知を送信します。
+
+    use App\Notifications\ResetPasswordNotification;
 
     /**
-     * パスワードリセット通知の送信
+     * パスワードリセット通知をユーザーに送信
      *
      * @param  string  $token
      * @return void
      */
     public function sendPasswordResetNotification($token)
     {
-        $this->notify(new ResetPasswordNotification($token));
+        $url = 'https://example.com/reset-password?token='.$token;
+
+        $this->notify(new ResetPasswordNotification($url));
     }

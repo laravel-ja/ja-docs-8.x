@@ -1,73 +1,73 @@
-# データベース：マイグレーション
+# マイグレーション
 
 - [イントロダクション](#introduction)
-- [マイグレーション生成](#generating-migrations)
+- [マイグレーションの生成](#generating-migrations)
     - [マイグレーションの圧縮](#squashing-migrations)
-- [マイグレーション構造](#migration-structure)
-- [マイグレーション実行](#running-migrations)
-    - [ロールバック](#rolling-back-migrations)
+- [マイグレーションの構造](#migration-structure)
+- [マイグレーションの実行](#running-migrations)
+    - [マイグレーションのロールバック](#rolling-back-migrations)
 - [テーブル](#tables)
-    - [テーブル作成](#creating-tables)
-    - [テーブルリネーム／削除](#renaming-and-dropping-tables)
+    - [テーブルの生成](#creating-tables)
+    - [テーブルの更新](#updating-tables)
+    - [テーブルのリネーム／削除](#renaming-and-dropping-tables)
 - [カラム](#columns)
-    - [カラム作成](#creating-columns)
+    - [カラムの生成](#creating-columns)
+    - [利用可能なカラムタイプ](#available-column-types)
     - [カラム修飾子](#column-modifiers)
-    - [カラム変更](#modifying-columns)
-    - [カラム削除](#dropping-columns)
+    - [カラムの変更](#modifying-columns)
+    - [カラムの削除](#dropping-columns)
 - [インデックス](#indexes)
-    - [インデックス作成](#creating-indexes)
-    - [インデックス名変更](#renaming-indexes)
-    - [インデックス削除](#dropping-indexes)
+    - [インデックスの生成](#creating-indexes)
+    - [インデックスのリネーム](#renaming-indexes)
+    - [インデックスの削除](#dropping-indexes)
     - [外部キー制約](#foreign-key-constraints)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-マイグレーションとはデータベースのバージョンコントロールのような機能です。アプリケーションデータベースのスキーマの更新をチームで共有できるようにしてくれます。マイグレーションは基本的にLaravelのスキーマビルダと一緒に使い、アプリケーションのデータベーススキーマを作成するために使用します。もしあなたが今まで、チームメイトに彼らのローカルデータベーススキーマに手作業でカラムを追加するよう依頼したことがあるなら、データベースマイグレーションは、そうした問題を解決してくれます。
+マイグレーションはデータベースのバージョン管理のようなもので、チームがアプリケーションのデータベーススキーマを定義および共有できるようにします。ソース管理から変更を取得した後に、ローカルデータベーススキーマにカラムを手動で追加するようにチームメートに指示する必要があったことを経験していれば、データベースのマイグレーションにより解決される問題に直面していたのです。
 
-Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブルの作成や操作をサポートしてるデータベースシステム全部に対しサポートします。
+Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、Laravelがサポートするすべてのデータベースシステムに対し、テーブルを作成、操作するために特定のデータベースに依存しないサポートを提供します。通常、マイグレーションはこのファサードを使用して、データベースのテーブルとカラムを作成および変更します。
 
 <a name="generating-migrations"></a>
-## マイグレーション生成
+## マイグレーションの生成
 
-`make:migration` [Artisanコマンド](/docs/{{version}}/artisan)を使いマイグレーションを生成できます。
+`make:migration` [Artisanコマンド](/docs/{{version}}/artisan)を使用して、データベースマイグレーションを生成します。新しいマイグレーションは、`database/migrations`ディレクトリに配置されます。各マイグレーションファイル名には、Laravelがマイグレーションの順序を決定できるようにするタイムスタンプを含めています。
 
-    php artisan make:migration create_users_table
+    php artisan make:migration create_flights_table
 
-マイグレーションは`database/migrations`フォルダに設置されます。マイグレーションの実行順をフレームワークに知らせるため、名前にタイムスタンプが含まれています。
+`--table`や`--create`オプションを使用して、テーブルの名前とマイグレーションにより新しいテーブルを作成するかを指定します。これらのオプションは、生成するマイグレーションファイルへ指定したテーブル名をあらかじめ取り込ませます。
 
-> {tip} マイグレーションのスタブは[スタブのリソース公開](/docs/{{version}}/artisan#stub-customization)を使用しカスタマイズできます。
+    php artisan make:migration create_flights_table --create=flights
 
-`--table`と`--create`オプションも、テーブル名とマイグレーションで新しいテーブルを生成するかを指定するために使用できます。これらのオプションは生成するマイグレーションスタブの中へ指定したテーブルをあらかじめ埋め込みます。
+    php artisan make:migration add_destination_to_flights_table --table=flights
 
-    php artisan make:migration create_users_table --create=users
+生成するマイグレーションのカスタムパスを指定する場合は、`make:migration`コマンドを実行するときに`--path`オプションを使用します。指定したパスは、アプリケーションのベースパスを基準にする必要があります。
 
-    php artisan make:migration add_votes_to_users_table --table=users
-
-マイグレーションの生成出力先のパスを指定したい場合は、`make:migrate`コマンドの実行時に`--path`オプションを付けてください。パスはアプリケーションのベースパスからの相対位置です。
+> {tip} マイグレーションのスタブは[スタブのリソース公開](/docs/{{version}}/artisan#stub-customization)を使用してカスタマイズできます。
 
 <a name="squashing-migrations"></a>
 ### マイグレーションの圧縮
 
-アプリケーションを構築していくと、時間が経過するにつれマイグレーションがだんだんと増えていきます。これによりマイグレーションディレクトリが数百のマイグレーションにも膨れ上がる可能性があります。お望みであれば、マイグレーションを１つのSQLファイルへ「圧縮」できます。そのためには、`schema:dump`コマンドを実行してください。
+アプリケーションを構築していくにつれ、時間の経過とともに段々と多くのマイグレーションが蓄積されていく可能性があります。これにより、`database/migrations`ディレクトリが数百のマイグレーションで肥大化する可能性があります。必要に応じて、マイグレーションを単一のSQLファイルに「圧縮」できます。利用するには、`schema:dump`コマンドを実行します。
 
     php artisan schema:dump
 
-    // 現在のデータベーススキーマをダンプし、既存のマイグレーションをすべて切り詰める
+    // 現在のデータベーススキーマをダンプし、既存のすべての移行を削除
     php artisan schema:dump --prune
 
-このコマンドを実行すると、Laravelは「スキーマ」ファイルを`database/schema`ディレクトリへ書き出します。これでデータベースをマイグレートする時に、その他のマイグレーションが実行されなくなり、LaravelはそのスキーマファイルのSQLを最初に実行します。それから、スキーマダンプに含まれていない残りのマイグレーションを実行します。
+このコマンドを実行すると、Laravelは「スキーマ」ファイルをアプリケーションの`database/schema`ディレクトリに書き込みます。これ以降、データベースをマイグレーションするときに、まだ他のマイグレーションが実行されていない場合、Laravelは最初にスキーマファイルのSQLステートメントを実行します。スキーマファイルのステートメントを実行した後、Laravelはスキーマダンプのに入っていない残りのマイグレーションを実行します。
 
-データベーススキーマはソース管理のコミットに含めるべきでしょう。それによりチームに入った別の新しい開発者がアプリケーションの初期データベース構造を簡単に生成できます。
+チームの新しい開発者がアプリケーションの初期データベース構造をすばやく作成できるようにするため、データベーススキーマファイルはソース管理にコミットすべきでしょう。
 
-> {note} マイグレーションの圧縮はMySQL、PostgreSQL、およびSQLiteデータベースでのみ使用できます。ただし、データベースダンプはインメモリSQLiteデータベースへは復元されないでしょう。
+> {note} マイグレーションの圧縮は、MySQL、PostgreSQL、SQLiteデータベースでのみ使用できます。ただし、スキーマダンプはSQLiteデータベースのインメモリには、復元されない場合があります。
 
 <a name="migration-structure"></a>
-## マイグレーション構造
+## マイグレーションの構造
 
-マイグレーションは`up`と`down`の２メソッドを含んでいます。`up`メソッドは新しいテーブル、カラム、インデックスをデータベースへ追加するために使用し、一方の`down`メソッドは`up`メソッドが行った操作を元に戻します。
+移行クラスには、`up`と`down`の2つのメソッドを用意します。`up`メソッドはデータベースに新しいテーブル、カラム、またはインデックスを追加するために使用します。`down`メソッドでは、`up`メソッドによって実行する操作を逆にし、以前の状態へ戻す必要があります。
 
-両方のメソッドでは、記述的にテーブルを作成したり、変更したりできるLaravelスキーマビルダが使えます。`Schema`ビルダで使用できる全メソッドは、[このドキュメント後半](#creating-tables)で確認してください。たとえば、次のマイグレーションは`flights`テーブルを作成します。
+これらの両方のメソッド内で、Laravelスキーマビルダを使用して、テーブルを明示的に作成および変更できます。`Schema`ビルダで利用可能なすべてのメソッドを学ぶには、[ドキュメントをチェックしてください](#creating-tables)。たとえば、次のマイグレーションでは、`flights`テーブルが作成されます。
 
     <?php
 
@@ -78,7 +78,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
     class CreateFlightsTable extends Migration
     {
         /**
-         * マイグレーション実行
+         * マイグレーションの実行
          *
          * @return void
          */
@@ -93,7 +93,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
         }
 
         /**
-         * マイグレーションを元に戻す
+         * マイグレーションを戻す
          *
          * @return void
          */
@@ -104,239 +104,722 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
     }
 
 <a name="running-migrations"></a>
-## マイグレーション実行
+## マイグレーションの実行
 
-アプリケーションで用意したマイグレーションを全部実行するには、`migrate` Artisanコマンドを使用します。
+未処理のマイグレーションをすべて実行するには、`migrate` Artisanコマンドを実行します。
 
     php artisan migrate
 
-> {note} [Homestead仮想マシン](/docs/{{version}}/homestead)を使用している場合、このコマンドは仮想マシン内で実行してください。
-
 <a name="forcing-migrations-to-run-in-production"></a>
-#### 実働環境でのマイグレーション強制
+#### マイグレーションを強制的に本番環境で実行する
 
-いくつかのマイグレーション操作は破壊的です。つまりデーターを失う可能性があります。実働環境(production)のデータベースに対し、こうしたコマンドが実行されることから保護するために、コマンド実行前に確認のプロンプトが表示されます。コマンド実行時のプロンプトを出さないためには、`--force`フラグを指定してください。
+一部のマイグレーション操作は破壊的です。つまり、データーが失われる可能性を持っています。本番データベースに対してこれらのコマンドを実行しないように保護するために、コマンドを実行する前に確認を求めるプロンプトが表示されます。プロンプトなしでコマンドを強制的に実行するには、`--force`フラグを使用します。
 
     php artisan migrate --force
 
 <a name="rolling-back-migrations"></a>
-### ロールバック
+### マイグレーションのロールバック
 
-最後のマイグレーション操作をロールバックしたい場合は、`rollback`コマンドを使います。このロールバックは、「同時に」実行した最後のマイグレーションをまとめて元に戻します。
+最新のマイグレーション操作をロールバックするには、`rollback` Artisanコマンドを使用します。このコマンドは、マイグレーションの最後の「バッチ」をロールバックします。これは、複数のマイグレーションファイルを含む場合があります。
 
     php artisan migrate:rollback
 
-`rollback`コマンドに`step`オプションを付けると、巻き戻す数を限定できます。たとえば、次のコマンドは最後の5マイグレーションをロールバックします。
+`rollback`コマンドに`step`オプションを提供することにより、限られた数のマイグレーションをロールバックできます。たとえば、次のコマンドは最後の5つのマイグレーションをロールバックします。
 
     php artisan migrate:rollback --step=5
 
-`migrate:reset`コマンドはアプリケーション全部のマイグレーションをロールバックします。
+`migrate：reset`コマンドは、アプリケーションのすべてのマイグレーションをロールバックします。
 
     php artisan migrate:reset
 
 <a name="roll-back-migrate-using-a-single-command"></a>
-#### rollbackとmigrateの１コマンド実行
+#### 単一コマンドでロールバックとマイグレーション実行
 
-`migrate:refresh`コマンドは全部のデータベースマイグレーションを最初にロールバックし、それから`migrate`コマンドを実行します。このコマンドはデータベース全体を作り直すために便利です。
+`migrate:refresh`コマンドは、すべてのマイグレーションをロールバックしてから、`migrate`コマンドを実行します。このコマンドは、データベース全体を効果的に再作成します。
 
     php artisan migrate:refresh
 
-    // データベースをリフレッシュし、全データベースシードを実行
+    // データベースを更新し、すべてのデータベース初期値設定を実行
     php artisan migrate:refresh --seed
 
-`refresh`コマンドに`step`オプションを付けると、巻き戻してからマイグレーションを再実行する数を限定できます。たとえば、次のコマンドは最後の5マイグレーションをロールバック後にマイグレートします。
+`refresh`コマンドに`step`オプションを指定し、特定の数のマイグレーションをロールバックしてから再マイグレーションできます。たとえば、次のコマンドは、最後の５マイグレーションをロールバックして再マイグレーションします。
 
     php artisan migrate:refresh --step=5
 
 <a name="drop-all-tables-migrate"></a>
-#### 全テーブル削除後のマイグレーション
+#### すべてのテーブルを削除後にマイグレーション
 
-`migrate:fresh`コマンドは、データベースから全テーブルをドロップします。次に、`migrate`コマンドを実行してください。
+`migrate:fresh`コマンドは、データベースからすべてのテーブルを削除したあと、`migrate`コマンドを実行します。
 
     php artisan migrate:fresh
 
     php artisan migrate:fresh --seed
 
-> {note} `migrate：fresh`コマンドは、プレフィックスに関係なく、すべてのデータベーステーブルを削除します。 このコマンドは、他のアプリケーションから共有されるデータベースを使用して開発する場合には注意して使用する必要があります。
+> {note} `migrate:fresh`コマンドは、プレフィックスに関係なく、すべてのデータベーステーブルを削除します。このコマンドは、他のアプリケーションと共有されているデータベースで開発している場合は注意して使用する必要があります。
 
 <a name="tables"></a>
 ## テーブル
 
 <a name="creating-tables"></a>
-### テーブル作成
+### テーブルの生成
 
-新しいデータベーステーブルを作成するには、`Schema`ファサードの`create`メソッドを使用します。`create`メソッドは引数を２つ取ります。最初はテーブルの名前で、２つ目は新しいテーブルを定義するために使用する`Blueprint`オブジェクトを受け取る「クロージャ」です。
+新しいデータベーステーブルを作成するには、`Schema`ファサードで`create`メソッドを使用します。`create`メソッドは２つの引数を取ります。１つ目はテーブルの名前で、２つ目は新しいテーブルを定義するために使用できる`Blueprint`オブジェクトを受け取るクロージャです。
+
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
 
     Schema::create('users', function (Blueprint $table) {
         $table->id();
+        $table->string('name');
+        $table->string('email');
+        $table->timestamps();
     });
 
-テーブル作成時には、テーブルのカラムを定義するためにスキーマビルダの[カラムメソッド](#creating-columns)をどれでも利用できます。
+テーブルを作成するときは、スキーマビルダの[カラムメソッド](#creating-columns)のいずれかを使用して、テーブルのカラムを定義します。
 
 <a name="checking-for-table-column-existence"></a>
-#### テーブル／カラムの存在チェック
+#### テーブル／カラムの存在の確認
 
-`hasTable`や`hasColumn`メソッドを使えば、テーブルやカラムの存在をチェックできます。
+`hasTable`および`hasColumn`メソッドを使用して、テーブルまたは列の存在を確認できます。
 
     if (Schema::hasTable('users')) {
-        //
+        // "users"テーブルは存在していた
     }
 
     if (Schema::hasColumn('users', 'email')) {
-        //
+        // "email"カラムを持つ"users"テーブルが存在していた
     }
 
 <a name="database-connection-table-options"></a>
-#### データベース接続とテーブル操作
+#### データベース接続とテーブルオプション
 
-デフォルト接続以外のデータベース接続でスキーマ操作を行いたい場合は、`connection`メソッドを使ってください。
+アプリケーションのデフォルトではないデータベース接続でスキーマ操作を実行する場合は、`connection`メソッドを使用します。
 
-    Schema::connection('foo')->create('users', function (Blueprint $table) {
+    Schema::connection('sqlite')->create('users', function (Blueprint $table) {
         $table->id();
     });
 
-テーブルのオプションを定義するため、以下のコマンドがスキーマビルダで使用できます。
+さらに、他のプロパティやメソッドを使用して、テーブル作成の他の部分を定義できます。`engine`プロパティはMySQLを使用するときにテーブルのストレージエンジンを指定するために使用します。
 
-コマンド  |  説明
------------------------------------  |  -----------------------------------------------------------
-`$table->engine = 'InnoDB';`  |  テーブルストレージエンジンの指定(MySQL)
-`$table->charset = 'utf8mb4';`  |  テーブルのデフォルトキャラクターセットの指定(MySQL)
-`$table->collation = 'utf8mb4_unicode_ci';`  |  テーブルのデフォルトコレーションの指定(MySQL)
-`$table->temporary();`  |  一時テーブルの作成(SQL Server以外)
+    Schema::create('users', function (Blueprint $table) {
+        $table->engine = 'InnoDB';
+
+        // ...
+    });
+
+`charset`プロパティと`collat​​ion`プロパティはMySQLを使用するときに、作成されたテーブルの文字セットと照合順序を指定するために使用します。
+
+    Schema::create('users', function (Blueprint $table) {
+        $table->charset = 'utf8mb4';
+        $table->collation = 'utf8mb4_unicode_ci';
+
+        // ...
+    });
+
+`temporary`メソッドを使用して、テーブルを「一時的」にする必要があることを示すことができます。一時テーブルは、現在の接続のデータベースセッションにのみ表示され、接続が閉じられると自動的に削除されます。
+
+    Schema::create('calculations', function (Blueprint $table) {
+        $table->temporary();
+
+        // ...
+    });
+
+<a name="updating-tables"></a>
+### テーブルの更新
+
+`Schema`ファサードの`table`メソッドを使用して、既存のテーブルを更新できます。`create`メソッドと同様に、`table`メソッドは２つの引数を取ります。テーブルの名前とテーブルにカラムやインデックスを追加するために使用できる`Blueprint`インスタンスを受け取るクロージャです。
+
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
+
+    Schema::table('users', function (Blueprint $table) {
+        $table->integer('votes');
+    });
 
 <a name="renaming-and-dropping-tables"></a>
-### テーブルリネーム／削除
+### テーブルのリネーム／削除
 
-既存のデータベーステーブルの名前を変えたい場合は、`rename`メソッドを使います。
+既存のデータベーステーブルの名前を変更するには、`rename`メソッドを使用します。
+
+    use Illuminate\Support\Facades\Schema;
 
     Schema::rename($from, $to);
 
-存在するテーブルを削除する場合は、`drop`か`dropIfExists`メソッドを使います。
+既存のテーブルを削除するには、`drop`または`dropIfExists`メソッドを使用できます。
 
     Schema::drop('users');
 
     Schema::dropIfExists('users');
 
 <a name="renaming-tables-with-foreign-keys"></a>
-#### 外部キーを持つテーブルのリネーム
+#### 外部キーを使用したテーブルのリネーム
 
-テーブルのリネームを行う前に、Laravelの規約に基づいた名前の代わりに、マイグレーションファイル中で独自の名前付けた外部キー制約が存在していないか確認してください。そうしないと、外部キー制約名は古いテーブル名を参照してしまいます。
+テーブルをリネームする前に、Laravelのテーブル名ベースの命名規約で外部キーを割り当てさせるのではなく、マイグレーションファイルでテーブルの外部キー制約の名前を明示的に指定していることを確認する必要があります。そうでない場合、外部キー制約名は古いテーブル名で参照されることになるでしょう。
 
 <a name="columns"></a>
 ## カラム
 
 <a name="creating-columns"></a>
-### カラム作成
+### カラムの生成
 
-存在するテーブルを更新するには、`Schema`ファサードの`table`メソッドを使います。`create`メソッドと同様に、`table`メソッドは２つの引数を取ります。テーブルの名前と、テーブルにカラムを追加するために使用する`Blueprint`インスタンスを受け取る「クロージャ」です。
+`Schema`ファサードの`table`メソッドを使用して、既存のテーブルを更新できます。`create`メソッドと同様に、`table`メソッドは２つの引数を取ります。テーブルの名前とテーブルに列を追加するために使用できる`Illuminate\Database\Schema\Blueprint`インスタンスを受け取るクロージャです。
+
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
 
     Schema::table('users', function (Blueprint $table) {
-        $table->string('email');
+        $table->integer('votes');
     });
 
 <a name="available-column-types"></a>
-#### 使用できるカラムタイプ
+### 利用可能なカラムタイプ
 
-スキーマビルダは、テーブルを構築する時に使用するさまざまなカラムタイプを持っています。
+スキーマビルダのBlueprintは、データベーステーブルに追加できるさまざまなタイプのカラムに対応する、多くのメソッドを提供しています。使用可能な各メソッドを以下に一覧します。
 
-コマンド  |  説明
------------------------------------  |  -----------------------------------------------------------
-`$table->id();`  |  `$table->bigIncrements('id')`の別名
-`$table->foreignId('user_id');`  |  `$table->unsignedBigInteger('user_id')`の別名
-`$table->bigIncrements('id');`  |  符号なしBIGINTを使用した自動増分ID（主キー）
-`$table->bigInteger('votes');`  |  BIGINTカラム
-`$table->binary('data');`  |  BLOBカラム
-`$table->boolean('confirmed');`  |  BOOLEANカラム
-`$table->char('name', 100);`  |  文字長を指定するCHARカラム
-`$table->date('created_at');`  |  DATEカラム
-`$table->dateTime('created_at', 0);`  |  有効（全体）桁数指定のDATETIMEカラム
-`$table->dateTimeTz('created_at', 0);`  |  タイムゾーンと有効（全体）桁数指定のDATETIMEカラム
-`$table->decimal('amount', 8, 2);`  |  有効（全体）桁数と小数点以下桁数指定のDECIMALカラム
-`$table->double('amount', 8, 2);`  |  有効（全体）桁数と小数点以下桁数指定のDOUBLEカラム
-`$table->enum('level', ['easy', 'hard']);`  |  ENUMカラム
-`$table->float('amount', 8, 2);`  |  有効（全体）桁数／小数点以下桁数指定のFLOATカラム
-`$table->geometry('positions');`  |  GEOMETRYカラム
-`$table->geometryCollection('positions');`  |  GEOMETRYCOLLECTIONカラム
-`$table->increments('id');`  |  符号なしINTを使用した自動増分ID（主キー）
-`$table->integer('votes');`  |  INTEGERカラム
-`$table->ipAddress('visitor');`  |  IPアドレスカラム
-`$table->json('options');`  |  JSONフィールド
-`$table->jsonb('options');`  |  JSONBフィールド
-`$table->lineString('positions');`  |  LINESTRINGカラム
-`$table->longText('description');`  |  LONGTEXTカラム
-`$table->macAddress('device');`  |  MACアドレスカラム
-`$table->mediumIncrements('id');`  |  符号なしMEDIUMINTを使用した自動増分ID（主キー）
-`$table->mediumInteger('votes');`  |  MEDIUMINTカラム
-`$table->mediumText('description');`  |  MEDIUMTEXTカラム
-`$table->morphs('taggable');`  |  符号なしBIGINTの`taggable_id`と文字列の`taggable_type`を追加
-`$table->uuidMorphs('taggable');`  |  CHAR(36)の`taggable_id`とVARCHAR(255)の`taggable_type` UUIDカラムを追加
-`$table->multiLineString('positions');`  |  MULTILINESTRINGカラム
-`$table->multiPoint('positions');`  |  MULTIPOINTカラム
-`$table->multiPolygon('positions');`  |  MULTIPOLYGONカラム
-`$table->nullableMorphs('taggable');`  |  NULL値可能な`morphs()`カラム
-`$table->nullableUuidMorphs('taggable');`  |  `uuidMorphs()`をNULL値可能で追加
-`$table->nullableTimestamps(0);`  |  `timestamps()`メソッドの別名
-`$table->point('position');`  |  POINTカラム
-`$table->polygon('positions');`  |  POLYGONカラム
-`$table->rememberToken();`  |  VARCHAR(100)でNULL値可能な`remember_token`を追加
-`$table->set('flavors', ['strawberry', 'vanilla']);`  |  SETカラム
-`$table->smallIncrements('id');`  |  符号なしSMALLINTを使用した自動増分ID（主キー）
-`$table->smallInteger('votes');`  |  SMALLINTカラム
-`$table->softDeletes('deleted_at', 0);`  |  ソフトデリートのためにNULL値可能で有効（全体）桁数指定の`deleted_at` TIMESTAMPカラム追加
-`$table->softDeletesTz('deleted_at', 0);`  |  ソフトデリートのためにNULL値可能でタイムゾーン付き、有効（全体）桁数指定の`deleted_at` TIMESTAMPカラム追加
-`$table->string('name', 100);`  |  文字長を指定したVARCHARカラム
-`$table->text('description');`  |  TEXTカラム
-`$table->time('sunrise', 0);`  |  有効（全体）桁数指定のTIMEカラム
-`$table->timeTz('sunrise', 0);`  |  タイムゾーン付き、有効（全体）桁数指定のTIMEカラム
-`$table->timestamp('added_on', 0);`  |  有効（全体）桁数指定のTIMESTAMPカラム
-`$table->timestampTz('added_on', 0);`  |  タイムゾーン付き、有効（全体）桁数指定のTIMESTAMPカラム
-`$table->timestamps(0);`  |  有効（全体）桁数指定でNULL値可能な`created_at`と`updated_at`カラム追加
-`$table->timestampsTz(0);`  |  タイムゾーン付きで、有効（全体）桁数指定、NULL値可能な`created_at`と`updated_at`カラム追加
-`$table->tinyIncrements('id');`  |  符号なしTINYINTを使用した自動増分ID（主キー）
-`$table->tinyInteger('votes');`  |  TINYINTカラム
-`$table->unsignedBigInteger('votes');`  |  符号なしBIGINTカラム
-`$table->unsignedDecimal('amount', 8, 2);`  |  有効（全体）桁数／小数点以下桁数指定の符号なしDECIMALカラム
-`$table->unsignedInteger('votes');`  |  符号なしINTカラム
-`$table->unsignedMediumInteger('votes');`  |  符号なしMEDIUMINTカラム
-`$table->unsignedSmallInteger('votes');`  |  符号なしSMALLINTカラム
-`$table->unsignedTinyInteger('votes');`  |  符号なしTINYINTカラム
-`$table->uuid('id');`  |  UUIDカラム
-`$table->year('birth_year');`  |  YEARカラム
+<style>
+    #collection-method-list > p {
+        column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
+        column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
+    }
+
+    #collection-method-list a {
+        display: block;
+    }
+</style>
+
+<div id="collection-method-list" markdown="1">
+[bigIncrements](#column-method-bigIncrements)
+[bigInteger](#column-method-bigInteger)
+[binary](#column-method-binary)
+[boolean](#column-method-boolean)
+[char](#column-method-char)
+[dateTimeTz](#column-method-dateTimeTz)
+[dateTime](#column-method-dateTime)
+[date](#column-method-date)
+[decimal](#column-method-decimal)
+[double](#column-method-double)
+[enum](#column-method-enum)
+[float](#column-method-float)
+[foreignId](#column-method-foreignId)
+[geometryCollection](#column-method-geometryCollection)
+[geometry](#column-method-geometry)
+[id](#column-method-id)
+[increments](#column-method-increments)
+[integer](#column-method-integer)
+[ipAddress](#column-method-ipAddress)
+[json](#column-method-json)
+[jsonb](#column-method-jsonb)
+[lineString](#column-method-lineString)
+[longText](#column-method-longText)
+[macAddress](#column-method-macAddress)
+[mediumIncrements](#column-method-mediumIncrements)
+[mediumInteger](#column-method-mediumInteger)
+[mediumText](#column-method-mediumText)
+[morphs](#column-method-morphs)
+[multiLineString](#column-method-multiLineString)
+[multiPoint](#column-method-multiPoint)
+[multiPolygon](#column-method-multiPolygon)
+[nullableMorphs](#column-method-nullableMorphs)
+[nullableTimestamps](#column-method-nullableTimestamps)
+[nullableUuidMorphs](#column-method-nullableUuidMorphs)
+[point](#column-method-point)
+[polygon](#column-method-polygon)
+[rememberToken](#column-method-rememberToken)
+[set](#column-method-set)
+[smallIncrements](#column-method-smallIncrements)
+[smallInteger](#column-method-smallInteger)
+[softDeletesTz](#column-method-softDeletesTz)
+[softDeletes](#column-method-softDeletes)
+[string](#column-method-string)
+[text](#column-method-text)
+[timeTz](#column-method-timeTz)
+[time](#column-method-time)
+[timestampTz](#column-method-timestampTz)
+[timestamp](#column-method-timestamp)
+[timestampsTz](#column-method-timestampsTz)
+[timestamps](#column-method-timestamps)
+[tinyIncrements](#column-method-tinyIncrements)
+[tinyInteger](#column-method-tinyInteger)
+[unsignedBigInteger](#column-method-unsignedBigInteger)
+[unsignedDecimal](#column-method-unsignedDecimal)
+[unsignedInteger](#column-method-unsignedInteger)
+[unsignedMediumInteger](#column-method-unsignedMediumInteger)
+[unsignedSmallInteger](#column-method-unsignedSmallInteger)
+[unsignedTinyInteger](#column-method-unsignedTinyInteger)
+[uuidMorphs](#column-method-uuidMorphs)
+[uuid](#column-method-uuid)
+[year](#column-method-year)
+</div>
+
+<a name="column-method-bigIncrements"></a>
+#### `bigIncrements()` {#collection-method .first-collection-method}
+
+`bigIncrements`メソッドは、自動増分する`UNSIGNED BIGINT`(主キー)カラムを作成します。
+
+    $table->bigIncrements('id');
+
+<a name="column-method-bigInteger"></a>
+#### `bigInteger()` {#collection-method}
+
+`bigInteger`メソッドは`BIGINT`カラムを作成します。
+
+    $table->bigInteger('votes');
+
+<a name="column-method-binary"></a>
+#### `binary()` {#collection-method}
+
+`binary`メソッドは`BLOB`カラムを作成します。
+
+    $table->binary('photo');
+
+<a name="column-method-boolean"></a>
+#### `boolean()` {#collection-method}
+
+`boolean`メソッドは`BOOLEAN`カラムを作成します。
+
+    $table->boolean('confirmed');
+
+<a name="column-method-char"></a>
+#### `char()` {#collection-method}
+
+`char`メソッドは、指定した長さの`CHAR`カラムを作成します。
+
+    $table->char('name', 100);
+
+<a name="column-method-dateTimeTz"></a>
+#### `dateTimeTz()` {#collection-method}
+
+`dateTimeTz`メソッドは、オプションの精度(合計桁数)で`DATETIME`(タイムゾーン付き)カラムを作成します。
+
+    $table->dateTimeTz('created_at', $precision = 0);
+
+<a name="column-method-dateTime"></a>
+#### `dateTime()` {#collection-method}
+
+`dateTime`メソッドは、オプションの精度(合計桁数)で`DATETIME`カラムを作成します。
+
+    $table->dateTime('created_at', $precision = 0);
+
+<a name="column-method-date"></a>
+#### `date()` {#collection-method}
+
+`date`メソッドは`DATE`カラムを作成します。
+
+    $table->date('created_at');
+
+<a name="column-method-decimal"></a>
+#### `decimal()` {#collection-method}
+
+`decimal`メソッドは、指定した精度(合計桁数)とスケール(少数桁数)で`DECIMAL`カラムを作成します。
+
+    $table->decimal('amount', $precision = 8, $scale = 2);
+
+<a name="column-method-double"></a>
+#### `double()` {#collection-method}
+
+`double`メソッドは、指定した精度(合計桁数)とスケール(少数桁数)で`DOUBLE`カラムを作成します。
+
+    $table->double('amount', 8, 2);
+
+<a name="column-method-enum"></a>
+#### `enum()` {#collection-method}
+
+`enum`メソッドは、指定した有効な値で`ENUM`カラムを作成します。
+
+    $table->enum('difficulty', ['easy', 'hard']);
+
+<a name="column-method-float"></a>
+#### `float()` {#collection-method}
+
+`float`メソッドは、指定した精度(合計桁数)とスケール(少数桁数)で`FLOAT`カラムを作成します。
+
+    $table->float('amount', 8, 2);
+
+<a name="column-method-foreignId"></a>
+#### `foreignId()` {#collection-method}
+
+`foreignId`メソッドは`unsignedBigInteger`メソッドのエイリアスです。
+
+    $table->foreignId('user_id');
+
+<a name="column-method-geometryCollection"></a>
+#### `geometryCollection()` {#collection-method}
+
+`geometryCollection`メソッドは`GEOMETRYCOLLECTION`カラムを作成します。
+
+    $table->geometryCollection('positions');
+
+<a name="column-method-geometry"></a>
+#### `geometry()` {#collection-method}
+
+`geometry`メソッドは`GEOMETRY`カラムを作成します。
+
+    $table->geometry('positions');
+
+<a name="column-method-id"></a>
+#### `id()` {#collection-method}
+
+`id`メソッドは`bigIncrements`メソッドのエイリアスです。デフォルトでは、メソッドは`id`カラムを作成します。ただし、カラムに別の名前を割り当てたい場合は、カラム名を渡すことができます。
+
+    $table->id();
+
+<a name="column-method-increments"></a>
+#### `increments()` {#collection-method}
+
+`increments`メソッドは、主キーとして自動増分の`UNSIGNEDINTEGER`カラムを作成します。
+
+    $table->increments('id');
+
+<a name="column-method-integer"></a>
+#### `integer()` {#collection-method}
+
+`integer`メソッドは` INTEGER`カラムを作成します。
+
+    $table->integer('votes');
+
+<a name="column-method-ipAddress"></a>
+#### `ipAddress()` {#collection-method}
+
+`ipAddress`メソッドは`INTEGER`カラムを作成します。
+
+    $table->ipAddress('visitor');
+
+<a name="column-method-json"></a>
+#### `json()` {#collection-method}
+
+`json`メソッドは`JSON`カラムを作成します。
+
+    $table->json('options');
+
+<a name="column-method-jsonb"></a>
+#### `jsonb()` {#collection-method}
+
+`jsonb`メソッドは`JSONB`カラムを作成します。
+
+    $table->jsonb('options');
+
+<a name="column-method-lineString"></a>
+#### `lineString()` {#collection-method}
+
+`lineString`メソッドは`LINESTRING`カラムを作成します。
+
+    $table->lineString('positions');
+
+<a name="column-method-longText"></a>
+#### `longText()` {#collection-method}
+
+`longText`メソッドは`LONGTEXT`カラムを作成します。
+
+    $table->longText('description');
+
+<a name="column-method-macAddress"></a>
+#### `macAddress()` {#collection-method}
+
+`macAddress`メソッドは、MACアドレスを保持することを目的としたカラムを作成します。PostgreSQLなどの一部のデータベースシステムには、このタイプのデータ専用のカラムタイプがあります。他のデータベースシステムでは、文字カラムに相当するカラムを使用します。
+
+    $table->macAddress('device');
+
+<a name="column-method-mediumIncrements"></a>
+#### `mediumIncrements()` {#collection-method}
+
+`mediumIncrements`メソッドは、主キーが自動増分の`UNSIGNED MEDIUMINT`カラムを作成します。
+
+    $table->mediumIncrements('id');
+
+<a name="column-method-mediumInteger"></a>
+#### `mediumInteger()` {#collection-method}
+
+`mediumInteger`メソッドは`MEDIUMINT`カラムを作成します。
+
+    $table->mediumInteger('votes');
+
+<a name="column-method-mediumText"></a>
+#### `mediumText()` {#collection-method}
+
+`mediumText`メソッドは`MEDIUMTEXT`カラムを作成します。
+
+    $table->mediumText('description');
+
+<a name="column-method-morphs"></a>
+#### `morphs()` {#collection-method}
+
+`morphs`メソッドは、`{column}_id` `UNSIGNED BIGINT`カラムと、`{column}_type` `VARCHAR`カラムを追加する便利なメソッドです。
+
+このメソッドは、ポリモーフィック[Eloquentリレーション](/docs/{{version}}/eloquent-relationships)に必要なカラムを定義するときに使用することを目的としています。次の例では、`taggable_id`カラムと`taggable_type`カラムが作成されます。
+
+    $table->morphs('taggable');
+
+<a name="column-method-multiLineString"></a>
+#### `multiLineString()` {#collection-method}
+
+`multiLineString`メソッドは`MULTILINESTRING`カラムを作成します。
+
+    $table->multiLineString('positions');
+
+<a name="column-method-multiPoint"></a>
+#### `multiPoint()` {#collection-method}
+
+`multiPoint`メソッドは`MULTIPOINT`カラムを作成します。
+
+    $table->multiPoint('positions');
+
+<a name="column-method-multiPolygon"></a>
+#### `multiPolygon()` {#collection-method}
+
+`multiPolygon`メソッドは`MULTIPOLYGON`カラムを作成します。
+
+    $table->multiPolygon('positions');
+
+<a name="column-method-nullableTimestamps"></a>
+#### `nullableTimestamps()` {#collection-method}
+
+このメソッドは、[timestamps](#column-method-timestamps)メソッドに似ています。ただし、作成するカラムは"NULLABLE"になります。
+
+    $table->nullableTimestamps(0);
+
+<a name="column-method-nullableMorphs"></a>
+#### `nullableMorphs()` {#collection-method}
+
+このメソッドは、[morphs](#column-method-morphs)メソッドに似ています。ただし、作成するカラムは"NULLABLE"になります。
+
+    $table->nullableMorphs('taggable');
+
+<a name="column-method-nullableUuidMorphs"></a>
+#### `nullableUuidMorphs()` {#collection-method}
+
+このメソッドは、[uuidMorphs](#column-method-uuidMorphs)メソッドに似ています。ただし、作成するカラムは"NULLABLE"になります。
+
+    $table->nullableUuidMorphs('taggable');
+
+<a name="column-method-point"></a>
+#### `point()` {#collection-method}
+
+The `point` method creates an `POINT` equivalent column:
+`point`メソッドは`POINT`カラムを作成します。
+
+    $table->point('position');
+
+<a name="column-method-polygon"></a>
+#### `polygon()` {#collection-method}
+
+`polygon`メソッドは`POLYGON`カラムを作成します。
+
+    $table->polygon('position');
+
+<a name="column-method-rememberToken"></a>
+#### `rememberToken()` {#collection-method}
+
+`rememberToken`メソッドは、現在の「ログイン持続（"remember me"）」[認証トークン](/docs/{{version}}/authentication#remembering-users)を格納することを目的としたNULL許容の`VARCHAR(100)`相当のカラムを作成します。
+
+    $table->rememberToken();
+
+<a name="column-method-set"></a>
+#### `set()` {#collection-method}
+
+`set`メソッドは、指定した有効な値のリストを使用して、`SET`カラムを作成します。
+
+    $table->set('flavors', ['strawberry', 'vanilla']);
+
+<a name="column-method-smallIncrements"></a>
+#### `smallIncrements()` {#collection-method}
+
+`smallIncrements`メソッドは、主キーとして自動増分の`UNSIGNED SMALLINT`カラムを作成します。
+
+    $table->smallIncrements('id');
+
+<a name="column-method-smallInteger"></a>
+#### `smallInteger()` {#collection-method}
+
+`smallInteger`メソッドは`SMALLINT`カラムを作成します。
+
+    $table->smallInteger('votes');
+
+<a name="column-method-softDeletesTz"></a>
+#### `softDeletesTz()` {#collection-method}
+
+`softDeletesTz`メソッドは、オプションの精度(合計桁数)でNULL許容の`deleted_at` `TIMESTAMP`(タイムゾーン付き)カラムを追加します。このカラムは、Eloquentの「ソフトデリート」機能に必要な`deleted_at`タイムスタンプを格納するためのものです。
+
+    $table->softDeletesTz($column = 'deleted_at', $precision = 0);
+
+<a name="column-method-softDeletes"></a>
+#### `softDeletes()` {#collection-method}
+
+`softDeletes`メソッドは、オプションの精度(合計桁数)でNULL許容の`deleted_at` `TIMESTAMP`カラムを追加します。このカラムは、Eloquentの「ソフトデリート」機能に必要な`deleted_at`タイムスタンプを格納するためのものです。
+
+    $table->softDeletes($column = 'deleted_at', $precision = 0);
+
+<a name="column-method-string"></a>
+#### `string()` {#collection-method}
+
+`string`メソッドは、指定された長さの`VARCHAR`カラムを作成します。
+
+    $table->string('name', 100);
+
+<a name="column-method-text"></a>
+#### `text()` {#collection-method}
+
+`text`メソッドは`TEXT`カラムを作成します。
+
+    $table->text('description');
+
+<a name="column-method-timeTz"></a>
+#### `timeTz()` {#collection-method}
+
+`timeTz`メソッドは、オプションの精度(合計桁数)で`TIME`(タイムゾーン付き)カラムを作成します。
+
+    $table->timeTz('sunrise', $precision = 0);
+
+<a name="column-method-time"></a>
+#### `time()` {#collection-method}
+
+`time`メソッドは、オプションの精度（合計桁数）で`TIME`カラムを作成します。
+
+    $table->time('sunrise', $precision = 0);
+
+<a name="column-method-timestampTz"></a>
+#### `timestampTz()` {#collection-method}
+
+`timestampTz`メソッドは、オプションの精度(合計桁数)で`TIMESTAMP`(タイムゾーン付き)カラムを作成します。
+
+    $table->timestampTz('added_at', $precision = 0);
+
+<a name="column-method-timestamp"></a>
+#### `timestamp()` {#collection-method}
+
+`timestamp`メソッドは、オプションの精度(合計桁数)で`TIMESTAMP`カラムを作成します。
+
+    $table->timestamp('added_at', $precision = 0);
+
+<a name="column-method-timestampsTz"></a>
+#### `timestampsTz()` {#collection-method}
+
+`timestampsTz`メソッドは、オプションの精度(合計桁数)で`created_at`および`updated_at`　`TIMESTAMP`(タイムゾーン付き)カラムを作成します。
+
+    $table->timestampsTz($precision = 0);
+
+<a name="column-method-timestamps"></a>
+#### `timestamps()` {#collection-method}
+
+`timestamps`メソッドは、オプションの精度(合計桁数)で`created_at`および`updated_at`　`TIMESTAMP`カラムを作成します。
+
+    $table->timestamps($precision = 0);
+
+<a name="column-method-tinyIncrements"></a>
+#### `tinyIncrements()` {#collection-method}
+
+`tinyIncrements`メソッドは、主キーとして自動増分の`UNSIGNED TINYINT`カラムを作成します。
+
+    $table->tinyIncrements('id');
+
+<a name="column-method-tinyInteger"></a>
+#### `tinyInteger()` {#collection-method}
+
+`tinyInteger`メソッドは`TINYINT`カラムを作成します。
+
+    $table->tinyInteger('votes');
+
+<a name="column-method-unsignedBigInteger"></a>
+#### `unsignedBigInteger()` {#collection-method}
+
+`unsignedBigInteger`メソッドは`UNSIGNED BIGINT`カラムを作成します。
+
+    $table->unsignedBigInteger('votes');
+
+<a name="column-method-unsignedDecimal"></a>
+#### `unsignedDecimal()` {#collection-method}
+
+`unsignedDecimal`メソッドは、オプションの精度(合計桁数)とスケール(少数桁数)を使用して、`UNSIGNED DECIMAL`カラムを作成します。
+
+    $table->unsignedDecimal('amount', $precision = 8, $scale = 2);
+
+<a name="column-method-unsignedInteger"></a>
+#### `unsignedInteger()` {#collection-method}
+
+`unsignedInteger`メソッドは`UNSIGNED INTEGER`カラムを作成します。
+
+    $table->unsignedInteger('votes');
+
+<a name="column-method-unsignedMediumInteger"></a>
+#### `unsignedMediumInteger()` {#collection-method}
+
+`unsignedMediumInteger`メソッドは、`UNSIGNED　MEDIUMINT`カラムを作成します。
+
+    $table->unsignedMediumInteger('votes');
+
+<a name="column-method-unsignedSmallInteger"></a>
+#### `unsignedSmallInteger()` {#collection-method}
+
+`unsignedSmallInteger`メソッドは`UNSIGNED SMALLINT`カラムを作成します。
+
+    $table->unsignedSmallInteger('votes');
+
+<a name="column-method-unsignedTinyInteger"></a>
+#### `unsignedTinyInteger()` {#collection-method}
+
+`unsignedTinyInteger`メソッドは` UNSIGNED　TINYINT`カラムを作成します。
+
+    $table->unsignedTinyInteger('votes');
+
+<a name="column-method-uuidMorphs"></a>
+#### `uuidMorphs()` {#collection-method}
+
+`uuidMorphs`メソッドは、`{column}_id` `CHAR(36)`カラムと、`{column}_type` `VARCHAR`カラムを追加する便利なメソッドです。
+
+このメソッドは、UUID識別子を使用するポリモーフィックな[Eloquentリレーション](/docs/{{version}}/eloquent-relationships)に必要なカラムを定義するときに使用します。以下の例では、`taggable_id`カラムと`taggable_type`カラムが作成されます。
+
+    $table->uuidMorphs('taggable');
+
+<a name="column-method-uuid"></a>
+#### `uuid()` {#collection-method}
+
+`uuid`メソッドは`UUID`カラムを作成します。
+
+    $table->uuid('id');
+
+<a name="column-method-year"></a>
+#### `year()` {#collection-method}
+
+`year`メソッドは`YEAR`カラムを作成します。
+
+    $table->year('birth_year');
 
 <a name="column-modifiers"></a>
 ### カラム修飾子
 
-上記のカラムタイプに付け加え、カラムを追加するときに使用できるさまざまな修飾子もあります。たとえばカラムを「NULL値設定可能(nullable)」にしたい場合は、`nullable`メソッドを使います。
+上記リストのカラムタイプに加え、データベーステーブルにカラムを追加するときに使用できるカラム「修飾子」もあります。たとえば、カラムを"NULLABLE"へするために、`nullable`メソッドが使用できます。
+
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
 
     Schema::table('users', function (Blueprint $table) {
         $table->string('email')->nullable();
     });
 
-下表が使用可能なカラム修飾子の一覧です。[インデックス修飾子](#creating-indexes)は含まれていません。
+次の表は、使用可能なすべてのカラム修飾子を紹介しています。このリストには[インデックス修飾子](#creating-indexes)は含まれていません。
 
-修飾子  |  説明
------------------------  |  ------------------------------------------------------------------------------
-`->after('column')`  |  指定カラムの次に他のカラムを設置(MySQLのみ)
-`->autoIncrement()`  |  整数カラムを自動増分ID（主キー）へ設定
-`->charset('utf8mb4')`  |  カラムへキャラクタセットを指定(MySQLのみ)
-`->collation('utf8mb4_unicode_ci')`  |  カラムへコレーションを指定(MySQL/PostgreSQL/SQL Serverのみ)
-`->comment('my comment')`  |  カラムにコメント追加(MySQL/PostgreSQLのみ)
-`->default($value)`  |  カラムのデフォルト(default)値設定
-`->first()`  |  カラムをテーブルの最初(first)に設置する(MySQLのみ)
-`->from($integer)`  |  Set the starting value of an auto-incrementing field (MySQL / PostgreSQL)
-`->nullable($value = true)`  |  （デフォルトで）NULL値をカラムに挿入する
-`->storedAs($expression)`  |  stored generatedカラムを生成(MySQLのみ)
-`->unsigned()`  |  整数カラムを符号なしに設定(MySQLのみ)
-`->useCurrent()`  |  TIMESTAMPカラムのデフォルト値をCURRENT_TIMESTAMPに指定
-`->useCurrentOnUpdate()`  |  レコード更新時にCURRENT_TIMESTAMPを使用するようにTIMESTAMPカラムを設定
-`->virtualAs($expression)`  |  virtual generatedカラムを生成(MySQLのみ)
-`->generatedAs($expression)`  |  指定のシーケンスオプションで、識別カラムを生成(PostgreSQLのみ)
-`->always()`  |  識別カラムの入力を上書きするシーケンス値を定義(PostgreSQLのみ)
+就職し  |  説明
+--------  |  -----------
+`->after('column')`  |  カラムを別のカラムの「後に」配置（MySQL）
+`->autoIncrement()`  |  INTEGERカラムを自動増分（主キー）として設定
+`->charset('utf8mb4')`  |  カラムの文字セットを指定（MySQL）
+`->collation('utf8mb4_unicode_ci')`  |  カラムの照合順序を指定（MySQL／PostgreSQL／SQL Server）
+`->comment('my comment')`  |  カラムにコメントを追加（MySQL/PostgreSQL）
+`->default($value)`  |  カラムの「デフォルト」値を指定
+`->first()`  |  テーブルの「最初の」カラムを配置（MySQL）
+`->from($integer)`  |  自動増分フィールドの開始値を設定（MySQL / PostgreSQL）
+`->nullable($value = true)`  |  NULL値をカラムに保存可能に設定
+`->storedAs($expression)`  |  stored generatedカラムを作成（MySQL）
+`->unsigned()`  |  INTEGERカラムをUNSIGNEDとして設定（MySQL）
+`->useCurrent()`  |  CURRENT_TIMESTAMPをデフォルト値として使用するようにTIMESTAMPカラムを設定
+`->useCurrentOnUpdate()`  |  レコードが更新されたときにCURRENT_TIMESTAMPを使用するようにTIMESTAMPカラムを設定
+`->virtualAs($expression)`  |  virtual generatedカラムを作成（MySQL）
+`->generatedAs($expression)`  |  指定のシーケンスオプションで、識別カラムを生成（PostgreSQL）
+`->always()`  |  IDカラムの入力に対するシーケンス値の優先順位を定義（PostgreSQL）
 
 <a name="default-expressions"></a>
-#### デフォルトExpression
+#### デフォルト式
 
-`default`修飾子は、値か`\Illuminate\Database\Query\Expression`インスタンスを引数に取ります。`Expression`インスタンスを使えば値をクオートしなくて済みますし、データベース特有の機能を使うこともできます。デフォルト値をJSONカラムに割り付ける必要があるとき、とくに便利です。
+`default`修飾子は、値または`Illuminate\Database\Query\Expression`インスタンスを受け入れます。`Expression`インスタンスを使用すると、Laravelが値を引用符で囲むのを防ぎ、データベース固有の関数を使用できるようになります。これがとくに役立つ状況の１つは、JSONカラムにデフォルト値を割り当てる必要がある場合です。
 
     <?php
 
@@ -348,7 +831,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
     class CreateFlightsTable extends Migration
     {
         /**
-         * マイグレーション実行
+         * マイグレーションの実行
          *
          * @return void
          */
@@ -362,119 +845,126 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、テーブル
         }
     }
 
-> {note} デフォルトExpressionのサポートはデータベースドライバ、データベースバージョン、フィールドタイプによります。互換性に関する適切なドキュメントを参照してください。また、データベース固有機能の使用は、特定のドライバーに強く結びついてしまうことにも注意してください。
+> {note} デフォルト式のサポートは、データベースドライバー、データベースバージョン、およびフィールドタイプによって異なります。データベースのドキュメントを参照してください。
 
 <a name="modifying-columns"></a>
-### カラム変更
+### カラムの変更
 
 <a name="prerequisites"></a>
-#### 動作要件
+#### 前提条件
 
-カラムを変更する前に、`composer.json`ファイルで`doctrine/dbal`を確実に追加してください。Doctrine DBALライブラリーは現在のカラムの状態を決め、必要な調整を行うSQLクエリを生成するために、使用しています。
+カラムを変更する前に、Composerパッケージマネージャーを使用して`doctrine/dbal`パッケージをインストールする必要があります。DoctrineDBALライブラリは、カラムの現在の状態を判別し、カラムに要求された変更を加えるために必要なSQLクエリを作成するのに使用します。
 
     composer require doctrine/dbal
 
 <a name="updating-column-attributes"></a>
-#### カラム属性の変更
+#### カラム属性の更新
 
-`change`メソッドは存在するカラムのタイプと属性を更新します。たとえば`string`カラムの文字長を増やしたい場合です。`change`の実例を見てもらうため、`name`カラムのサイズを25から50へ増やしてみます。
+`change`メソッドを使用すると、既存のカラムのタイプと属性を変更できます。たとえば、`string`カラムのサイズを大きくしたい場合があります。`change`メソッドの動作を確認するために、`name`カラムのサイズを25から50に増やしてみましょう。これを実行するには、カラムの新しい状態を定義してから、`change`メソッドを呼び出します。
 
     Schema::table('users', function (Blueprint $table) {
         $table->string('name', 50)->change();
     });
 
-さらにカラムをNULL値設定可能にしてみましょう。
+カラムをNULLABLEへ変更することもできます。
 
     Schema::table('users', function (Blueprint $table) {
         $table->string('name', 50)->nullable()->change();
     });
 
-> {note} 以降のカラムタイプのみ変更可能です：bigInteger、binary、boolean、date、dateTime、dateTimeTz、decimal、integer、json、longText、mediumText、smallInteger、string、text、time、unsignedBigInteger、unsignedInteger、unsignedSmallInteger、uuid
+> {note} 以降のカラムタイプを変更できます。`bigInteger`、`binary`、`boolean`、`date`、`dateTime`、`dateTimeTz`、`decimal`、`integer`、`json`、`longText`、`mediumText`、`smallInteger`、`string`、`text`、`time`、`unsignedBigInteger`、`unsignedInteger`、`unsignedSmallInteger`、`uuid`。
 
 <a name="renaming-columns"></a>
-#### カラム名変更
+#### カラムのりネーム
 
-カラム名を変更するには、`renameColumn`メソッドをスキーマビルダで使用してください。カラム名を変更する前に、`composer.json`ファイルで`doctrine/dbal`を依存パッケージとして追加してください。
+カラムをリネームするには、スキーマビルダBlueprintが提供する`renameColumn`メソッドを使用します。カラムの名前を変更する前に、Composerパッケージマネージャーを介して`doctrine/dbal`ライブラリをインストールしていることを確認してください。
 
     Schema::table('users', function (Blueprint $table) {
         $table->renameColumn('from', 'to');
     });
 
-> {note} カラムタイプが`enum`のテーブル中のカラム名変更は、現在サポートしていません。
+> {note} `enum`カラムの名前変更は現在サポートしていません。
 
 <a name="dropping-columns"></a>
-### カラム削除
+### カラムの削除
 
-カラムをドロップするには、スキーマビルダの`dropColumn`メソッドを使用します。SQLiteデータベースからカラムをドロップする場合は、事前に`composer.json`ファイルへ`doctrine/dbal`依存パッケージを追加してください。その後にライブラリーをインストールするため、ターミナルで`composer update`を実行してください。
+カラムを削除するには、スキーマビルダのBlueprintで`dropColumn`メソッドを使用します。アプリケーションがSQLiteデータベースを利用している場合、`dropColumn`メソッドを使用する前に、Composerパッケージマネージャーを介して`doctrine/dbal`パッケージをインストールする必要があります。
 
     Schema::table('users', function (Blueprint $table) {
         $table->dropColumn('votes');
     });
 
-`dropColumn`メソッドにカラム名の配列を渡せば、テーブルから複数のカラムをドロップできます。
+カラム名の配列を`dropColumn`メソッドに渡すことにより、テーブルから複数のカラムを削除できます。
 
     Schema::table('users', function (Blueprint $table) {
         $table->dropColumn(['votes', 'avatar', 'location']);
     });
 
-> {note} SQLite使用時に、一つのマイグレーションによる複数カラム削除／変更はサポートされていません。
+> {note} SQLiteデータベースの使用時に、１回のマイグレーションで複数のカラムを削除または変更することはサポートしていません。
 
 <a name="available-command-aliases"></a>
-#### 利用可能な別名コマンド
+#### 使用可能なコマンドエイリアス
+
+Laravelは、一般的なタイプのカラムの削除の便利な方法を提供しています。各メソッドは以下の表で説明します。
 
 コマンド  |  説明
------------------------------------  |  -----------------------------------------------------------
-`$table->dropMorphs('morphable');`  |  `morphable_id`と`morphable_type`カラムのドロップ
-`$table->dropRememberToken();`  |  `remember_token`カラムのドロップ
-`$table->dropSoftDeletes();`  |  `deleted_at`カラムのドロップ
-`$table->dropSoftDeletesTz();`  |  `dropSoftDeletes()`メソッドの別名
-`$table->dropTimestamps();`  |  `created_at`と`updated_at`カラムのドロップ
-`$table->dropTimestampsTz();` |  `dropTimestamps()`メソッドの別名
+-------  |  -----------
+`$table->dropMorphs('morphable');`  |  `morphable_id`カラムと`morphable_type`カラムを削除
+`$table->dropRememberToken();`  |  `remember_token`カラムを削除
+`$table->dropSoftDeletes();`  |  `deleted_at`カラムを削除
+`$table->dropSoftDeletesTz();`  |  `dropSoftDeletes（）`メソッドのエイリアス
+`$table->dropTimestamps();`  |  `created_at`カラムと`updated_at`カラムを削除
+`$table->dropTimestampsTz();` |  `dropTimestamps（）`メソッドのエイリアス
 
 <a name="indexes"></a>
 ## インデックス
 
 <a name="creating-indexes"></a>
-### インデックス作成
+### インデックスの生成
 
-Laravelのスキーマビルダはさまざまなインデックスタイプをサポートしています。以下の例は新しく`email`カラムを作成し、その値を一意に指定しています。インデックスを作成するには、カラム定義に`unique`メソッドをチェーンで付け加えます。
+Laravelスキーマビルダは多くのタイプのインデックスをサポートしています。次の例では、新しい`email`カラムを作成し、その値が一意であることを指定しています。インデックスを作成するには、`unique`メソッドをカラム定義にチェーンします。
 
-    $table->string('email')->unique();
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
 
-もしくはカラム定義の後でインデックスを作成することも可能です。例を見てください。
+    Schema::table('users', function (Blueprint $table) {
+        $table->string('email')->unique();
+    });
+
+または、カラムを定義した後にインデックスを作成することもできます。これを行うには、スキーマビルダBlueprintで`unique`メソッドを呼び出す必要があります。このメソッドは、一意のインデックスを受け取る必要があるカラムの名前を引数に取ります。
 
     $table->unique('email');
 
-インデックスメソッドにカラムの配列を渡し、複合インデックスを作成することもできます。
+カラムの配列をindexメソッドに渡して、複合インデックスを作成することもできます。
 
     $table->index(['account_id', 'created_at']);
 
-Laravelはテーブル名に基づき、インデックス名を付けます。しかしメソッドの第２引数で、名前を指定することもできます。
+インデックスを作成するとき、Laravelはテーブル、カラム名、およびインデックスタイプに基づいてインデックス名を自動的に生成しますが、メソッドに2番目の引数を渡して、インデックス名を自分で指定することもできます。
 
     $table->unique('email', 'unique_email');
 
 <a name="available-index-types"></a>
-#### 使用可能なインデックスタイプ
+#### 利用可能なインデックスタイプ
 
-各インデックスメソッドは、オプションとして第２引数に、インデックス名を指定できます。省略した場合、テーブルとカラムから名前が決まるのと同様に、インデックスタイプが自動的に指定されます。
+LaravelのスキーマビルダBlueprintクラスは、Laravelでサポートしている各タイプのインデックスを作成するメソッドを提供しています。各indexメソッドは、オプションの２番目の引数を取り、インデックスの名前を指定します。省略した場合、名前は、インデックスに使用されるテーブルとカラムの名前、およびインデックスタイプから派生します。使用可能な各インデックスメソッドは、以下の表で説明します。
 
 コマンド  |  説明
------------------------------------  |  -----------------------------------------------------------
-`$table->primary('id');`  |  主キー追加
-`$table->primary(['id', 'parent_id']);`  |  複合キー追加
-`$table->unique('email');`  |  uniqueキー追加
-`$table->index('state');`  |  基本的なインデックス追加
-`$table->spatialIndex('location');`  |  空間インデックス追加(SQLite以外)
+-------  |  -----------
+`$table->primary('id');`  |  主キーを追加
+`$table->primary(['id', 'parent_id']);`  |  複合キーを追加
+`$table->unique('email');`  |  一意のインデックスを追加
+`$table->index('state');`  |  インデックスを追加
+`$table->spatialIndex('location');`  |  空間インデックスを追加（SQLiteを除く）
 
 <a name="index-lengths-mysql-mariadb"></a>
-#### インデックス長とMySQL／MariaDB
+#### インデックスの長さとMySQL／MariaDB
 
-Laravelはデータベース中への「絵文字」保存をサポートするため、デフォルトで`utf8mb4`文字セットを使っています。バージョン5.7.7より古いMySQLや、バージョン10.2.2より古いMariaDBを使用している場合、マイグレーションにより生成されるデフォルトのインデックス用文字列長を明示的に設定する必要があります。`AppServiceProvider`中で`Schema::defaultStringLength`を呼び出してください。
+デフォルトでは、Laravelは`utf8mb4`文字セットを使用します。5.7.7リリースより古いバージョンのMySQLまたは10.2.2リリースより古いMariaDBを実行している場合、MySQLがそれらのインデックスを作成するために、マイグレーションによって生成されるデフォルトの文字カラム長を手動で設定する必要が起きます。`App\Providers\AppServiceProvider`クラスの`boot`メソッド内で`Schema::defaultStringLength`メソッドを呼び出し、デフォルトの文字カラムの長さを設定できます。
 
     use Illuminate\Support\Facades\Schema;
 
     /**
-     * 全アプリケーションサービスの初期起動処理
+     * 全アプリケーションサービスの初期設定
      *
      * @return void
      */
@@ -483,37 +973,40 @@ Laravelはデータベース中への「絵文字」保存をサポートする�
         Schema::defaultStringLength(191);
     }
 
-もしくは、データベースの`innodb_large_prefix`オプションを有効にする方法もあります。このオプションを個別に有効にする方法は、使用するデータベースのドキュメントを参照してください。
+または、データベースの`innodb_large_prefix`オプションを有効にすることもできます。このオプションを適切に有効にする方法については、データベースのドキュメントを参照してください。
 
 <a name="renaming-indexes"></a>
-### インデックス名変更
+### インデックスのリネーム
 
-インデックス名を変更するためには、`renameIndex`メソッドを使用します。このメソッドは最初の引数として現在のインデックス名を受け取り、２つ目の引数として変更後の名前を受け取ります。
+インデックスの名前を変更するには、スキーマビルダBlueprintが提供する`renameIndex`メソッドを使用します。このメソッドは、現在のインデックス名を最初の引数として取り、目的の名前を２番目の引数として取ります。
 
     $table->renameIndex('from', 'to')
 
 <a name="dropping-indexes"></a>
-### インデックス削除
+### インデックスの削除
 
-インデックスを削除する場合はインデックスの名前を指定します。Laravelはデフォルトでテーブル名、インデックスしたカラム名、インデックスタイプに基づいて自動的に名前をつけます。いくつか例をご覧ください。
+インデックスを削除するには、インデックスの名前を指定する必要があります。デフォルトでは、Laravelはテーブル名、インデックス付きカラムの名前、およびインデックスタイプに基づいてインデックス名を自動的に割り当てます。ここではいくつかの例を示します。
 
 コマンド  |  説明
------------------------------------  |  -----------------------------------------------------------
+-------  |  -----------
 `$table->dropPrimary('users_id_primary');`  |  "users"テーブルから主キーを削除
-`$table->dropUnique('users_email_unique');`  |  "users"テーブルからユニークキーを削除
+`$table->dropUnique('users_email_unique');`  |  "users"テーブルから一意のインデックスを削除
 `$table->dropIndex('geo_state_index');`  |  "geo"テーブルから基本インデックスを削除
-`$table->dropSpatialIndex('geo_location_spatialindex');`  |  "geo"テーブルから空間インデックスを削除(SQLite以外)
+`$table->dropSpatialIndex('geo_location_spatialindex');`  |  "geo"テーブルから空間インデックスを削除（SQLiteを除く）
 
-カラムの配列をインデックス削除メソッドに渡すと、テーブル、カラム、キータイプに基づき、命名規則に従ったインデックス名が生成されます。
+インデックスを削除するメソッドにカラムの配列を渡すと、テーブル名、カラム、およびインデックスタイプに基づいてインデックス名が生成されます。
 
     Schema::table('geo', function (Blueprint $table) {
-        $table->dropIndex(['state']); // 'geo_state_index'インデックスを削除
+        $table->dropIndex(['state']); // Drops index 'geo_state_index'
     });
 
 <a name="foreign-key-constraints"></a>
 ### 外部キー制約
 
-Laravelはデータベースレベルの整合性を強制するために、テーブルに対する外部キー束縛の追加も提供しています。たとえば`users`テーブルの`id`カラムを参照する、`posts`テーブルの`user_id`カラムを定義してみましょう。
+Laravelは、データベースレベルで参照整合性を強制するために使用される外部キー制約の作成もサポートしています。たとえば、`users`テーブルの`id`カラムを参照する`posts`テーブルの`user_id`カラムを定義しましょう。
+
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
 
     Schema::table('posts', function (Blueprint $table) {
         $table->unsignedBigInteger('user_id');
@@ -521,44 +1014,50 @@ Laravelはデータベースレベルの整合性を強制するために、テ�
         $table->foreign('user_id')->references('id')->on('users');
     });
 
-この書き方はやや複雑です。より良い開発イクスピアリエンスを提供するため、Laravelはさらに便利に使用できる簡潔なメソッドを提供しています。上の例は、次のように書き換えられます。
+この構文はかなり冗長であるため、Laravelは、より良い開発者エクスペリエンスを提供するために規約を使用した追加の簡潔なメソッドを提供します。上記の例は、次のように書き直すことができます。
 
     Schema::table('posts', function (Blueprint $table) {
         $table->foreignId('user_id')->constrained();
     });
 
-`foreignId`メソッドは`unsignedBigInteger`のエイリアスです。一方の`constrained`メソッドはテーブルとカラム名を`foreignId`で指定したカラム名をもとに規約により決定します。テーブル名が規約と合っていない場合は、`constrained`メソッドの引数にテーブル名を渡してください。
+`foreignId`メソッドは`unsignedBigInteger`のエイリアスですが、`constrained`メソッドは規約を使用して参照されるテーブルとカラムの名前を決定します。テーブル名がLaravelの規則と一致しない場合は、引数として`constrained`メソッドに渡すことでテーブル名を指定できます。
 
     Schema::table('posts', function (Blueprint $table) {
         $table->foreignId('user_id')->constrained('users');
     });
 
 
-さらに束縛に対して「デリート時(on delete)」と「更新時(on update)」に対する処理をオプションとして指定できます。
+必要なアクションに"on delete"や"on update"の制約プロパティを指定することもできます。
 
     $table->foreignId('user_id')
           ->constrained()
           ->onUpdate('cascade')
           ->onDelete('cascade');
 
-追加の[カラム修飾子](#column-modifiers)は`constrained`より前で呼び出してください。
+追加の[カラム修飾子](#column-modifiers)は、`constrained`メソッドの前に呼び出す必要があります。
 
     $table->foreignId('user_id')
           ->nullable()
           ->constrained();
 
-外部キーを削除するには、`dropForeign`メソッドに削除する外部キー束縛を指定します。インデックスで使用されるものと同じ命名規則が、外部キーにも使用されています。制約するテーブル名とカラム名に基づいて、"\_foreign"を最後につけた名前です。
+<a name="dropping-foreign-keys"></a>
+#### 外部キーの削除
+
+外部キーを削除するには、`dropForeign`メソッドを使用して、削除する外部キー制約の名前を引数として渡してください。外部キー制約は、インデックスと同じ命名規約を使用しています。つまり、外部キー制約名は、制約内のテーブルとカラムの名前に基づいており、その後に「\_foreign」サフィックスが続きます。
 
     $table->dropForeign('posts_user_id_foreign');
 
-もしくは、`dropForeign`メソッドへ外部キーのカラム名を持つ配列を指定する方法もあります。配列はLaravelのスキームビルダの制約命名規則に従い、自動的に変換されます。
+または、外部キーを保持するカラム名を含む配列を`dropForeign`メソッドに渡すこともできます。配列は、Laravelの制約命名規約を使用して外部キー制約名に変換されます。
 
     $table->dropForeign(['user_id']);
 
-以下のメソッドにより、マイグレーション中の外部キー制約の有効／無効を変更できます。
+<a name="toggling-foreign-key-constraints"></a>
+#### 外部キー制約の切り替え
+
+次の方法を使用して、マイグレーション内の外部キー制約を有効または無効にできます。
 
     Schema::enableForeignKeyConstraints();
 
     Schema::disableForeignKeyConstraints();
 
-> {note} デフォルト状態では、SQLiteは外部キー制約が利用できません。SQLiteを使用する場合は、マイグレーションで外部キーを作成する前に、確実に[外部キーサポートを有効](/docs/{{version}}/database#configuration)にしてください。さらに、SQLiteはテーブル生成時のみ外部キーをサポートしており、[テーブル変更時](https://www.sqlite.org/omitted.html)ではありません。
+> {note} SQLiteは、デフォルトで外部キー制約を無効にします。SQLiteを使用する場合は、マイグレーションでデータベースを作成する前に、データベース設定の[外部キーサポートを有効にする](/docs/{{version}}/database#configuration)を確実に行ってください。さらに、SQLiteはテーブルの作成時にのみ外部キーをサポートし、[テーブルを変更する場合はサポートしません](https://www.sqlite.org/omitted.html)。

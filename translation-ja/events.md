@@ -1,80 +1,99 @@
 # イベント
 
 - [イントロダクション](#introduction)
-- [イベント／リスナ登録](#registering-events-and-listeners)
-    - [イベント／リスナ生成](#generating-events-and-listeners)
-    - [任意のイベント登録](#manually-registering-events)
-    - [イベントディスカバリ](#event-discovery)
+- [イベントとリスナの登録](#registering-events-and-listeners)
+    - [イベントとリスナの生成](#generating-events-and-listeners)
+    - [イベントの手動登録](#manually-registering-events)
+    - [イベントディスカバリー](#event-discovery)
 - [イベント定義](#defining-events)
 - [リスナ定義](#defining-listeners)
-- [イベントリスナのキュー投入](#queued-event-listeners)
-    - [キューへの任意アクセス](#manually-accessing-the-queue)
-    - [失敗したジョブの取り扱い](#handling-failed-jobs)
-- [イベントの発行](#dispatching-events)
-- [イベント購読](#event-subscribers)
-    - [イベント購読プログラミング](#writing-event-subscribers)
-    - [イベント購読登録](#registering-event-subscribers)
+- [キュー投入するイベントリスナ](#queued-event-listeners)
+    - [キューの手動操作](#manually-interacting-the-queue)
+    - [キュー投入するイベントリスナとデータベーストランザクション](#queued-event-listeners-and-database-transactions)
+    - [失敗したジョブの処理](#handling-failed-jobs)
+- [イベント発行](#dispatching-events)
+- [イベントサブスクライバ](#event-subscribers)
+    - [イベントサブスクライバの記述](#writing-event-subscribers)
+    - [イベントサブスクライバの登録](#registering-event-subscribers)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelのイベントはシンプルなオブザーバの実装で、アプリケーションで発生するさまざまなイベントを購読し、リッスンするために使用します。イベントクラスは通常、`app/Events`ディレクトリに保存されます。一方、リスナは`app/Listeners`ディレクトリへ保存されます。アプリケーションに両ディレクトリが存在しなくても、心配ありません。Artisanコンソールコマンドを使い、イベントとリスナを生成するとき、ディレクトリも生成されます。
+Laravelのイベントは、単純なオブザーバーパターンの実装を提供し、アプリケーション内で発生するさまざまなイベントをサブスクライブしてリッスンできるようにします。イベントクラスは通常、`app/Events`ディレクトリに保存し、リスナは`app/Listeners`に保存します。Artisanコンソールコマンドを使用してイベントとリスナを生成すると、これらのディレクトリが作成されるため、アプリケーションにこれらのディレクトリが表示されていなくても心配ありません。
 
-一つのイベントは、互いに依存していない複数のリスナに紐付けられますので、アプリケーションのさまざまな要素を独立させるための良い手段として活用できます。たとえば、注文を配送するごとにSlack通知をユーザーへ届けたいとします。注文の処理コードとSlackの通知コードを結合する代わりに、`OrderShipped`イベントを発行し、リスナがそれを受け取り、Slack通知へ変換するように実装できます。
+１つのイベントに、相互に依存しない複数のリスナを含めることができるため、イベントは、アプリケーションのさまざまな側面を分離するための優れた方法として機能します。たとえば、注文が発送されるたびにユーザーにSlack通知を送信したい場合があります。注文処理コードをSlack通知コードに結合する代わりに、リスナが受信してSlack通知をディスパッチするために使用できる`App\Events\OrderShipped`イベントを発生させることができます。
 
 <a name="registering-events-and-listeners"></a>
-## イベント／リスナ登録
+## イベントとリスナの登録
 
-Laravelアプリケーションに含まれている`EventServiceProvider`は、イベントリスナを全部登録するために便利な場所を提供しています。`listen`プロパティは全イベント（キー）とリスナ（値）で構成されている配列です。アプリケーションで必要とされているイベントをこの配列に好きなだけ追加できます。例として、`OrderShipped`イベントを追加してみましょう。
+Laravelアプリケーションに含まれている`App\Providers\EventServiceProvider`は、アプリケーションのすべてのイベントリスナを登録するための便利な場所を提供しています。`listen`プロパティには、すべてのイベント(キー)とそのリスナ(値)の配列が含まれています。アプリケーションが必要とするイベントをこの配列へ全部追加できます。例として、`OrderShipped`イベントを追加してみましょう。
+
+    use App\Events\OrderShipped;
+    use App\Listeners\SendShipmentNotification;
 
     /**
-     * アプリケーションのイベントリスナをマップ
+     * アプリケーションのイベントリスナマッピング
      *
      * @var array
      */
     protected $listen = [
-        'App\Events\OrderShipped' => [
-            'App\Listeners\SendShipmentNotification',
+        OrderShipped::class => [
+            SendShipmentNotification::class,
         ],
     ];
 
-<a name="generating-events-and-listeners"></a>
-### イベント／リスナ生成
+> {tip} `event:list`コマンドを使用して、アプリケーションによって登録されたすべてのイベントとリスナのリストを表示できます。
 
-毎回ハンドラやリスナを作成するのは、当然のことながら手間がかかります。代わりにハンドラとリスナを`EventServiceProvider`に追加し、`event:generate`コマンドを使いましょう。このコマンドは`EventServiceProvider`にリストしてあるイベントやリスナを生成してくれます。既存のイベントとハンドラには、変更を加えません。
+<a name="generating-events-and-listeners"></a>
+### イベントとリスナの生成
+
+もちろん、各イベントとリスナのファイルを一つずつ手で生成するのは面倒です。代わりに、リスナとイベントを`EventServiceProvider`へ追加し、`event:generate` Artisanコマンドを使用してください。このコマンドは、`EventServiceProvider`にリストされているまだ存在しないイベントとリスナを生成します。
 
     php artisan event:generate
+
+もしくは、`make:event`コマンドと`make:listener` Artisanコマンドを使用して、個々のイベントとリスナを生成することもできます。
+
+    php artisan make:event PodcastProcessed
+
+    php artisan make:listener SendPodcastNotification --event=PodcastProcessed
 
 <a name="manually-registering-events"></a>
 ### イベントの手動登録
 
-通常イベントは、`EventServiceProvider`の`$listen`配列により登録するべきです。しかし、`EventServiceProvider`の`boot`メソッドの中で、クロージャベースリスナを登録できます。
+通常、イベントは`EventServiceProvider`の`$listen`配列を介して登録する必要があります。ただし、`EventServiceProvider`の`boot`メソッドでクラスまたはクロージャベースのイベントリスナを手動で登録することもできます。
 
     use App\Events\PodcastProcessed;
+    use App\Listeners\SendPodcastNotification;
+    use Illuminate\Support\Facades\Event;
 
     /**
-     * アプリケーションの他のイベントを登録する
+     * アプリケーションの他の全イベントの登録
      *
      * @return void
      */
     public function boot()
     {
+        Event::listen(
+            PodcastProcessed::class,
+            [SendPodcastNotification::class, 'handle']
+        );
+
         Event::listen(function (PodcastProcessed $event) {
             //
         });
     }
 
 <a name="queuable-anonymous-event-listeners"></a>
-#### キュー投入可能な無名イベントリスナ
+#### Queueable匿名イベントリスナ
 
-自分でイベントリスナを登録するとき、リスナが[キュー](/docs/{{version}}/queues)を使用して実行されることをLaravelへ指示するために、そのリスナを`Illuminate\Events\queueable`関数の中のクロージャでラップしてください。
+クロージャベースのイベントリスナを手動で登録する場合、リスナクロージャを`Illuminate\Events\queueable`関数内にラップして、[キュー](/docs/{{version}}/queues)を使用してリスナを実行するようにLaravelへ指示できます。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;
     use Illuminate\Support\Facades\Event;
 
     /**
-     * アプリケーションの他のイベントを登録する
+     * アプリケーションの他の全イベントの登録
      *
      * @return void
      */
@@ -85,13 +104,13 @@ Laravelアプリケーションに含まれている`EventServiceProvider`は、
         }));
     }
 
-キュー投入されたジョブと同様に、その投入されたリスナの実行をカスタマイズするために、`onConnection`、`onQueue`、`delay`メソッドが使用できます。
+キュー投入ジョブと同様に、`onConnection`、`onQueue`、`delay`メソッドを使用して、キュー投入するリスナの実行をカスタマイズできます。
 
     Event::listen(queueable(function (PodcastProcessed $event) {
         //
     })->onConnection('redis')->onQueue('podcasts')->delay(now()->addSeconds(10)));
 
-キュー投入された無名リスナの失敗を処理したい場合は、`queueable`リスナの定義時に`catch`メソッドを含めてください。
+キューに投入した匿名リスナの失敗を処理したい場合は、`queueable`リスナを定義するときに`catch`メソッドにクロージャを指定できます。このクロージャは、リスナの失敗の原因となったイベントインスタンスと`Throwable`インスタンスを受け取ります。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;
@@ -101,28 +120,28 @@ Laravelアプリケーションに含まれている`EventServiceProvider`は、
     Event::listen(queueable(function (PodcastProcessed $event) {
         //
     })->catch(function (PodcastProcessed $event, Throwable $e) {
-        // キュー済みリスナが失敗した
+        // キュー投入したリスナは失敗した…
     }));
 
 <a name="wildcard-event-listeners"></a>
-#### ワイルドカードリスナ
+#### ワイルドカードイベントリスナ
 
-登録したリスナが、`*`をワイルドカードパラメータとして使用している場合、同じリスナで複数のイベントを捕捉できます。ワイルドカードリスナは、イベント全体のデータ配列を最初の引数として、イベントデータ全体を第２引数として受け取ります。
+ワイルドカードパラメータとして`*`を使用してリスナを登録することもでき、同じリスナで複数のイベントをキャッチできます。ワイルドカードリスナは、最初の引数としてイベント名を受け取り、2番目の引数としてイベントデータ配列全体を受け取ります。
 
     Event::listen('event.*', function ($eventName, array $data) {
         //
     });
 
 <a name="event-discovery"></a>
-### イベントディスカバリ
+### イベントディスカバリー
 
-`EventServiceProvider`の`$listen`配列へ、自分でイベントとリスナを登録する代わりに、自動的にイベントを検出させることができます。イベントディスカバリを有効にすると、Laravelはアプリケーションの`Listeners`ディレクトリをスキャンし、自動的にイベントとリスナを見つけ出して登録します。さらに、`EventServiceProvider`で明示的に定義されたイベントリストも今まで通りに登録します。
+`EventServiceProvider`の`$listen`配列にイベントとリスナを手動で登録する代わりに、自動イベント検出を有効にすることもできます。イベント検出が有効になっている場合、Laravelはアプリケーションの`Listeners`ディレクトリをスキャンすることでイベントとリスナを自動的に見つけて登録します。さらに、`EventServiceProvider`にリストされている明示的に定義されたイベントは引き続き登録します。
 
-Laravelはリフレクションを使いリスナクラスをスキャンし、イベントリスナを見つけます。Laravelは`handle`で始まるイベントリスナクラスメソッドを見つけると、そのメソッド引数のタイプヒントで示すイベントに対する、イベントリスナとしてメソッドを登録します。
+Laravelは、PHPのリフレクションサービスを使用してリスナクラスをスキャンすることにより、イベントリスナを見つけます。Laravelが`handle`で始まるリスナクラスメソッドを見つけると、Laravelはそれらのメソッドをメソッドの引数でタイプヒントされているイベントのイベントリスナとして登録します。
 
     use App\Events\PodcastProcessed;
 
-    class SendPodcastProcessedNotification
+    class SendPodcastNotification
     {
         /**
          * 指定イベントの処理
@@ -136,10 +155,10 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         }
     }
 
-イベントディスカバリはデフォルトで無効になっています。アプリケーションの`EventServiceProvider`にある`shouldDiscoverEvents`をオーバーライドすることで、有効にできます。
+イベント検出はデフォルトで無効になっていますが、アプリケーションの`EventServiceProvider`の`shouldDiscoverEvents`メソッドをオーバーライドすることで有効にできます。
 
     /**
-     * イベントとリスナを自動的に検出するか指定
+     * イベントとリスナを自動的に検出するかを判定
      *
      * @return bool
      */
@@ -148,10 +167,10 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         return true;
     }
 
-アプリケーションのListenersディレクトリ中の全リスナが、デフォルトでスキャンされます。スキャンする追加のディレクトリを定義したい場合は、`EventServiceProvider`の`discoverEventsWithin`をオーバーライドしてください。
+デフォルトでは、アプリケーションの`app/Listeners`ディレクトリ内のすべてのリスナをスキャンします。スキャンする追加のディレクトリを定義する場合は、`EventServiceProvider`の`discoverEventsWithin`メソッドをオーバーライドしてください。
 
     /**
-     * イベントを見つけるために使用するリスナディレクトリの取得
+     * イベントの検出に使用するリスナディレクトリを取得
      *
      * @return array
      */
@@ -162,14 +181,15 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         ];
     }
 
-実働時はリクエストのたびに、すべてのリスナをフレームワークにスキャンさせるのは好ましくないでしょう。アプリケーションのイベントとリスナの全目録をキャッシュする、`event:cache` Artisanコマンドを実行すべきです。この目録はフレームワークによるイベント登録処理をスピードアップするために使用されます。`event:clear`コマンドにより、このキャッシュは破棄されます。
+<a name="event-discovery-in-production"></a>
+#### 実働環境でのイベント検出
 
-> {tip} `event:list`コマンドで、アプリケーションに登録されたすべてのイベントとリスナを一覧表示できます。
+本番環境では、フレームワークがすべてのリクエストですべてのリスナをスキャンするのは効率的ではありません。したがって、デプロイメントプロセス中に、`event:cache` Artisanコマンドを実行して、アプリケーションのすべてのイベントとリスナのマニフェストをキャッシュする必要があります。このマニフェストは、イベント登録プロセスを高速化するためにフレームワークか使用します。`event:clear`コマンドを使用してキャッシュを破棄できます。
 
 <a name="defining-events"></a>
 ## イベント定義
 
-イベントクラスはデータコンテナとして、イベントに関する情報を保持します。たとえば生成した`OrderShipped`イベントが[Eloquent ORM](/docs/{{version}}/eloquent)オブジェクトを受け取るとしましょう。
+イベントクラスは、基本的に、イベントに関連する情報を保持するデータコンテナです。たとえば、`App\Events\OrderShipped`イベントが[Eloquent ORM](/docs/{{version}}/eloquent)オブジェクトを受け取るとします。
 
     <?php
 
@@ -184,6 +204,11 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
     {
         use Dispatchable, InteractsWithSockets, SerializesModels;
 
+        /**
+         * 注文インスタンス
+         *
+         * @var \App\Models\Order
+         */
         public $order;
 
         /**
@@ -198,12 +223,12 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         }
     }
 
-ご覧の通り、このクラスはロジックを含みません。購入された`Order`オブジェクトのための、コンテナです。イベントオブジェクトがPHPの`serialize`関数でシリアライズされる場合でも、Eloquentモデルをイベントがuseしている`SerializesModels`トレイトが優雅にシリアライズします。
+ご覧のとおり、このイベントクラスにはロジックが含まれていません。購読した`App\Models\Order`インスタンスのコンテナです。イベントで使用される`SerializesModels`トレイトは、[キュー投入するリスナ](#queued-event-listeners)を利用する場合など、イベントオブジェクトがPHPの`serialize`関数を使用してシリアル化される場合、Eloquentモデルを適切にシリアル化します。
 
 <a name="defining-listeners"></a>
-## リスナの定義
+## リスナ定義
 
-次にサンプルイベントのリスナを取り上げましょう。イベントリスナはイベントインスタンスを`handle`メソッドで受け取ります。`event:generate`コマンドは自動的に適切なイベントクラスをインポートし、`handle`メソッドのイベントのタイプヒントを指定します。そのイベントに対応するため必要なロジックを`handle`メソッドで実行してください。
+次に、サンプルイベントのリスナを見てみましょう。イベントリスナは、`handle`メソッドでイベントインスタンスを受け取ります。`event:generate`と`make:listener` Artisanコマンドは、適切なイベントクラスを自動的にインポートし、`handle`メソッドでイベントをタイプヒントします。`handle`メソッド内で、イベントに応答するために必要なアクションを実行できます。
 
     <?php
 
@@ -214,7 +239,7 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
     class SendShipmentNotification
     {
         /**
-         * イベントリスナ生成
+         * イベントリスナの生成
          *
          * @return void
          */
@@ -231,23 +256,23 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
          */
         public function handle(OrderShipped $event)
         {
-            // $event->orderにより、注文へアクセス…
+            // $event->orderを使用して注文にアクセス
         }
     }
 
-> {tip} イベントリスナでも、必要な依存をコンストラクターのタイプヒントで指定できます。イベントリスナはすべてLaravelの[サービスコンテナで](/docs/{{version}}/container)依存解決されるので、依存は自動的に注入されます。
+> {tip} イベントリスナは、コンストラクタに必要な依存関係をタイプヒントすることもできます。すべてのイベントリスナはLaravel[サービスコンテナ](/docs/{{version}}/container)を介して依存解決されるため、依存関係は自動的に注入されます。
 
 <a name="stopping-the-propagation-of-an-event"></a>
-#### イベントの伝播の停止
+#### イベント伝播の停止
 
-場合によりイベントが他のリスナへ伝播されるのを止めたいこともあります。その場合は`handle`メソッドから`false`を返してください。
+場合によっては、他のリスナへのイベント伝播を停止したいことがあります。これを行うには、リスナの`handle`メソッドから`false`を返します。
 
 <a name="queued-event-listeners"></a>
-## イベントリスナのキュー投入
+## キュー投入するイベントリスナ
 
-メール送信やHTTPリクエストを作成するなど、遅い仕事を担当する場合、そのリスナをキューイングできると便利です。キューリスナへ取り掛かる前に、[キューの設定](/docs/{{version}}/queues)を確実に行い、サーバかローカル開発環境でキューリスナを起動しておいてください。
+リスナをキューに投入することは、リスナが電子メールの送信やHTTPリクエストの作成などの遅いタスクを実行する場合に役立ちます。キューに入れられたリスナを使用する前に、必ず[キューを設定](/docs/{{version}}/queues)して、サーバまたはローカル開発環境でキューワーカを起動してください。
 
-リスナをキュー投入するように指定するには、`ShouldQueue`インターフェイスをリスナクラスに追加します。`event:generate` Artisanコマンドにより生成したリスナには、すでにこのインターフェイスが現在の名前空間下にインポートされていますので、すぐに使用できます。
+リスナをキューに投入するように指定するには、`ShouldQueue`インターフェイスをリスナクラスに追加します。`event:generate`と`make:listener` Artisanコマンドによって生成されたリスナには、このインターフェイスが現在の名前空間にインポートされているため、すぐに使用できます。
 
     <?php
 
@@ -261,12 +286,12 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         //
     }
 
-これだけです！これでこのリスナがイベントのために呼び出されると、Laravelの[キューシステム](/docs/{{version}}/queues)を使い、イベントデスパッチャーにより自動的にキューへ投入されます。キューにより実行されるリスナから例外が投げられなければ、そのキュージョブは処理が済み次第、自動的に削除されます。
+これだけです！これで、このリスナによって処理されるイベントがディスパッチされると、リスナはLaravelの[キューシステム](/docs/{{version}}/queues)を使用してイベントディスパッチャによって自動的にキューへ投入されます。リスナがキューによって実行されたときに例外が投げられない場合、キュー投入済みジョブは、処理が終了した後で自動的に削除されます。
 
 <a name="customizing-the-queue-connection-queue-name"></a>
 #### キュー接続とキュー名のカスタマイズ
 
-イベントリスナのキュー接続とキュー名、イベントリスナのキュー遅延時間をカスタマイズしたい場合は、`$connection`、`$queue`、`$delay`プロパティをリスナクラスで定義します。
+イベントリスナのキュー接続、キュー名、またはキュー遅延時間をカスタマイズする場合は、リスナクラスで`$connection`、`$queue`、`$delay`プロパティを定義できます。
 
     <?php
 
@@ -278,31 +303,31 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
     class SendShipmentNotification implements ShouldQueue
     {
         /**
-         * ジョブを投入する接続名
+         * ジョブの送信先となる接続名
          *
          * @var string|null
          */
         public $connection = 'sqs';
 
         /**
-         * ジョブを投入するキュー名
+         * ジョブの送信先となるキュー名
          *
          * @var string|null
          */
         public $queue = 'listeners';
 
         /**
-         * ジョブが処理開始されるまでの時間（秒）
+         * ジョブを処理するまでの時間(秒)
          *
          * @var int
          */
         public $delay = 60;
     }
 
-実行時のリスナのキューを定義したい場合は、リスナ上に`viaQueue`メソッドを定義してください。
+実行時にリスナのキューを定義したい場合は、リスナに`viaQueue`メソッドを定義します。
 
     /**
-     * リスナのキュー名の取得
+     * リスナのキュー名を取得
      *
      * @return string
      */
@@ -312,46 +337,46 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
     }
 
 <a name="conditionally-queueing-listeners"></a>
-#### 条件付きリスナのキュー投入
+#### 条件付き投入リスナ
 
-あるデータが存在する場合のみ、実行時にリスナをキューすると判断する必要が起きる場合もあります。そのためには`shouldQueue`メソッドをリスナへ追加し、そのリスナがキューされるかどうかを決めます。`shouldQueue`が`false`を返すとそのリスナは実行されません。
+場合によっては、実行時にのみ使用可能なデータに基づいて、リスナをキュー投入する必要があるかどうかを判断する必要が起きるでしょう。このために、`shouldQueue`メソッドをリスナに追加して、リスナをキュー投入する必要があるかどうかを判断できます。`shouldQueue`メソッドが`false`を返す場合、リスナは実行されません。
 
     <?php
 
     namespace App\Listeners;
 
-    use App\Events\OrderPlaced;
+    use App\Events\OrderCreated;
     use Illuminate\Contracts\Queue\ShouldQueue;
 
     class RewardGiftCard implements ShouldQueue
     {
         /**
-         * 顧客にギフトカードを贈る
+         * ギフトカードを顧客へ提供
          *
-         * @param  \App\Events\OrderPlaced  $event
+         * @param  \App\Events\OrderCreated  $event
          * @return void
          */
-        public function handle(OrderPlaced $event)
+        public function handle(OrderCreated $event)
         {
             //
         }
 
         /**
-         * リスナがキューされるかどうかを決める
+         * リスナをキューへ投入するかを決定
          *
-         * @param  \App\Events\OrderPlaced  $event
+         * @param  \App\Events\OrderCreated  $event
          * @return bool
          */
-        public function shouldQueue(OrderPlaced $event)
+        public function shouldQueue(OrderCreated $event)
         {
             return $event->order->subtotal >= 5000;
         }
     }
 
-<a name="manually-accessing-the-queue"></a>
-### キューへの任意アクセス
+<a name="manually-interacting-the-queue"></a>
+### キューの手動操作
 
-リスナの裏で動作しているキュージョブの、`delete`や`release`メソッドを直接呼び出したければ、`Illuminate\Queue\InteractsWithQueue`トレイトを使えます。このトレイトは生成されたリスナにはデフォルトとしてインポートされており、これらのメソッドへアクセスできるようになっています。
+リスナの基になるキュージョブの`delete`メソッドと`release`メソッドへ手動でアクセスする必要がある場合は、`Illuminate\Queue\InteractsWithQueue`トレイトを使用してアクセスできます。このトレイトは、生成したリスナにはデフォルトでインポートされ、以下のメソッドへのアクセスを提供します。
 
     <?php
 
@@ -379,10 +404,33 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         }
     }
 
-<a name="handling-failed-jobs"></a>
-### 失敗したジョブの取り扱い
+<a name="queued-event-listeners-and-database-transactions"></a>
+### キュー投入するイベントリスナとデータベーストランザクション
 
-キュー投入したイベントリスナはときどき落ちることがあります。キューワーカにより定義された最大試行回数を超え、キュー済みのリスナが実行されると、リスナの`failed`メソッドが実行されます。`failed`メソッドはイベントインスタンスと落ちた原因の例外を引数に受け取ります。
+キュー投入したリスナがデータベーストランザクション内でディスパッチされると、データベーストランザクションがコミットされる前にキューによって処理される場合があります。これが発生した場合、データベーストランザクション中にモデルまたはデータベースレコードに加えた更新は、データベースにまだ反映されていない可能性があります。さらに、トランザクション内で作成されたモデルまたはデータベースレコードは、データベースに存在しない可能性があります。リスナがこれらのモデルに依存している場合、キューに入れられたリスナをディスパッチするジョブの処理時に予期しないエラーが発生する可能性があります。
+
+キュー接続の`after_commit`設定オプションが`false`に設定されている場合でも、リスナクラスで`$afterCommit`プロパティを定義することにより、開いているすべてのデータベーストランザクションがコミットされた後に、特定のキューに入れられたリスナをディスパッチする必要があることを示すことができます。
+
+    <?php
+
+    namespace App\Listeners;
+
+    use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Queue\InteractsWithQueue;
+
+    class SendShipmentNotification implements ShouldQueue
+    {
+        use InteractsWithQueue;
+
+        public $afterCommit = true;
+    }
+
+> {tip} こうした問題の回避方法の詳細は、[キュー投入されるジョブとデータベーストランザクション](/docs/{{version}}/queues#jobs-and-database-transactions)に関するドキュメントを確認してください。
+
+<a name="handling-failed-jobs"></a>
+### 失敗したジョブの処理
+
+キュー投入したイベントリスナが失敗する場合があります。キュー投入したリスナがキューワーカーによって定義された最大試行回数を超えると、リスナ上の`failed`メソッドが呼び出されます。`failed`メソッドは、失敗の原因となったイベントインスタンスと`Throwable`を受け取ります。
 
     <?php
 
@@ -408,7 +456,7 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         }
 
         /**
-         * 失敗したジョブの処理
+         * ジョブの失敗を処理
          *
          * @param  \App\Events\OrderShipped  $event
          * @param  \Throwable  $exception
@@ -420,10 +468,49 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         }
     }
 
-<a name="dispatching-events"></a>
-## イベントの発行
+<a name="specifying-queued-listener-maximum-attempts"></a>
+#### キュー投入したリスナの最大試行回数の指定
 
-イベントを発行するには、`event`ヘルパにイベントのインスタンスを渡してください。このヘルパは登録済みのリスナ全部へイベントをディスパッチします。`event`ヘルパはグローバルに使用できますので、アプリケーションのどこからでも呼び出すことができます。
+キュー投入したリスナの１つでエラーが発生した場合、リスナが無期限に再試行し続けることを皆さんも望まないでしょう。そのため、Laravelはリスナを試行できる回数または期間を指定するさまざまな方法を提供しています。
+
+リスナクラスで`$trys`プロパティを定義して、リスナが失敗したと見なされるまでに試行できる回数を指定できます。
+
+    <?php
+
+    namespace App\Listeners;
+
+    use App\Events\OrderShipped;
+    use Illuminate\Contracts\Queue\ShouldQueue;
+    use Illuminate\Queue\InteractsWithQueue;
+
+    class SendShipmentNotification implements ShouldQueue
+    {
+        use InteractsWithQueue;
+
+        /**
+         * キュー投入したリスナが試行される回数
+         *
+         * @var int
+         */
+        public $tries = 5;
+    }
+
+リスナが失敗するまでに試行できる回数を定義する代わりに、リスナをそれ以上試行しない時間を定義することもできます。これにより、リスナは特定の時間枠内で何度でも試行します。リスナの試行最長時間を定義するには、リスナクラスに`retryUntil`メソッドを追加します。このメソッドは`DateTime`インスタンスを返す必要があります:
+
+    /**
+     * リスナタイムアウト時間を決定
+     *
+     * @return \DateTime
+     */
+    public function retryUntil()
+    {
+        return now()->addMinutes(5);
+    }
+
+<a name="dispatching-events"></a>
+## イベント発行
+
+イベントをディスパッチするには、イベントで静的な`dispatch`メソッドを呼び出します。このメソッドは`Illuminate\Foundation\Events\Dispatchable`トレイトにより、イベントで使用可能になります。`dispatch`メソッドに渡された引数はすべて、イベントのコンストラクタへ渡されます。
 
     <?php
 
@@ -432,38 +519,35 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
     use App\Events\OrderShipped;
     use App\Http\Controllers\Controller;
     use App\Models\Order;
+    use Illuminate\Http\Request;
 
-    class OrderController extends Controller
+    class OrderShipmentController extends Controller
     {
         /**
-         * 指定した注文を発送
+         * 指定注文を発送
          *
-         * @param  int  $orderId
-         * @return Response
+         * @param  \Illuminate\Http\Request  $request
+         * @return \Illuminate\Http\Response
          */
-        public function ship($orderId)
+        public function store(Request $request)
         {
-            $order = Order::findOrFail($orderId);
+            $order = Order::findOrFail($request->order_id);
 
-            // 注文発送ロジック…
+            // 注文出荷ロジック…
 
-            event(new OrderShipped($order));
+            OrderShipped::dispatch($order);
         }
     }
 
-もしくは、イベントが`Illuminate\Foundation\Events\Dispatchable`トレイトを使用していれば、そのイベントの静的`dispatch`メソッドを呼び出せます。`dispatch`メソッドへ渡したすべての引数は、そのイベントのコンストラクタへ渡されます。
-
-    OrderShipped::dispatch($order);
-
-> {tip} テスト時は実際にリスナを起動せずに、正しいイベントがディスパッチされたことをアサートできると便利です。Laravelに[組み込まれたテストヘルパ](/docs/{{version}}/mocking#event-fake)で簡単に行なえます。
+> {tip} テスト時は、特定のイベントが実際にリスナを起動せずにディスパッチされたことを宣言できると役立つでしょう。Laravelの[組み込みのテストヘルパ](/docs/{{version}}/mocking#event-fake)で簡単にできます。
 
 <a name="event-subscribers"></a>
-## イベント
+## イベントサブスクライバ
 
 <a name="writing-event-subscribers"></a>
-### イベント購読プログラミング
+### イベントサブスクライバの記述
 
-イベント購読クラスは、その内部で複数のイベントを購読でき、一つのクラスで複数のイベントハンドラを定義できます。購読クラスは、イベントディスパッチャインスタンスを受け取る、`subscribe`メソッドを定義する必要があります。イベントリスナを登録するには、渡されたディスパッチャの`listen`メソッドを呼び出します。
+イベントサブスクライバは、サブスクライバクラス自体から複数のイベントを購読できるクラスであり、単一のクラス内で複数のイベントハンドラを定義できます。サブスクライバは、イベントディスパッチャーインスタンスを渡す`subscribe`メソッドを定義する必要があります。特定のディスパッチャ上の`listen`メソッドを呼び出して、イベントリスナを登録します。
 
     <?php
 
@@ -472,17 +556,17 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
     class UserEventSubscriber
     {
         /**
-         * ユーザーログインイベント処理
+         * ユーザーログインイベントの処理
          */
         public function handleUserLogin($event) {}
 
         /**
-         * ユーザーログアウトイベント処理
+         * ユーザーログアウトイベントの処理
          */
         public function handleUserLogout($event) {}
 
         /**
-         * 購読するリスナの登録
+         * サブスクライバのリスナを登録
          *
          * @param  \Illuminate\Events\Dispatcher  $events
          * @return void
@@ -501,44 +585,22 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         }
     }
 
-もしくは、購読者の`subscribe`メソッドでイベント／ハンドラのマッピング配列を返してください。この場合、リスナのマッピングは自動的に登録されます。
-
-    use Illuminate\Auth\Events\Login;
-    use Illuminate\Auth\Events\Logout;
-
-    /**
-     * 購読者のリスナ登録
-     *
-     * @return array
-     */
-    public function subscribe()
-    {
-        return [
-            Login::class => [
-                [UserEventSubscriber::class, 'handleUserLogin']
-            ],
-
-            Logout::class => [
-                [UserEventSubscriber::class, 'handleUserLogout']
-            ],
-        ];
-    }
-
 <a name="registering-event-subscribers"></a>
-### イベント購読登録
+### イベントサブスクライバの登録
 
-購読クラスを書いたら、イベントディスパッチャへ登録できる準備が整いました。`EventServiceProvider`の`$subscribe`プロパティを使用し、購読クラスを登録します。例として、`UserEventSubscriber`をリストに追加してみましょう。
+サブスクライバを書き終えたら、イベントディスパッチャに登録する準備が整います。`EventServiceProvider`の`$subscribe`プロパティを使用してサブスクライバを登録できます。例として、`UserEventSubscriber`をリストに追加しましょう。
 
     <?php
 
     namespace App\Providers;
 
+    use App\Listeners\UserEventSubscriber;
     use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
     class EventServiceProvider extends ServiceProvider
     {
         /**
-         * アプリケーションのイベントリスナをマップ
+         * アプリケーションのイベントリスナマッピング
          *
          * @var array
          */
@@ -547,11 +609,11 @@ Laravelはリフレクションを使いリスナクラスをスキャンし、�
         ];
 
         /**
-         * 登録する購読クラス
+         * 登録するサブスクライバクラス
          *
          * @var array
          */
         protected $subscribe = [
-            'App\Listeners\UserEventSubscriber',
+            UserEventSubscriber::class,
         ];
     }

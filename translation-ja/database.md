@@ -1,71 +1,75 @@
-# データベース：利用開始
+# データベース：準備
 
 - [イントロダクション](#introduction)
     - [設定](#configuration)
-    - [Read／Write接続](#read-and-write-connections)
-    - [複数接続の使用](#using-multiple-database-connections)
+    - [読み／書き接続](#read-and-write-connections)
 - [SQLクエリの実行](#running-queries)
-- [クエリイベントのリッスン](#listening-for-query-events)
+    - [複数データベース接続の使用](#using-multiple-database-connections)
+    - [クエリイベントのリッスン](#listening-for-query-events)
 - [データベーストランザクション](#database-transactions)
 - [データベースCLIへの接続](#connecting-to-the-database-cli)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-LaravelはSQLを直接使用する場合でも、[Fluentクエリビルダ](/docs/{{version}}/queries)や[Eloquent ORM](/docs/{{version}}/eloquent)を使う時でも、データベースの取り扱いをとても簡単にしてくれます。現在、Laravelは以下のデータベースシステムを使用しています。
+最近のほとんどすべてのWebアプリケーションは、データベースとやり取りします。Laravelでは、素のSQL、[fluent（流暢な）クエリビルダ](/docs/{{version}}/queries)、および[Eloquent ORM](/docs/{{version}}/eloquent)を使用して、サポートしているさまざまなでデータベースとのやり取りを非常に簡単にしています。現在、Laravelは４つのデータベースをファーストパーティサポートしています。
 
 <div class="content-list" markdown="1">
-- MySQL 5.6以上 ([バージョンポリシー](https://en.wikipedia.org/wiki/MySQL#Release_history))
-- PostgreSQL 9.4以上  ([バージョンポリシー](https://www.postgresql.org/support/versioning/))
-- SQLite 3.8.8以上
-- SQL Server 2017以上  ([バージョンポリシー](https://support.microsoft.com/en-us/lifecycle/search))
+- MySQL5.6以上 ([バージョンポリシー](https://en.wikipedia.org/wiki/MySQL#Release_history))
+- PostgreSQL9.4以上 ([バージョンポリシー](https://www.postgresql.org/support/versioning/))
+- SQLite3.8.8以上
+- SQL Server2017以上 ([バージョンポリシー](https://support.microsoft.com/en-us/lifecycle/search))
 </div>
 
 <a name="configuration"></a>
 ### 設定
 
-データベース設定ファイルは`config/database.php`です。このファイルで使用するデータベース接続を全部定義すると同時に、デフォルトで使用する接続も指定してください。サポートしているほとんどのデータベースシステムの例がファイルの中に用意しています。
+Laravelのデータベースサービスの設定は、アプリケーションの`config/database.php`設定ファイルにあります。このファイルは、全データベース接続を定義し、デフォルトで使用する接続を指定できます。このファイル内のほとんどの設定オプションは、アプリケーションの環境変数の値によって決まります。Laravelがサポートしているデータベースシステムのほとんどの設定例をこのファイルに用意しています。
 
-デフォルトでLaravelのサンプル[環境設定](/docs/{{version}}/configuration#environment-configuration)は、ローカルマシン上でLaravelでの開発を行うための便利な仮想マシンである[Laravel Homestead](/docs/{{version}}/homestead)用に設定してあります。ローカルのデータベースに合わせ、自由に変更してくだい。
+デフォルトのLaravelのサンプル[環境設定](/docs/{{version}}/configuration#environment-configuration)は、[Laravel Sail](/docs/{{version}}/sail)で使用できるようになっています。SailはローカルマシンでLaravelアプリケーションを開発するためのDocker環境です。しかし、ローカルデータベースの必要に応じ、データベース設定を自由に変更してください。
 
 <a name="sqlite-configuration"></a>
 #### SQLite設定
 
-`touch database/database.sqlite`などのコマンドを使い、新しいSQLiteデータベースを作成した後、この新しいデータベースの絶対パスを環境変数へ設定します。
+SQLiteデータベースは、ファイルシステム上の単一ファイルに含まれます。ターミナルで`touch`コマンドを使用して新しいSQLiteデータベースを作成できます。（`touch database/database.sqlite`）データベースを作成したあと、データベースへの絶対パスを`DB_DATABASE`環境変数で指定することにより、このデータベースを使用するよう簡単に設定できます。
 
     DB_CONNECTION=sqlite
     DB_DATABASE=/absolute/path/to/database.sqlite
 
-SQLiteで外部キー制約を有効にするには、`DB_FOREIGN_KEYS`環境変数に`true`をセットする必要があります。
+SQLite接続の外部キー制約を有効にするには、`DB_FOREIGN_KEYS`環境変数を`true`に設定する必要があります。
 
     DB_FOREIGN_KEYS=true
 
 <a name="mssql-configuration"></a>
 #### Microsoft SQLサーバ設定
 
-Microsoft SQLサーバデータベースを使用するには、`sqlsrv`および`pdo_sqlsrv` PHP拡張機能と、Microsoft SQL ODBCドライバなどの必要な依存関係をすべて確実にインストールしてください。
+Microsoft　SQL Serverデータベースを使用するには、`sqlsrv`、`pdo_sqlsrv`PHP拡張機能と、Microsoft SQL ODBCドライバーなど必要な依存関係パッケージを確実にインストールしてください。
 
 <a name="configuration-using-urls"></a>
-#### URLを使用したデータベース設定
+#### URLを使用した設定
 
-通常、データベース接続は`host`、`database`、`username`、`password`などのような複数の設定値を用いて設定します。これらの各設定値は、対応する環境変数を持っています。つまり、実働サーバ上でデータベース接続情報を設定する場合に、多くの環境変数を管理する必要があります。
+通常、データベース接続は、`host`、`database`、`username`、`password`などの複数の設定値により構成します。こうした設定値には、それぞれ対応する環境変数があります。これは、運用サーバでデータベース接続情報を設定するときに、複数の環境変数を管理する必要があることを意味します。
 
-Herokuのようなマネージドデータベースのプロバイダでは、一つの文字列の中にデータベースの接続状を全部含めたデータベース"URL"を提供しています。たとえば、サンプルのデータベースURLは次のようになります。
+AWSやHerokuなどの一部のマネージドデータベースプロバイダは、データベースのすべての接続情報を単一の文字カラムで含む単一のデータベース「URL」を提供しています。データベースURLの例は、次のようになります。
 
-    mysql://root:password@127.0.0.1/forge?charset=UTF-8
+```html
+mysql://root:password@127.0.0.1/forge?charset=UTF-8
+```
 
-こうしたURLは通常、次のような標準的なスキーマ規約に従います。
+こうしたURLは通常、標準のスキーマ規約に従います。
 
-    driver://username:password@host:port/database?options
+```html
+driver://username:password@host:port/database?options
+```
 
-これに対応するため、Laravelは複数の接続オプションを使い、データベースの設定を変更可能なURLをサポートしています。（`DATABASE_URL`環境変数に対応している）`url`設定オプションが存在する場合は、データベース接続と接続情報を取り出し、接続に使用します。
+利便性のため、Laravelは複数の設定オプションを使用してデータベースを構成する代わりに、こうしたURLをサポートしています。`url`(または対応する`DATABASE_URL`環境変数)設定オプションが存在する場合は、データベース接続と接続情報を抽出するためにそれを使用します。
 
 <a name="read-and-write-connections"></a>
-### Read／Write接続
+### 読み／書き接続
 
-SELECT文に別のデータベース接続を利用したい場合もあると思います。INSERT、UPDATE、DELETE文では他の接続に切り替えたい場合などです。Laravelでこれを簡単に実現できます。SQLをそのまま使う場合であろうと、クエリビルダやEloquent ORMを利用する場合であろうと、適切な接続が利用されます。
+SELECTステートメントに１つのデータベース接続を使用し、INSERT、UPDATE、およびDELETEステートメントに別のデータベース接続を使用したい場合があるでしょう。Laravelでは簡単に、素のクエリ、クエリビルダ、もしくはEloquent ORMのいずれを使用していても常に適切な接続が使用されます。
 
-Read/Write接続を理解してもらうため、以下の例をご覧ください。
+読み取り/書き込み接続を設定する方法を確認するため、以下の例を見てみましょう。
 
     'mysql' => [
         'read' => [
@@ -89,35 +93,24 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
         'prefix' => '',
     ],
 
-設定配列に`read`と`write`、`sticky`、３つのキーが追加されたことに注目してください。２つのキーとも`host`というキーを一つ持っています。`read`と`write`接続時の残りのデータベースオプションは、メインの`mysql`配列からマージされます。
+設定配列には、`read`、`write`、`sticky`の３キーが追加されていることに注目してください。`read`キーと`write`キーには、単一のキーとして`host`を含む配列値があります。`read`および` write`接続の残りのデータベースオプションは、メインの`mysql`設定配列からマージされます。
 
-`read`と`write`の配列には、メインの配列の値をオーバーライドしたいものだけ指定してください。この場合、`192.168.1.1`は"read"接続に利用され、一方`192.168.1.3`が"write"接続に利用されます。メインの`mysql`配列に含まれる、データベース接続情報、プレフィックス、文字セットなどその他のオプションは、両方の接続で共有されます。
+メインの`mysql`配列の値をオーバーライドする場合にのみ、`read`配列と`write`配列へ項目を配置する必要があります。したがって、この場合、`192.168.1.1`は「読み取り」接続のホストとして使用し、`192.168.1.3`は「書き込み」接続に使用します。データベースの接続情報、プレフィックス、文字セット、およびメインの`mysql`配列内の他のすべてのオプションは、両方の接続で共有されます。`host`設定配列に複数の値が存在する場合、リクエストごとランダムにデータベースホストを選択します。
 
 <a name="the-sticky-option"></a>
 #### `sticky`オプション
 
-`sticky`オプションは**オプショナル**値で、現在のリクエストサイクルでデータベースへ書き込まれたレコードを即時に読み込みます。`sticky`オプションが有効なとき、現在のリクエストサイクルにデータベースに対して「書き込み(write)」処理が実行されると、すべての「読み込み(read)」操作で"write"接続が使われるようになります。これにより、あるリクエストサイクルで書き込んだデータが、同じリクエストでは確実にデータベースから即時読み込まれます。
-
-<a name="using-multiple-database-connections"></a>
-### 複数接続の使用
-
-複数の接続を使用する場合は、`DB`ファサードの`connection`メソッドを利用し、各接続にアクセスできます。`connection`メソッドに渡す「名前」は、`config/database.php`設定ファイルの中の`connections`にリストされている名前を指定します。
-
-    $users = DB::connection('foo')->select(...);
-
-裏で動作しているPDOインスタンスに直接アクセスしたい場合は、接続インスタンスに`getPdo`メソッドを使います。
-
-    $pdo = DB::connection()->getPdo();
+`sticky`オプションは、現在のリクエストサイクル中にデータベースへ書き込まれたレコードをすぐに読み取るため使用する**オプション**値です。`sticky`オプションが有効になっており、現在のリクエストサイクル中にデータベースへ対し「書き込み」操作が実行された場合、それ以降の「読み取り」操作では「書き込み」接続が使用されます。これにより、要求サイクル中に書き込まれたデータを、同じ要求中にデータベースからすぐに読み戻すことができます。これがアプリケーションにとって望ましい動作であるかどうかを判断するのは使用者の皆さん次第です。
 
 <a name="running-queries"></a>
 ## SQLクエリの実行
 
-データベース接続の設定を済ませれば、`DB`ファサードを使用しクエリを実行できます。`DB`ファサードは `select`、`update`、`insert`、`delete`、`statement`のクエリタイプごとにメソッドを用意しています。
+データベース接続を設定したら、`DB`ファサードを使用してクエリが実行できます。`DB`ファサードは、クエリのタイプごとに`select`、`update`、`insert`、`delete`、` statement`メソッドを提供しています。
 
 <a name="running-a-select-query"></a>
 #### SELECTクエリの実行
 
-基本的なクエリを行うには、`DB`ファサードの`select`メソッドを使います。
+基本的なSELECTクエリを実行するには、`DB`ファサードで`select`メソッドを使用します。
 
     <?php
 
@@ -129,9 +122,9 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
     class UserController extends Controller
     {
         /**
-         * アプリケーションの全ユーザーリストを表示
+         * アプリケーションの全ユーザーのリストを表示
          *
-         * @return Response
+         * @return \Illuminate\Http\Response
          */
         public function index()
         {
@@ -141,71 +134,97 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
         }
     }
 
-`select`メソッドの最初の引数はSQLクエリで、２つ目の引数はクエリに結合する必要のあるパラメーターです。通常、パラメーターは`where`節制約の値です。パラメーター結合はSQLインジェクションを防ぐために提供されています。
+`select`メソッドの最初の引数はSQLクエリであり、２番目の引数はクエリにバインドする必要のあるパラメータバインディングです。通常、これらは `where`句の制約の値です。パラメータバインディングは、SQLインジェクションに対する保護を提供します。
 
-`select`メソッドはいつも結果の「配列」を返します。結果の値へアクセスできるように、配列に含まれる結果はそれぞれ、PHPの`stdClass`オブジェクトになります。
+`select`メソッドは常に結果の`配列`を返します。配列内の各結果は、データベースのレコードを表すPHPの`stdClass`オブジェクトになります。
+
+    use Illuminate\Support\Facades\DB;
+
+    $users = DB::select('select * from users');
 
     foreach ($users as $user) {
         echo $user->name;
     }
 
 <a name="using-named-bindings"></a>
-#### 名前付き結合の使用
+#### 名前付きバインディングの使用
 
-パラメーター結合に`?`を使う代わりに名前付きの結合でクエリを実行できます。
+パラメータバインディングを表すために`?`を使用する代わりに、名前付きバインディングを使用してクエリを実行できます。
 
     $results = DB::select('select * from users where id = :id', ['id' => 1]);
 
 <a name="running-an-insert-statement"></a>
 #### INSERT文の実行
 
-`insert`文を実行するには、`DB`ファサードの`insert`メソッドを使います。`select`と同様に、このメソッドは第１引数にSQLクエリそのもの、第２引数に結合を取ります。
+`insert`ステートメントを実行するには、`DB`ファサードで`insert`メソッドを使用します。`select`と同様に、このメソッドはSQLクエリを最初の引数に取り、バインディングを２番目の引数に取ります。
 
-    DB::insert('insert into users (id, name) values (?, ?)', [1, 'Dayle']);
+    use Illuminate\Support\Facades\DB;
+
+    DB::insert('insert into users (id, name) values (?, ?)', [1, 'Marc']);
 
 <a name="running-an-update-statement"></a>
-#### UPDATE文の実行
+#### 更新文の実行
 
-データベースの既存レコードの更新には、`update`メソッドを使います。このメソッドの返却値は影響を受けたレコード数です。
+データベース内の既存のレコードを更新するには、`update`メソッドを使用する必要があります。メソッドは実行の影響を受けた行数を返します。
 
-    $affected = DB::update('update users set votes = 100 where name = ?', ['John']);
+    use Illuminate\Support\Facades\DB;
+
+    $affected = DB::update(
+        'update users set votes = 100 where name = ?',
+        ['Anita']
+    );
 
 <a name="running-a-delete-statement"></a>
 #### DELETE文の実行
 
-データベースからレコードを削除するには、`delete`メソッドを使います。`update`と同様に、削除したレコード数が返されます。
+データベースからレコードを削除するには、`delete`メソッドを使用する必要があります。`update`と同様に、メソッドは影響を受けた行数を返します。
+
+    use Illuminate\Support\Facades\DB;
 
     $deleted = DB::delete('delete from users');
 
 <a name="running-a-general-statement"></a>
-#### 通常のSQL文を実行する
+#### 一般的な文の実行
 
-いつくかのデータベース文は値を返しません。こうしたタイプの操作には、`DB`ファサードの`statement`メソッドを使います。
+一部のデータベース操作文は値を返しません。こうしたタイプの操作では、`DB`ファサードで`statement`メソッドを使用します。
 
     DB::statement('drop table users');
 
 <a name="running-an-unprepared-statement"></a>
-#### プリペアドステートメントを使用しない実行
+#### プリペアドではない文の実行
 
-値をバインドせずにSQLステートメントを実行したい場合があります。それには`DB`ファサードの`unprepared`メソッドを使用します。
+値をバインドせずSQL文を実行したい場合があります。それには、`DB`ファサードの`unprepared`メソッドを使用します。
 
     DB::unprepared('update users set votes = 100 where name = "Dries"');
 
-> {note} unpreparedステートメントはパラメーターをバインドしないため、SQLインジェクションに対して脆弱である可能性を持っています。unpreparedステートメント内でユーザーが制御する値の使用を許してはいけません。
+> {note} プリペアドではない文はパラメーターをバインドしないため、SQLインジェクションに対して脆弱である可能性があります。プリペアドではない文内では、ユーザーの値のコントロールを許可しないでください。
 
 <a name="implicit-commits-in-transactions"></a>
 #### 暗黙のコミット
 
-トランザクション内で `DB`ファサードの`statement`および`unprepared`メソッドを使用する場合、[暗黙のコミット](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html)を引き起こすステートメントを回避するように注意する必要があります。そうしたステートメントにより、データベースエンジンはトランザクション全体を間接的にコミットし、Laravelはデータベースのトランザクションレベルを認識しなくなります。このようなステートメントの例は、データベーステーブルの作成です。
+トランザクション内で`DB`ファサードの`statement`および`unprepared`メソッドを使用する場合、[暗黙のコミット](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html)を引き起こすステートメントを回避するように注意する必要があります。これらのステートメントにより、データベースエンジンはトランザクション全体を間接的にコミットし、Laravelはデータベースのトランザクションレベルを認識しなくなります。このようなステートメントの例は、データベーステーブルの作成です。
 
     DB::unprepared('create table a (col varchar(1) null)');
 
-暗黙的なコミットをトリガーする[すべてのステートメントのリスト](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html)は、MySQLのマニュアルを参照してください。
+暗黙的なコミットを引き起こす、[すべてのステートメントのリスト](https://dev.mysql.com/doc/refman/8.0/en/implicit-commit.html)は、MySQLのマニュアルを参照してください。
+
+<a name="using-multiple-database-connections"></a>
+### 複数データベース接続の使用
+
+アプリケーションが`config/database.php`設定ファイルで複数の接続を定義している場合、`DB`ファサードが提供する`connection`メソッドを介して各接続にアクセスできます。`connection`メソッドに渡される接続名は、`config/database.php`設定ファイルにリストしている接続、または実行時に`config`ヘルパを使用して設定した接続の１つに対応している必要があります。
+
+    use Illuminate\Support\Facades\DB;
+
+    $users = DB::connection('sqlite')->select(...);
+
+接続インスタンスで`getPdo`メソッドを使用して、接続の基になる素のPDOインスタンスにアクセスできます。
+
+    $pdo = DB::connection()->getPdo();
 
 <a name="listening-for-query-events"></a>
-## クエリイベントのリッスン
+### クエリイベントのリッスン
 
-アプリケーションで実行される各SQLクエリを取得したい場合は、`listen`メソッドが使用できます。このメソッドはクエリをログしたり、デバッグしたりするときに便利です。クエリリスナは[サービスプロバイダ](/docs/{{version}}/providers)の中で登録します。
+アプリケーションが実行すｒSQLクエリごとに呼び出すクロージャを指定する場合は、`DB`ファサードの`listen`メソッドを使用します。このメソッドは、クエリのログ記録やデバッグに役立ちます。クエリリスナクロージャは、[サービスプロバイダ](/docs/{{version}}/providers)の`boot`メソッドで登録します。
 
     <?php
 
@@ -217,7 +236,7 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
     class AppServiceProvider extends ServiceProvider
     {
         /**
-         * 全アプリケーションサービスの登録
+         * アプリケーションの全サービスの登録
          *
          * @return void
          */
@@ -227,7 +246,7 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
         }
 
         /**
-         * 全アプリケーションサービスの初期起動
+         * アプリケーションの全サービスの起動初期処理
          *
          * @return void
          */
@@ -244,29 +263,35 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
 <a name="database-transactions"></a>
 ## データベーストランザクション
 
-一連の操作をデータベーストランザクション内で実行するには、`DB`ファサードの`transaction`メソッドを使用してください。トランザクション「クロージャ」の中で例外が投げられると、トランザクションは自動的にロールバックされます。「クロージャ」が正しく実行されると、自動的にコミットされます。`transaction`メソッドを使用すれば、ロールバックやコミットを自分でコードする必要はありません。
+`DB`ファサードが提供する`transaction`メソッドを使用して、データベーストランザクション内で一連の操作を実行できます。トランザクションクロージャ内で例外が投げられた場合、トランザクションを自動的にロールバックします。クロージャが正常に実行されると、トランザクションを自動的にコミットします。`transaction`メソッドの使用中にロールバックやコミットを手動で実行する心配はありません。
+
+    use Illuminate\Support\Facades\DB;
 
     DB::transaction(function () {
-        DB::table('users')->update(['votes' => 1]);
+        DB::update('update users set votes = 1');
 
-        DB::table('posts')->delete();
+        DB::delete('delete from posts');
     });
 
 <a name="handling-deadlocks"></a>
 #### デッドロックの処理
 
-`transaction`メソッドは第２引数に、デッドロック発生時のトランザクション再試行回数を指定できます。試行回数を過ぎたら、例外が投げられます。
+`transaction`メソッドは、デッドロックが発生したときにトランザクションを再試行する回数をオプションとして、２番目の引数に取ります。試行回数が終了したばあいは、例外を投げます。
+
+    use Illuminate\Support\Facades\DB;
 
     DB::transaction(function () {
-        DB::table('users')->update(['votes' => 1]);
+        DB::update('update users set votes = 1');
 
-        DB::table('posts')->delete();
+        DB::delete('delete from posts');
     }, 5);
 
 <a name="manually-using-transactions"></a>
-#### 手動トランザクション
+#### トランザクションを手動で使用
 
-トランザクションを自分で開始し、ロールバックとコミットを完全にコントロールしたい場合は、`DB`ファサードの`beginTransaction`メソッドを使います。
+トランザクションを手動で開始し、ロールバックとコミットを自分で完全にコントロールしたい場合は、`DB`ファサードが提供する`beginTransaction`メソッドを使用します。
+
+    use Illuminate\Support\Facades\DB;
 
     DB::beginTransaction();
 
@@ -274,19 +299,19 @@ Read/Write接続を理解してもらうため、以下の例をご覧くださ�
 
     DB::rollBack();
 
-同様に、`commit`メソッドにより、トランザクションをコミットできます。
+`commit`メソッドにより、トランザクションをコミットできます。
 
     DB::commit();
 
-> {tip} `DB`ファサードのトランザクションメソッドは、[クエリビルダ](/docs/{{version}}/queries)と[Eloquent ORM](/docs/{{version}}/eloquent)のトランザクションを両方共にコントロールします。
+> {tip} `DB`ファサードのトランザクションメソッドは、[クエリビルダ](/docs/{{version}}/queries)と[Eloquent ORM](/docs/{{version}}/eloquent)の両方のトランザクションを制御します。
 
 <a name="connecting-to-the-database-cli"></a>
 ## データベースCLIへの接続
 
-データベースCLIに接続する場合は、`db` Artisanコマンドを使用します。
+データベースのCLIに接続する場合は、`db` Artisanコマンドを使用します。
 
     php artisan db
 
-必要に応じ、データベース接続名を指定し、デフォルト以外のデータベースに接続できます。
+必要に応じて、データベース接続名を指定して、デフォルト接続以外のデータベースへ接続できます。
 
     php artisan db mysql

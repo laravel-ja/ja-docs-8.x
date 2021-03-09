@@ -8,7 +8,7 @@
     - [名前付きルートへのリダイレクト](#redirecting-named-routes)
     - [コントローラアクションへのリダイレクト](#redirecting-controller-actions)
     - [外部ドメインへのリダイレクト](#redirecting-external-domains)
-    - [フラッシュデータを保存するリダイレクト](#redirecting-with-flashed-session-data)
+    - [一時保持データを保存するリダイレクト](#redirecting-with-flashed-session-data)
 - [他のレスポンスタイプ](#other-response-types)
     - [Viewレスポンス](#view-responses)
     - [JSONレスポンス](#json-responses)
@@ -43,13 +43,24 @@
 
 完全な`Response`インスタンスを返せば、レスポンスのHTTPステータスコードやヘッダをカスタマイズできます。`Response`インスタンスは、`Symfony\Component\HttpFoundation\Response`クラスを継承しており、HTTPレスポンスを構築するためにさまざまなメソッドを提供しています。
 
-    Route::get('home', function () {
+    Route::get('/home', function () {
         return response('Hello World', 200)
                       ->header('Content-Type', 'text/plain');
     });
 
+<a name="eloquent-models-and-collections"></a>
+#### Eloquentモデルとコレクション
+
+[Eloquent ORM](/docs/{{version}}/eloquent)モデルとコレクションをルートとコントローラから直接返すこともできます。これを行うと、Laravelはモデルの[非表示属性](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json)を尊重しながら、モデルやコレクションをJSONレスポンスへ自動的に変換します。
+
+    use App\Models\User;
+
+    Route::get('/user/{user}', function (User $user) {
+        return $user;
+    });
+
 <a name="attaching-headers-to-responses"></a>
-#### ヘッダの付加
+### レスポンスへのヘッダ付加
 
 レスポンスインスタンスをスラスラと構築できるように、ほとんどのレスポンスメソッドはチェーンとしてつなげられることを覚えておきましょう。たとえば、ユーザーにレスポンスを送り返す前に、`header`メソッドでいくつかのヘッダを追加できます。
 
@@ -62,47 +73,69 @@
 
     return response($content)
                 ->withHeaders([
-                    'Content-Type' => $type,
+        Route::get('/privacy', function () {
                     'X-Header-One' => 'Header Value',
                     'X-Header-Two' => 'Header Value',
                 ]);
-
+        Route::get('/terms', function () {
 <a name="cache-control-middleware"></a>
 #### キャッシュコントロール・ミドルウェア
 
 ルートグループへ`Cache-Control`ヘッダを簡単に指定できるよう、Laravelは`cache.headers`を用意しています。ディレクティブのリストの中で`etag`が指定されていると、レスポンスコンテンツのMD5ハッシュが、ETag識別子へ自動的にセットされます。
 
     Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
-        Route::get('privacy', function () {
+        Route::get('/privacy', function () {
             // ...
         });
 
-        Route::get('terms', function () {
+        Route::get('/terms', function () {
             // ...
         });
     });
 
 <a name="attaching-cookies-to-responses"></a>
-#### クッキーの付加
+### レスポンスへのクッキー付加
 
-レスポンスインスタンスの`cookie`メソッドで、レスポンスへ簡単にクッキーを付加できます。たとえば、`cookie`メソッドでクッキーを生成し、レスポンスインスタンスへ、さっと付加してみましょう。
+`cookie`メソッドを使用して、発信`Illuminate\Http\Response`インスタンスへクッキーを添付できます。Cookieが有効であると見なされる名前、値、および分数をメソッドへ渡す必要があります。
 
-    return response($content)
-                    ->header('Content-Type', $type)
-                    ->cookie('name', 'value', $minutes);
+    return response('Hello World')->cookie(
+        'name', 'value', $minutes
+    );
 
-`cookie`メソッドは、さらに使用機会が少ない引数をいくつか受け付けます。これらの引数は、全般的にPHPネイティブの[setcookie](https://secure.php.net/manual/en/function.setcookie.php)メソッドに指定する引数と、同じ目的、同じ意味合いを持っています。
+`cookie`メソッドはさらに、使用機会が少ない引数をいくつか受け付けます。これらの引数は、全般的にPHPネイティブの[setcookie](https://secure.php.net/manual/en/function.setcookie.php)メソッドに指定する引数と、同じ目的、同じ意味合いを持っています。
 
-    ->cookie($name, $value, $minutes, $path, $domain, $secure, $httpOnly)
+    return response('Hello World')->cookie(
+        'name', 'value', $minutes, $path, $domain, $secure, $httpOnly
+    );
 
-もしくは、アプリケーションから送り出すレスポンスへアタッチするクッキーを「キュー」するために、`Cookie`ファサードが使えます。`queue`メソッドは、`Cookie`インスタンスか`Cookie`インスタンスを生成するために必要な引数を受け取ります。こうしたクッキーは、ブラウザにレスポンスが送信される前にアタッチされます。
+クッキーが送信レスポンスとともに確実に送信したいが、そのレスポンスのインスタンスがまだない場合は、`Cookie`ファサードを使用して、送信時にレスポンスへ添付するためにそのクッキーを「キュー」へ投入できます。`queue`メソッドは、クッキーインスタンスの作成に必要な引数をとります。こうしたクッキーは、ブラウザへ送信される前に送信レスポンスへ添付します。
 
-    Cookie::queue(Cookie::make('name', 'value', $minutes));
+    use Illuminate\Support\Facades\Cookie;
 
     Cookie::queue('name', 'value', $minutes);
 
+<a name="generating-cookie-instances"></a>
+#### クッキーインスタンスの生成
+
+後ほどレスポンスインスタンスへアタッチできる`Symfony\Component\HttpFoundation\Cookie`インスタンスを生成したい場合は、グローバルな`cookie`ヘルパを使用します。このCookieは、レスポンスインスタンスへ添付しない限り、クライアントに返送されません。
+
+    $cookie = cookie('name', 'value', $minutes);
+
+    return response('Hello World')->cookie($cookie);
+
+<a name="expiring-cookies-early"></a>
+#### クッキーの早期期限切れ
+
+送信レスポンスの`withoutCookie`メソッドを介してクッキーを期限切れにすることにより、そのクッキーを削除できます。
+
+    return response('Hello World')->withoutCookie('name');
+
+送信レスポンスのインスタンスがまだない場合は、`Cookie`ファサードの`queue`メソッドを使用してCookieを期限切れにすることができます。
+
+    Cookie::queue(Cookie::forget('name'));
+
 <a name="cookies-and-encryption"></a>
-#### クッキーと暗号化
+### クッキーと暗号化
 
 Laravelにより生成されるクッキーは、クライアントにより変更されたり、読まれたりされないようにデフォルトで暗号化され、署名されます。アプリケーションで生成する特定のクッキーで暗号化を無効にしたい場合は、`app/Http/Middleware`ディレクトリ中に存在する、`App\Http\Middleware\EncryptCookies`ミドルウェアの`$except`プロパティで指定してください。
 
@@ -120,13 +153,13 @@ Laravelにより生成されるクッキーは、クライアントにより変�
 
 リダイレクトのレスポンスは`Illuminate\Http\RedirectResponse`クラスのインスタンスであり、ユーザーを他のURLへリダイレクトさせるために必要なしっかりとしたヘッダを含んでいます。`RedirectResponse`インスタンスを生成するにはさまざまな方法があります。一番簡単な方法は、グローバルな`redirect`ヘルパを使う方法です。
 
-    Route::get('dashboard', function () {
+    Route::get('/dashboard', function () {
         return redirect('home/dashboard');
     });
 
-たとえば送信されたフォーム内容にエラーがある場合など、直前のページヘユーザーをリダイレクトさせたい場合もあります。グローバルな`back`ヘルパ関数を使ってください。この機能は[セッション](/docs/{{version}}/session)を利用しているため、`back`関数を使用するルートは`web`ミドルウェアグループに属しているか、セッションミドルウェアが適用されることを確認してください。
+送信したフォームが無効な場合など、ユーザーを以前の場所にリダイレクトしたい場合があります。これは、グローバルな`back`ヘルパ関数を使用して行うことができます。この機能は[セッション](/docs/{{version}}/session)を利用するため、`back`関数を呼び出すルートが`web`ミドルウェアグループを使用していることを確認してください。
 
-    Route::post('user/profile', function () {
+    Route::post('/user/profile', function () {
         // レスポンスのバリデーション処理…
 
         return back()->withInput();
@@ -141,7 +174,7 @@ Laravelにより生成されるクッキーは、クライアントにより変�
 
 ルートにパラメーターがある場合は、`route`メソッドの第２引数として渡してください。
 
-    // profile/{id}のURIへのリダイレクト
+    // /profile/{id}のURIを持つルートの場合
 
     return redirect()->route('profile', ['id' => 1]);
 
@@ -150,11 +183,11 @@ Laravelにより生成されるクッキーは、クライアントにより変�
 
 Eloquentモデルの"ID"をルートパラメーターとしてリダイレクトする場合は、モデルをそのまま渡してください。IDは自動的にとり出されます。
 
-    // profile/{id}のURIへのリダイレクト
+    //  /profile/{id}のURIを持つルートの場合
 
     return redirect()->route('profile', [$user]);
 
-ルートパラメータに埋め込む値をカスタマイズしたい場合は、ルートパラメータ定義でカラムを指定するか（`profile/{id:slug}`）、Eloquentモデルの`getRouteKey`メソッドをオーバーライドします。
+ルートパラメータへ配置する値をカスタマイズする場合は、ルートパラメータ定義(`/profile/{id:slug}`)でカラムを指定するか、Eloquentモデルの`getRouteKey`メソッドをオーバーライドします。
 
     /**
      * モデルのルートキー値の取得
@@ -171,9 +204,9 @@ Eloquentモデルの"ID"をルートパラメーターとしてリダイレク�
 
 [コントローラアクション](/docs/{{version}}/controllers)に対するリダイレクトを生成することもできます。そのためには、コントローラとアクションの名前を`action`メソッドに渡してください。
 
-    use App\Http\Controllers\HomeController;
+    use App\Http\Controllers\UserController;
 
-    return redirect()->action([HomeController::class, 'index']);
+    return redirect()->action([UserController::class, 'index']);
 
 コントローラルートにパラメーターが必要ならば、`action`メソッドの第２引数として渡してください。
 
@@ -193,8 +226,8 @@ Eloquentモデルの"ID"をルートパラメーターとしてリダイレク�
 
 新しいURLへリダイレクトし、[セッションへフラッシュデータを保存する](/docs/{{version}}/session#flash-data)のは、一度にまとめて行われる典型的な作業です。典型的な使い方は、あるアクションが実行成功した後に、実効成功メッセージをフラッシュデータとしてセッションに保存する場合でしょう。これに便利なように、`RedirectResponse`インスタンスを生成し、メソッドチェーンを一つだけさっと書けば、データをセッションへ保存できるようになっています。
 
-    Route::post('user/profile', function () {
-        // ユーザープロフィールの更新処理…
+    Route::post('/user/profile', function () {
+        // …
 
         return redirect('dashboard')->with('status', 'Profile updated!');
     });
@@ -206,6 +239,13 @@ Eloquentモデルの"ID"をルートパラメーターとしてリダイレク�
             {{ session('status') }}
         </div>
     @endif
+
+<a name="redirecting-with-input"></a>
+#### 入力と共にリダイレクト
+
+ユーザーを新しい場所にリダイレクトする前に、`RedirectResponse`インスタンスが提供する`withInput`メソッドを使用して、現在のリクエストの入力データをセッションへ一時保存できます。これは通常、ユーザーがバリデーションエラーに遭遇した場合に行います。入力をセッションに一時保存したら、次のリクエスト中で簡単に[取得](/docs/{{version}}/requests#retrieveing-old-input)してフォームを再入力できます。
+
+    return back()->withInput();
 
 <a name="other-response-types"></a>
 ## 他のレスポンスタイプ
@@ -221,7 +261,7 @@ Eloquentモデルの"ID"をルートパラメーターとしてリダイレク�
                 ->view('hello', $data, 200)
                 ->header('Content-Type', $type);
 
-もちろん、カスタムHTTPステータスコードやヘッダの指定が不必要であれば、シンプルにグローバル`view`ヘルパ関数を使用することもできます。
+もちろん、カスタムHTTPステータスコードやカスタムヘッダを渡す必要がない場合は、グローバルな`view`ヘルパ関数が使用できます。
 
 <a name="json-responses"></a>
 ### JSONレスポンス
@@ -242,20 +282,20 @@ JSONPレスポンスを生成したい場合は、`json`メソッドと`withCall
 <a name="file-downloads"></a>
 ### Fileダウンロード
 
-`download`メソッドは指定したパスのファイルをダウンロードように、ブラウザへ強要するレスポンスを生成するために使用します。`download`メソッドはファイル名を第２引数として受け取り、ユーザーがダウンロードするファイル名になります。第３引数にHTTPヘッダの配列を渡すこともできます。
+`download`メソッドを使用して、ユーザーのブラウザに対し、指定パスのファイルをダウンロードするように強制するレスポンスを生成できます。`download`メソッドは、メソッドの引数の２番目にファイル名を取ります。これにより、ユーザーがファイルをダウンロードするときに表示するファイル名が決まります。最後に、HTTPヘッダの配列をメソッドの３番目の引数として渡すこともできます。
 
     return response()->download($pathToFile);
 
     return response()->download($pathToFile, $name, $headers);
-
-    return response()->download($pathToFile)->deleteFileAfterSend();
 
 > {note} ファイルダウンロードを管理しているSymfony HttpFoundationクラスは、ASCIIのダウンロードファイル名を指定するよう要求しています。
 
 <a name="streamed-downloads"></a>
 #### ストリームダウンロード
 
-操作するコンテンツをディスクへ書き込まずに、指定した操作の文字列レスポンスをダウンロード可能なレスポンスへ変えたい場合もあります。そうしたシナリオでは、`streamDownload`メソッドを使用します。このメソッドは引数として、コールバック、ファイル名、それにオプションとしてヘッダの配列を受け取ります。
+特定の操作の文字列レスポンスを、操作の内容をディスクに書き込まずにダウンロード可能なレスポンスへ変換したい場合もあるでしょう。このシナリオでは、`streamDownload`メソッドを使用します。このメソッドは、コールバック、ファイル名、およびオプションのヘッダ配列を引数に取ります。
+
+    use App\Services\GitHub;
 
     return response()->streamDownload(function () {
         echo GitHub::api('repo')
@@ -275,7 +315,7 @@ JSONPレスポンスを生成したい場合は、`json`メソッドと`withCall
 <a name="response-macros"></a>
 ## レスポンスマクロ
 
-いろいろなルートやコントローラで、再利用するためのカスタムレスポンスを定義したい場合は`Response`ファサードの`macro`メソッドが使用できます。たとえば、[サービスプロバイダ](/docs/{{version}}/providers)の`boot`メソッドで定義します。
+さまざまなルートやコントローラで再利用できるカスタムレスポンスを定義する場合は、`Response`ファサードで`macro`メソッドを使用してください。通常、このメソッドは、`App\Providers\AppProvider`サービスプロバイダなど、アプリケーションの[サービスプロバイダ](/docs/{{version}}/provider)の１つの`boot`メソッドから呼び出す必要があります。
 
     <?php
 
@@ -284,10 +324,10 @@ JSONPレスポンスを生成したい場合は、`json`メソッドと`withCall
     use Illuminate\Support\Facades\Response;
     use Illuminate\Support\ServiceProvider;
 
-    class ResponseMacroServiceProvider extends ServiceProvider
+    class AppServiceProvider extends ServiceProvider
     {
         /**
-         * アプリケーションのレスポンスマクロ登録
+         * 全アプリケーションサービスの初期起動処理
          *
          * @return void
          */
@@ -299,6 +339,6 @@ JSONPレスポンスを生成したい場合は、`json`メソッドと`withCall
         }
     }
 
-`macro`メソッドは登録名を第１引数、クロージャを第２引数に取ります。マクロのクロージャは`ResponseFactory`の実装か`response`ヘルパに対し、登録名を呼び出すことで実行されます。
+`macro`関数は、最初の引数に名前を受け入れ、２番目の引数にクロージャを取ります。マクロのクロージャは、`ResponseFactory`実装または`response`ヘルパからマクロ名を呼び出すときに実行されます。
 
     return response()->caps('foo');

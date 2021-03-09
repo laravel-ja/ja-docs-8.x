@@ -1,10 +1,11 @@
 # Laravel Passport
 
 - [イントロダクション](#introduction)
-- [Passportのアップグレード](#upgrading)
+    - [Passportか？Sanctumか？？](#passport-or-sanctum)
 - [インストール](#installation)
     - [Passportのデプロイ](#deploying-passport)
     - [マイグレーションのカスタマイズ](#migration-customization)
+    - [Passportのアップグレード](#upgrading-passport)
 - [設定](#configuration)
     - [クライアントシークレットハッシュ](#client-secret-hashing)
     - [トークン持続時間](#token-lifetimes)
@@ -45,14 +46,16 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelでは古典的なログインフォームによる認証は、簡単に実行できるようになっています。では、APIに関してはどうでしょうか？通常APIでは、ユーザーの認証にトークンを使用し、リクエスト間のセッション状態は保持されません。Laravelアプリケーションのために、完全なOAuth2サーバの実装を提供するLaravel Passportを使えば、短時間で簡単にAPI認証ができます。Passportは、Andy MillingtonとSimon Hampによりメンテナンスされている、[League OAuth2サーバ](https://github.com/thephpleague/oauth2-server)上に構築しています。
+LaravelPassportは、Laravelアプリケーションに完全なOAuth2サーバ実装を数分で提供します。Passportは、Andy MillingtonとSimon Hampがメンテナンスしている[League OAuth2 server](https://github.com/thephpleague/oauth2-server)の上に構築されています。
 
 > {note} このドキュメントは、皆さんがOAuth2に慣れていることを前提にしています。OAuth2について知らなければ、この先を続けて読む前に、一般的な[用語](https://oauth2.thephpleague.com/terminology/)とOAuth2の機能について予習してください。
 
-<a name="upgrading"></a>
-## Passportのアップグレード
+<a name="passport-or-sanctum"></a>
+### Passportか？Sanctumか？？
 
-Passportの新しいメジャーバーションへアップグレードする場合は、注意深く[アップグレードガイド](https://github.com/laravel/passport/blob/master/UPGRADE.md)をレビューしてください。
+始める前に、アプリケーションがLaravel Passport、もしくは[Laravel Sanctum](/docs/{{version}}/sanctum)のどちらがより適しているかを検討することをお勧めします。アプリケーションが絶対にOAuth2をサポートする必要がある場合は、Laravel　Passportを使用する必要があります。
+
+しかし、シングルページアプリケーションやモバイルアプリケーションを認証したり、APIトークンを発行したりする場合は、[Laravel Sanctum](/docs/{{version}}/sanctum)を使用する必要があります。Laravel SanctumはOAuth2をサポートしていません。ただし、はるかにシンプルななAPI認証開発エクスペリエンスを提供します。
 
 <a name="installation"></a>
 ## インストール
@@ -61,11 +64,11 @@ Composerパッケージマネージャにより、Passportをインストール�
 
     composer require laravel/passport
 
-Passportサービスプロバイダはフレームワークに対し、自身のマイグレーションディレクトリを登録します。そのためにパッケージインストール後、データベースのマイグレーションを実行する必要があります。Passportのマイグレーションは、アプリケーションで必要となる、クライアントとアクセストークンを保存しておくテーブルを作成します。
+Passportの[サービスプロバイダ](/docs/{{version}}/provider)は独自のデータベースマイグレーションディレクトリを登録しているため、パッケージのインストール後にデータベースをマイグレーションする必要があります。Passportのマイグレーションにより、アプリケーションがOAuth2クライアントとアクセストークンを保存するために必要なテーブルが作成されます。
 
     php artisan migrate
 
-次に、`passport:install`コマンドを実行します。このコマンドは安全なアクセストークンを生成するのに必要な暗号キーを作成します。さらにアクセストークンを生成するために使用する、「パーソナルアクセス」クライアントと「パスワードグラント」クライアントも作成します。
+次に、`passport:install` Artisanコマンドを実行する必要があります。このコマンドは、安全なアクセストークンを生成するために必要な暗号化キーを作成します。さらに、このコマンドは、アクセストークンの生成に使用される「個人アクセス」および「パスワード許可」クライアントを作成します。
 
     php artisan passport:install
 
@@ -87,7 +90,7 @@ Passportサービスプロバイダはフレームワークに対し、自身の
         use HasApiTokens, HasFactory, Notifiable;
     }
 
-次に、`AuthServiceProvider`の`boot`メソッドから、`Passport::routes`メソッドを呼び出す必要があります。このメソッドはアクセストークンの発行、アクセストークンの失効、クライアントとパーソナルアクセストークンの管理のルートを登録します。
+次に、`App\Providers\AuthServiceProvider`の`boot`メソッド内で`Passport::routes`メソッドを呼び出す必要があります。このメソッドは、アクセストークンを発行し、アクセストークン、クライアント、およびパーソナルアクセストークンを取り消すために必要なルートを登録します。
 
     <?php
 
@@ -121,7 +124,7 @@ Passportサービスプロバイダはフレームワークに対し、自身の
         }
     }
 
-最後に、`config/auth.php`設定ファイル中で、ガードの`api`認証の`driver`オプションを`passport`へ変更します。これにより、認証のAPIリクエストが送信された時に、パスポートの`TokenGuard`を使用するように、アプリケーションへ指示します。
+最後に、アプリケーションの`config/auth.php`設定ファイルで、`api`認証ガードの`driver`オプションを`passport`に設定する必要があります。これにより、受信APIリクエストを認証するときにPassportの`TokenGuard`を使用するようにアプリケーションに指示します。
 
     'guards' => [
         'web' => [
@@ -138,18 +141,18 @@ Passportサービスプロバイダはフレームワークに対し、自身の
 <a name="client-uuids"></a>
 #### クライアントUUID
 
-`passport:install`コマンドは`--uuids`オプションを指定して実行できます。このフラグはPassportへ`Client`モデルの主キー値として自動増分整数の代わりにUUIDを使用することを指示します。`--uuids`オプションを付けて`passport:install`コマンドを実行したら、Passportのデフォルトマイグレーションの無効化に関して追加の指示が与えられます。
+`--uuids`オプションを指定して`passport:install`コマンドを実行することもできます。このオプションは、Passportの`Client`モデルの主キー値として整数を自動増分する代わりにUUIDを使用することをPassportに指示します。`--uuids`オプションを指定して`passport:install`コマンドを実行すると、Passportのデフォルトのマイグレーションを無効にするための追加の手順が表示されます。
 
     php artisan passport:install --uuids
 
 <a name="deploying-passport"></a>
 ### Passportのデプロイ
 
-Passportを実働サーバへ最初にデプロイするとき、`passport:keys`コマンドを実行する必要があるでしょう。このコマンドは、Passportがアクセストークンを生成するために必要な、暗号化キーを生成するコマンドです。生成されたキーは、通常ソースコントロールには含めません。
+Passportをアプリケーションのサーバに初めてデプロイするときは、`passport:keys`コマンドを実行する必要があります。このコマンドは、アクセストークンを生成するためにPassportが必要とする暗号化キーを生成します。生成されたキーは通常、ソース管理しません。
 
     php artisan passport:keys
 
-必要があれば、Passportのキーを読み込むパスを定義できます。`Passport::loadKeysFrom`メソッドを使用します。
+必要に応じて、Passportのキーをロードするパスを定義できます。これを実現するには、`Passport::loadKeysFrom`メソッドを使用できます。通常、このメソッドは、アプリケーションの`App\Providers\AuthServiceProvider`クラスの`boot`メソッドから呼び出す必要があります。
 
     /**
      * 全認証／認可の登録
@@ -162,23 +165,39 @@ Passportを実働サーバへ最初にデプロイするとき、`passport:keys`
 
         Passport::routes();
 
-        Passport::loadKeysFrom('/secret-keys/oauth');
+        Passport::loadKeysFrom(__DIR__.'/../secrets/oauth');
     }
 
-さらに、`php artisan vendor:publish --tag=passport-config`により、Passportの設定ファイルをリソース公開することもできます。これにより、環境変数から暗号化キーをロードするためのオプションを提供しています。
+<a name="loading-keys-from-the-environment"></a>
+#### 環境からキーのロード
 
-    PASSPORT_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
-    <private key here>
-    -----END RSA PRIVATE KEY-----"
+または、`vendor:publish` Artisanコマンドを使用してPassportの設定ファイルをリソース公開することもできます。
 
-    PASSPORT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
-    <public key here>
-    -----END PUBLIC KEY-----"
+    php artisan vendor:publish --tag=passport-config
+
+設定ファイルをリソース公開した後、環境変数として定義することにより、アプリケーションの暗号化キーをロードできます。
+
+```bash
+PASSPORT_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+<private key here>
+-----END RSA PRIVATE KEY-----"
+
+PASSPORT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+<public key here>
+-----END PUBLIC KEY-----"
+```
 
 <a name="migration-customization"></a>
 ### マイグレーションのカスタマイズ
 
-Passportのデフォルトマイグレーションを使用しない場合、`AppServiceProvider`の`register`メソッドで`Passport::ignoreMigrations`メソッドを呼び出す必用があります。`php artisan vendor:publish --tag=passport-migrations`により、デフォルトマイグレーションをエクスポートできます。
+Passportのデフォルトのマイグレーションを使用しない場合は、`App\Providers\AppServiceProvider`クラスの`register`メソッドで`Passport::ignoreMigrations`メソッドを呼び出す必要があります。`vendor:publish` Artisanコマンドを使用してデフォルトのマイグレーションをエクスポートできます。
+
+    php artisan vendor:publish --tag=passport-migrations
+
+<a name="upgrading-passport"></a>
+### Passportのアップグレード
+
+Passportの新しいメジャーバージョンにアップグレードするときは、[アップグレードガイド](https://github.com/laravel/passport/blob/master/UPGRADE.md)を注意深く確認することが重要です。
 
 <a name="configuration"></a>
 ## 設定
@@ -186,16 +205,18 @@ Passportのデフォルトマイグレーションを使用しない場合、`Ap
 <a name="client-secret-hashing"></a>
 ### クライアントシークレットハッシュ
 
-クライアントのシークレットをデータベース保存時にハッシュ化したい場合は、`AppServiceProvider`の`boot`メソッドで`Passport::hashClientSecrets`メソッドを呼び出す必用があります。
+データベースに保存するときにクライアントのシークレットをハッシュする場合は、`App\Providers\AuthServiceProvider`クラスの`boot`メソッドで`Passport::hashClientSecrets`メソッドを呼び出す必要があります。
+
+    use Laravel\Passport\Passport;
 
     Passport::hashClientSecrets();
 
-一度有効にすると、すべてのクライアントのシークレットはクライアント作成時に一度だけ表示されます。データベースには平文のクライアントシークレット値はまったく保存されないため、失われたら回復は不可能です。
+有効にすると、すべてのクライアントシークレットは、作成した直後のみユーザーへ表示されます。平文テキストのクライアントシークレット値がデータベースに保存されることはないため、シークレットの値が失われた場合にその値を回復することはできません。
 
 <a name="token-lifetimes"></a>
 ### トークン持続時間
 
-Passportはデフォルトで、一年間有効な長期間持続するアクセストークンを発行します。トークンの持続時間をもっと短くしたい場合は、`tokensExpireIn`と`refreshTokensExpireIn`、`personalAccessTokensExpireIn`メソッドを使ってください。これらのメソッドは、`AuthServiceProvider`の`boot`メソッドから呼び出してください。
+デフォルトでは、Passportは１年後に有効期限が切れる長期アクセストークンを発行します。より長い／短いトークン有効期間を設定したい場合は、`tokensExpireIn`、`refreshTokensExpireIn`、`personalAccessTokensExpireIn`メソッドを使用します。これらのメソッドは、アプリケーションの`App\Providers\AuthServiceProvider`クラスの`boot`メソッドで呼び出す必要があります。
 
     /**
      * 全認証／認可の登録
@@ -209,18 +230,16 @@ Passportはデフォルトで、一年間有効な長期間持続するアクセ
         Passport::routes();
 
         Passport::tokensExpireIn(now()->addDays(15));
-
         Passport::refreshTokensExpireIn(now()->addDays(30));
-
         Passport::personalAccessTokensExpireIn(now()->addMonths(6));
     }
 
-> {note} Passportデータベーステーブルの `expires_at`カラムは読み取り専用で、表示目的のみです。トークン発行時にPassportは、署名暗号化されたトークン内へ有効期限情報を格納します。トークンを無効にする必要がある場合は、トークンを取り消す必要があります。
+> {note} Passportのデータベーステーブルの`expires_at`カラムは読み取り専用であり、表示のみを目的としています。トークンを発行するとき、Passportは署名および暗号化されたトークン内に有効期限情報を保存します。トークンを無効にする必要がある場合は、[取り消す](#revoking-tokens)必要があります。
 
 <a name="overriding-default-models"></a>
 ### デフォルトモデルのオーバーライド
 
-Passportが内部で使用するモデルは自由に拡張できます。
+独自のモデルを定義し、対応するPassportモデルを拡張することにより、Passportにより内部的に使用されるモデルを自由に拡張できます。
 
     use Laravel\Passport\Client as PassportClient;
 
@@ -229,7 +248,7 @@ Passportが内部で使用するモデルは自由に拡張できます。
         // ...
     }
 
-それから、`Passport`クラスを通して、カスタムモデルを指示します。
+モデルを定義した後、`Laravel\Passport\Passport`クラスを介してカスタムモデルを使用するようにPassportに指示します。通常、アプリケーションの`App\Providers\AuthServiceProvider`クラスの`boot`メソッドでカスタムモデルをPassportへ知らせる必要があります。
 
     use App\Models\Passport\AuthCode;
     use App\Models\Passport\Client;
@@ -256,7 +275,7 @@ Passportが内部で使用するモデルは自由に拡張できます。
 <a name="issuing-access-tokens"></a>
 ## アクセストークンの発行
 
-OAuth2で認可コードを使いこなせるかは、どの程度開発者がOAuth2に慣れているかによります。認可コードを使用する時、クライアントアプリケーションはそのクライアントに対するアクセストークン発行のリクエストが許可されようと、拒絶されようと、あなたのサーバにそのユーザーをリダイレクトします。
+認証コードを介してOAuth2を使用することは、OAuth2を扱う時にほとんどの開発者が精通している方法です。認証コードを使用する場合、クライアントアプリケーションはユーザーをサーバにリダイレクトし、そこでユーザーはクライアントへアクセストークンを発行するリクエストを承認または拒否します。
 
 <a name="managing-clients"></a>
 ### クライアント管理
@@ -272,16 +291,16 @@ OAuth2で認可コードを使いこなせるかは、どの程度開発者がOA
 
 **リダイレクトURL**
 
-クライアントに対するリダイレクトURLを複数許可したければ、`passport:client`コマンドで入力を促された時にURLをカンマで区切り指定します。
+クライアントに複数のリダイレクトURLを許可する場合は、`passport:client`コマンドでURLの入力を求められたときに、カンマ区切りのリストを使用して指定してください。カンマを含むURLは、URLエンコードする必要があります。
 
-    http://example.com/callback,http://examplefoo.com/callback
-
-> {note} カンマを含んでいるURLは、エンコードしてください。
+```bash
+http://example.com/callback,http://examplefoo.com/callback
+```
 
 <a name="clients-json-api"></a>
 #### JSON API
 
-皆さんのアプリのユーザーは`client`コマンドを使用できないわけですから、Passportはクライアント作成のJSON APIを提供しています。これにより、クライアントを作成、更新、削除するコントローラをわざわざコードする手間を省略できます。
+アプリケーションのユーザーは`client`コマンドを利用できないため、Passportはクライアントの作成に使用できるJSON APIを提供します。これにより、クライアントを作成、更新、および削除するためにコントローラを手動でコーディングする手間が省けます。
 
 しかし、ユーザーにクライアントを管理してもらうダッシュボードを提供するために、PassportのJSON APIと皆さんのフロントエンドを結合する必要があります。以降から、クライアントを管理するためのAPIエンドポイントをすべて説明します。エンドポイントへのHTTPリクエスト作成をデモンストレートするため利便性を考慮し、[Axios](https://github.com/mzabriskie/axios)を使用していきましょう。
 
@@ -353,18 +372,21 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
 
 クライアントが作成されると、開発者はクライアントIDとシークレットを使用し、あなたのアプリケーションへ許可コードとアクセストークンをリクエストするでしょう。まず、API利用側アプリケーションは以下のように、あなたのアプリケーションの`/oauth/authorize`ルートへのリダイレクトリクエストを作成する必要があります。
 
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Str;
+
     Route::get('/redirect', function (Request $request) {
         $request->session()->put('state', $state = Str::random(40));
 
         $query = http_build_query([
             'client_id' => 'client-id',
-            'redirect_uri' => 'http://example.com/callback',
+            'redirect_uri' => 'http://third-party-app.com/callback',
             'response_type' => 'code',
             'scope' => '',
             'state' => $state,
         ]);
 
-        return redirect('http://your-app.com/oauth/authorize?'.$query);
+        return redirect('http://passport-app.com/oauth/authorize?'.$query);
     });
 
 > {tip} `/oauth/authorize`ルートは、すでに`Passport::routes`メソッドが定義づけていることを覚えておいてください。このルートを自分で定義する必要はありません。
@@ -374,7 +396,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
 
 許可のリクエストを受け取ると、Passportはユーザーがその許可のリクエストを承認するか、拒絶するかのテンプレートを自動的に表示します。ユーザーが許可した場合、API利用側アプリケーションが指定した`redirect_uri`へリダイレクトします。`redirect_uri`は、クライアントを作成した時に指定した`redirect`のURLと一致する必要があります。
 
-許可の承認ページをカスタマイズしたい場合は、`vendor:publish` Artisanコマンドを使い、Passportのビューを公開することでリソースを用意する必要があります。リソース公開されたビューは、`resources/views/vendor/passport`へ設置されます。
+承認画面をカスタマイズする場合は、`vendor:publish` Artisanコマンドを使用してPassportのビューをリソース公開します。公開したビューは、`resources/views/vendor/passport`ディレクトリに配置されます。
 
     php artisan vendor:publish --tag=passport-views
 
@@ -402,7 +424,10 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
 <a name="requesting-tokens-converting-authorization-codes-to-access-tokens"></a>
 #### 許可コードからアクセストークンへの変換
 
-ユーザーが許可リクエストを承認したら、API使用側アプリケーションへリダイレクトされます。使用側は最初に、リダイレクトする前に保存していた値と、`state`パラメータを確認する必要があります。stateパラメータが一致したら、使用側はあなたのアプリケーションへアクセストークンをリクエストするための`POST`リクエストを送信する必要があります。そのリクエストには、ユーザーが許可リクエストを承認した時にあなたのアプリケーションが発行した、許可コードを含める必要があります。この例として、Guzzle HTTPライブラリで`POST`リクエストを作成してみましょう。
+ユーザーが承認リクエストを承認すると、ユーザーは利用側アプリケーションにリダイレクトされます。利用側はまず、リダイレクトの前に保存した値に対して`state`パラメーターを確認する必要があります。状態パラメータが一致する場合、利用側はアプリケーションへ`POST`リクエストを発行してアクセストークンをリクエストする必要があります。リクエストには、ユーザーが認証リクエストを承認したときにアプリケーションが発行した認証コードを含める必要があります。
+
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Http;
 
     Route::get('/callback', function (Request $request) {
         $state = $request->session()->pull('state');
@@ -412,24 +437,20 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
             InvalidArgumentException::class
         );
 
-        $http = new GuzzleHttp\Client;
-
-        $response = $http->post('http://your-app.com/oauth/token', [
-            'form_params' => [
-                'grant_type' => 'authorization_code',
-                'client_id' => 'client-id',
-                'client_secret' => 'client-secret',
-                'redirect_uri' => 'http://example.com/callback',
-                'code' => $request->code,
-            ],
+        $response = Http::asForm()->post('http://passport-app.com/oauth/token', [
+            'grant_type' => 'authorization_code',
+            'client_id' => 'client-id',
+            'client_secret' => 'client-secret',
+            'redirect_uri' => 'http://third-party-app.com/callback',
+            'code' => $request->code,
         ]);
 
-        return json_decode((string) $response->getBody(), true);
+        return $response->json();
     });
 
 この`/oauth/token`ルートは、`access_token`、`refresh_token`、`expires_in`属性を含むJSONレスポンスを返します。`expires_in`属性は、アクセストークンが無効になるまでの秒数を含んでいます。
 
-> {tip} `/oauth/authorize`ルートと同様に、`/oauth/token`ルートは`Passport::routes`メソッドが定義しています。このルートを自分で定義する必要はありません。デフォルトでこのルートは、`ThrottleRequests`ミドルウェアの設定を利用し、アクセス回数制限されています。
+> {tip} `/oauth/authorize`ルートと同様に、`/oauth/token`ルートは`Passport::routes`メソッドによって定義されます。このルートを手動で定義する必要はありません。
 
 <a name="tokens-json-api"></a>
 #### JSON API
@@ -456,31 +477,32 @@ Passportには、承認済みアクセストークンを管理するためのJSO
 <a name="refreshing-tokens"></a>
 ### トークンのリフレッシュ
 
-アプリケーションが短い有効期限のアクセストークンを発行している場合に、ユーザーはアクセストークンを発行する時に提供しているリフレッシュトークンを使用し、アクセストークンをリフレッシュする必要が起きます。以下はGuzzle HTTPライブラリを使用し、トークンをリフレッシュする例です。
+アプリケーションが短期間のアクセストークンを発行する場合、ユーザーはアクセストークンが発行されたときに提供された更新トークンを利用して、アクセストークンを更新する必要があります。
 
-    $http = new GuzzleHttp\Client;
+    use Illuminate\Support\Facades\Http;
 
-    $response = $http->post('http://your-app.com/oauth/token', [
-        'form_params' => [
-            'grant_type' => 'refresh_token',
-            'refresh_token' => 'the-refresh-token',
-            'client_id' => 'client-id',
-            'client_secret' => 'client-secret',
-            'scope' => '',
-        ],
+    $response = Http::asForm()->post('http://passport-app.com/oauth/token', [
+        'grant_type' => 'refresh_token',
+        'refresh_token' => 'the-refresh-token',
+        'client_id' => 'client-id',
+        'client_secret' => 'client-secret',
+        'scope' => '',
     ]);
 
-    return json_decode((string) $response->getBody(), true);
+    return $response->json();
 
 この`/oauth/token`ルートは、`access_token`、`refresh_token`、`expires_in`属性を含むJSONレスポンスを返します。`expires_in`属性は、アクセストークンが無効になるまでの秒数を含んでいます。
 
 <a name="revoking-tokens"></a>
 ### トークンの取り消し
 
-`TokenRepository`の`revokeAccessToken`メソッドを利用し、トークンを取り消せます。トークンのリフレッシュトークンの取り消しは`RefreshTokenRepository`の`revokeRefreshTokensByAccessTokenId`メソッドを使います。
+`Laravel\Passport\TokenRepository`の`revokeAccessToken`メソッドを使用してトークンを取り消すことができます。`Laravel\Passport\RefreshTokenRepository`の`revokeRefreshTokensByAccessTokenId`メソッドを使用して、トークンの更新トークンを取り消すことができます。これらのクラスは、Laravelの[サービスコンテナ](/docs/{{version}}/container)を使用して解決できます。
 
-    $tokenRepository = app('Laravel\Passport\TokenRepository');
-    $refreshTokenRepository = app('Laravel\Passport\RefreshTokenRepository');
+    use Laravel\Passport\TokenRepository;
+    use Laravel\Passport\RefreshTokenRepository;
+
+    $tokenRepository = app(TokenRepository::class);
+    $refreshTokenRepository = app(RefreshTokenRepository::class);
 
     // アクセストークンの取り消し
     $tokenRepository->revokeAccessToken($tokenId);
@@ -491,7 +513,7 @@ Passportには、承認済みアクセストークンを管理するためのJSO
 <a name="purging-tokens"></a>
 ### トークンの破棄
 
-トークンが無効、もしくは期限切れになったら、データベースから一掃する必要があります。Passportはこのためのコマンドを用意しています。
+トークンが取り消されたり期限切れになったりした場合は、データベースからトークンを削除することを推奨します。Passportに含まれている`passport:purge` Artisanコマンドでこれを実行できます。
 
     # 無効・期限切れのトークンと認可コードを破棄する
     php artisan passport:purge
@@ -502,7 +524,7 @@ Passportには、承認済みアクセストークンを管理するためのJSO
     # 期限切れのトークンと認可コードのみ破棄する
     php artisan passport:purge --expired
 
-スケジュールに従い自動的にトークンを整理するため、コンソールの`Kernel`クラスで[スケジュール済みジョブ](/docs/{{version}}/scheduling)として設定することも可能です。
+また、アプリケーションの`App\Console\Kernel`クラスで[ジョブの実行スケジュール](/docs/{{version}}/scheduleing)を設定して、スケジュールに従ってトークンを自動的に整理することもできます。
 
     /**
      * アプリケーションのコマンドスケジュール定義
@@ -523,7 +545,7 @@ Passportには、承認済みアクセストークンを管理するためのJSO
 <a name="creating-a-auth-pkce-grant-client"></a>
 ### クライアント生成
 
-PKCEを使用した認可コードグラントを通じトークンを発行する前に、PKCE可能なクライアントを生成する必要があります。`passport:client`コマンドを`--public`オプション付きで実行してください。
+アプリケーションがPKCEでの認証コードグラントを介してトークンを発行する前に、PKCE対応のクライアントを作成する必要があります。これは、`passport:client` Artisanコマンドと`--public`オプションを使用して行えます。
 
     php artisan passport:client --public
 
@@ -535,7 +557,8 @@ PKCEを使用した認可コードグラントを通じトークンを発行す�
 
 この認可グラントではクライアント秘密コードが提供されないため、開発者はトークンを要求するためにコードベリファイヤとコードチャレンジのコンビネーションを生成する必要があります。
 
-コードベリファイヤは[RFC 7636仕様](https://tools.ietf.org/html/rfc7636)で定義されている通り、４３から１２８文字の文字、数字、`"-"`、`"."`、`"_"`、`"~"`を含んだランダムな文字列の必要があります。
+コードベリファイアは、[RFC 7636 仕様](https://tools.ietf.org/html/rfc7636)で定義されているように、文字、数字、`"-"`、`"."`、`"_"`、`"~"`文字を含む４３文字から１２８文字のランダムな文字列でなければなりません。
+
 
 コードチャレンジはURL／ファイルネームセーフな文字をBase64エンコードしたものである必要があります。文字列終端の`'='`文字を削除し、ラインブレイクやホワイトスペースを含まず、その他はそのままにします。
 
@@ -548,10 +571,15 @@ PKCEを使用した認可コードグラントを通じトークンを発行す�
 
 クライアントが生成できたら、アプリケーションから認可コードとアクセストークンをリクエストするために、クライアントIDと生成したコードベリファイヤ、コードチャレンジを使用します。最初に、認可要求側のアプリケーションは、あなたのアプリケーションの`/oauth/authorize`ルートへのリダイレクトリクエストを生成する必要があります。
 
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Str;
+
     Route::get('/redirect', function (Request $request) {
         $request->session()->put('state', $state = Str::random(40));
 
-        $request->session()->put('code_verifier', $code_verifier = Str::random(128));
+        $request->session()->put(
+            'code_verifier', $code_verifier = Str::random(128)
+        );
 
         $codeChallenge = strtr(rtrim(
             base64_encode(hash('sha256', $code_verifier, true))
@@ -559,7 +587,7 @@ PKCEを使用した認可コードグラントを通じトークンを発行す�
 
         $query = http_build_query([
             'client_id' => 'client-id',
-            'redirect_uri' => 'http://example.com/callback',
+            'redirect_uri' => 'http://third-party-app.com/callback',
             'response_type' => 'code',
             'scope' => '',
             'state' => $state,
@@ -577,6 +605,9 @@ PKCEを使用した認可コードグラントを通じトークンを発行す�
 
 stateパラメータが一致したら、要求側はアクセストークンをリクエストするために、あなたのアプリケーションへ`POST`リクエストを発行する必要があります。そのリクエストは最初に生成したコードベリファイヤと同時に、ユーザーが認可リクエストを承認したときにあなたのアプリケーションが発行した認可コードを持っている必要があります。
 
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Http;
+
     Route::get('/callback', function (Request $request) {
         $state = $request->session()->pull('state');
 
@@ -587,28 +618,26 @@ stateパラメータが一致したら、要求側はアクセストークンを
             InvalidArgumentException::class
         );
 
-        $response = (new GuzzleHttp\Client)->post('http://your-app.com/oauth/token', [
-            'form_params' => [
-                'grant_type' => 'authorization_code',
-                'client_id' => 'client-id',
-                'redirect_uri' => 'http://example.com/callback',
-                'code_verifier' => $codeVerifier,
-                'code' => $request->code,
-            ],
+        $response = Http::asForm()->post('http://passport-app.com/oauth/token', [
+            'grant_type' => 'authorization_code',
+            'client_id' => 'client-id',
+            'redirect_uri' => 'http://third-party-app.com/callback',
+            'code_verifier' => $codeVerifier,
+            'code' => $request->code,
         ]);
 
-        return json_decode((string) $response->getBody(), true);
+        return $response->json();
     });
 
 <a name="password-grant-tokens"></a>
 ## パスワードグラントのトークン
 
-OAuth2のパスワードグラントはモバイルアプリケーションのような、その他のファーストパーティクライアントへ、メールアドレス／ユーザー名とパスワードを使ったアクセストークンの取得を提供します。これによりOAuth2のAuthorization Codeリダイレクトフローに完全に従うことをユーザーへ要求せずとも、アクセストークンを安全に発行できます。
+OAuth2パスワードグラントにより、モバイルアプリケーションなどの他のファーストパーティクライアントは、電子メールアドレス／ユーザー名とパスワードを使用してアクセストークンを取得できます。これにより、ユーザーがOAuth2認証コードのリダイレクトフロー全体を実行しなくても、ファーストパーティクライアントにアクセストークンを安全に発行できます。
 
 <a name="creating-a-password-grant-client"></a>
 ### パスワードグラントクライアントの作成
 
-パスワードグラントにより、あなたのアプリケーションがトークンを発行する前に、パスワードグラントクライアントを作成する必要があります。それには、`passport:client`コマンドで`--password`を使用してください。すでに`passport:install`コマンドを実行済みの場合、このコマンドを実行する必要はありません。
+アプリケーションがパスワードグラントを介してトークンを発行する前に、パスワードグラントクライアントを作成する必要があります。これは、`--password`オプションを指定した`passport:client` Artisanコマンドを使用して行えます。**すでに`passport:install`コマンドを実行している場合は、次のコマンドを実行する必要はありません:**
 
     php artisan passport:client --password
 
@@ -617,20 +646,18 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 
 パスワードグラントクライアントを作成したら、ユーザーのメールアドレスとパスワードを指定し、`/oauth/token`ルートへ`POST`リクエストを発行することで、アクセストークンをリクエストできます。このルートは、`Passport::routes`メソッドが登録しているため、自分で定義する必要がないことを覚えておきましょう。リクエストに成功すると、サーバから`access_token`と`refresh_token`のJSONレスポンスを受け取ります。
 
-    $http = new GuzzleHttp\Client;
+    use Illuminate\Support\Facades\Http;
 
-    $response = $http->post('http://your-app.com/oauth/token', [
-        'form_params' => [
-            'grant_type' => 'password',
-            'client_id' => 'client-id',
-            'client_secret' => 'client-secret',
-            'username' => 'taylor@laravel.com',
-            'password' => 'my-password',
-            'scope' => '',
-        ],
+    $response = Http::asForm()->post('http://passport-app.com/oauth/token', [
+        'grant_type' => 'password',
+        'client_id' => 'client-id',
+        'client_secret' => 'client-secret',
+        'username' => 'taylor@laravel.com',
+        'password' => 'my-password',
+        'scope' => '',
     ]);
 
-    return json_decode((string) $response->getBody(), true);
+    return $response->json();
 
 > {tip} アクセストークンはデフォルトで、長期間有効であることを記憶しておきましょう。ただし、必要であれば自由に、[アクセストークンの最長持続時間を設定](#configuration)できます。
 
@@ -639,26 +666,26 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 
 パスワードグラント、またはクライアント認証情報グラントを使用時は、あなたのアプリケーションでサポートする全スコープを許可するトークンを発行したいと考えるかと思います。`*`スコープをリクエストすれば可能です。`*`スコープをリクエストすると、そのトークンインスタンスの`can`メソッドは、いつも`true`を返します。このスコープは`password`か`client_credentials`グラントを使って発行されたトークのみに割り付けるのが良いでしょう。
 
-    $response = $http->post('http://your-app.com/oauth/token', [
-        'form_params' => [
-            'grant_type' => 'password',
-            'client_id' => 'client-id',
-            'client_secret' => 'client-secret',
-            'username' => 'taylor@laravel.com',
-            'password' => 'my-password',
-            'scope' => '*',
-        ],
+    use Illuminate\Support\Facades\Http;
+
+    $response = Http::asForm()->post('http://passport-app.com/oauth/token', [
+        'grant_type' => 'password',
+        'client_id' => 'client-id',
+        'client_secret' => 'client-secret',
+        'username' => 'taylor@laravel.com',
+        'password' => 'my-password',
+        'scope' => '*',
     ]);
 
 <a name="customizing-the-user-provider"></a>
 ### ユーザープロバイダのカスタマイズ
 
-アプリケーションが[認証ユーザープロバイダ](/docs/{{version}}/authentication#introduction)を複数使用している場合、`artisan passport:client --password`コマンドによりクライアントを制作する時に、`--provider`オプションによりパスワードグランツクライアントで使用するユーザープロバイダを指定します。指定プロバイダ名は`config/auth.php`設定ファイルで定義した有効なプロバイダと一致している必用があります。次に、[ミドルウェアを使用してルートを保護]（＃via-middleware）して、ガードの指定したプロバイダのユーザーのみ認証するようにします。
+アプリケーションが複数の[認証ユーザープロバイダ](/docs/{{version}}/authentication#introduction)を使用している場合は、`artisan passport:client --password`コマンドを介してクライアントを作成する時に、`--provider`オプションを指定することで、パスワードグラントクライアントが使用するユーザープロバイダを指定できます。指定するプロバイダ名は、アプリケーションの`config/auth.php`設定ファイルで定義している有効なプロバイダと一致する必要があります。次に、[ミドルウェアを使用してルートを保護](#via-middleware)して、ガードの指定するプロバイダのユーザーのみが許可されるようにすることができます。
 
 <a name="customizing-the-username-field"></a>
 ### ユーザー名フィールドのカスタマイズ
 
-パスワードグラントを使用する認証を行う場合、Passportはモデルの`email`属性をユーザー名（"username"）として利用します。しかし、モデルの`findForPassport`メソッドを定義することで、この振る舞いをカスタマイズできます。
+パスワードグラントを使用して認証する場合、Passportは認証可能なモデルの`email`属性を「ユーザー名」として使用します。ただし、モデルで`findForPassport`メソッドを定義することにより、この動作をカスタマイズできます。
 
     <?php
 
@@ -717,7 +744,7 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 <a name="implicit-grant-tokens"></a>
 ## 暗黙のグラントトークン
 
-暗黙のグラントは認可コードのグラントと似ています。違いは認可コードの交換をせずにクライアントへトークンが返されることです。一般的にこのグラントは、JavaScriptやモバイルアプリケーションでクライアントの認証情報を安全に保存できない場合に使用します。このグラントを有効にするには、`AuthServiceProvider`で`enableImplicitGrant`メソッドを呼び出します。
+暗黙的なグラントは、認証コードグラントに似ています。ただし、トークンは認証コードを交換せずにクライアントへ返します。このグラントは、クライアントの利用資格情報を安全に保存できないJavaScriptまたはモバイルアプリケーションで最も一般的に使用します。このグラントを有効にするには、アプリケーションの`App\Providers\AuthServiceProvider`クラスの`boot`メソッドで`enableImplicitGrant`メソッドを呼び出します。
 
     /**
      * 全認証／認可の登録
@@ -733,14 +760,16 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
         Passport::enableImplicitGrant();
     }
 
-グラントを有効にしたら、開発者はあなたのアプリケーションからのアクセストークンをリクエストするために、クライアントIDを使うことになるでしょう。使用側アプリケーションは、あなたのアプリケーションの`/oauth/authorize`ルートへのリダイレクトリクエストを生成する必要があります。例を確認してください。
+暗黙グラントが有効になると、開発者はクライアントIDを使用してアプリケーションにアクセストークンをリクエストできます。利用側アプリケーションは、次のようにアプリケーションの`/oauth/authorize`ルートにリダイレクトリクエストを行う必要があります。
+
+    use Illuminate\Http\Request;
 
     Route::get('/redirect', function (Request $request) {
         $request->session()->put('state', $state = Str::random(40));
 
         $query = http_build_query([
             'client_id' => 'client-id',
-            'redirect_uri' => 'http://example.com/callback',
+            'redirect_uri' => 'http://third-party-app.com/callback',
             'response_type' => 'token',
             'scope' => '',
             'state' => $state,
@@ -756,7 +785,7 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 
 クライアント認証情報グラントはマシンーマシン間の認証に最適です。たとえば、APIによりメンテナンスタスクを実行する、定期実行ジョブに使用できます。
 
-クライアント認証情報グラントによりトークンを発行する前に、クライアント認証情報グラントクライアントを生成する必要があります。`passport:client`コマンドで、`--client`オプションを使用してください。
+アプリケーションがクライアント利用資格情報グラントを介してトークンを発行する前に、クライアント利用資格情報グラントクライアントを作成する必要があります。これは、`passport:client` Artisanコマンドの`--client`オプションを使用して行うことができます。
 
     php artisan passport:client --client
 
@@ -774,7 +803,7 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
         ...
     })->middleware('client');
 
-スコープを指定しアクセスを制限するには、ルートへ`client`ミドルウェアを指定する時に、カンマ区切りで指定します。
+ルートへのアクセスを特定のスコープに制限するには、`client`ミドルウェアをルートに接続するときに、必要なスコープのコンマ区切りのリストを指定できます。
 
     Route::get('/orders', function (Request $request) {
         ...
@@ -783,20 +812,18 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 <a name="retrieving-tokens"></a>
 ### トークンの取得
 
-このグラントタイプを使うトークンを取得するため、`oauth/token`エンドポイントへリクエストを送ります。
+このグラントタイプを使用してトークンを取得するには、`oauth/token`エンドポイントにリクエストを送信します。
 
-    $guzzle = new GuzzleHttp\Client;
+    use Illuminate\Support\Facades\Http;
 
-    $response = $guzzle->post('http://your-app.com/oauth/token', [
-        'form_params' => [
-            'grant_type' => 'client_credentials',
-            'client_id' => 'client-id',
-            'client_secret' => 'client-secret',
-            'scope' => 'your-scope',
-        ],
+    $response = Http::asForm()->post('http://passport-app.com/oauth/token', [
+        'grant_type' => 'client_credentials',
+        'client_id' => 'client-id',
+        'client_secret' => 'client-secret',
+        'scope' => 'your-scope',
     ]);
 
-    return json_decode((string) $response->getBody(), true)['access_token'];
+    return $response->json()['access_token'];
 
 <a name="personal-access-tokens"></a>
 ## パーソナルアクセストークン
@@ -806,21 +833,25 @@ OAuth2のパスワードグラントはモバイルアプリケーションの�
 <a name="creating-a-personal-access-client"></a>
 ### パーソナルアクセスクライアントの作成
 
-あなたのアプリケーションでパーソナルアクセストークンを発行する前に、パーソナルアクセスクライアントを作成する必要があります。`--personal`オプションを付け、`passport:client`コマンドを実行すれば、作成できます。`passport:install`コマンドを実行済みの場合、このコマンドを実行する必要はありません。
+アプリケーションがパーソナルアクセストークンを発行する前に、パーソナルアクセスクライアントを作成する必要があります。これを行うには、`--personal`オプションを指定して`passport:client` Artisanコマンドを実行します。すでに`passport:install`コマンドを実行している場合は、次のコマンドを実行する必要はありません。
 
     php artisan passport:client --personal
 
 パーソナルアクセスクライアントを制作したら、クライアントIDと平文シークレット値をアプリケーションの`.env`ファイルに設定してください。
 
-    PASSPORT_PERSONAL_ACCESS_CLIENT_ID=client-id-value
-    PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET=unhashed-client-secret-value
+```bash
+PASSPORT_PERSONAL_ACCESS_CLIENT_ID="client-id-value"
+PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET="unhashed-client-secret-value"
+```
 
 <a name="managing-personal-access-tokens"></a>
 ### パーソナルアクセストークンの管理
 
-パーソナルアクセスクライアントを作成したら、`User`モデルインスタンスの`createToken`メソッドを使用し、指定ユーザーに対しトークンを発行することができるようになります。`createToken`メソッドは最初の引数として、トークンの名前を受け付けます。任意の第２引数として、[スコープ](#token-scopes)の配列を指定できます。
+パーソナルアクセスクライアントを作成したら、`App\Models\User`モデルインスタンスで`createToken`メソッドを使用して特定のユーザーにトークンを発行できます。`createToken`メソッドは、最初の引数にトークン名、２番目の引数にオプションの[スコープ](#token-scopes)の配列を取ります。
 
-    $user = App\Models\User::find(1);
+    use App\Models\User;
+
+    $user = User::find(1);
 
     // スコープ無しのトークンを作成する
     $token = $user->createToken('Token Name')->accessToken;
@@ -886,7 +917,7 @@ JSON APIは`web`と`auth`ミドルウェアにより保護されています。�
 <a name="via-middleware"></a>
 ### ミドルウェアによる保護
 
-Passportは送信されてきたリクエスト上のアクセストークンをバリデートする、[認証ガード](/docs/{{version}}/authentication#adding-custom-guards)を用意しています。`passport`ドライバを`api`ガードで使うように設定すれば、あとはアクセストークンをバリデートしたいルートに、`auth:api`ミドルウェアを指定するだけです。
+Passportは、受信リクエストのアクセストークンを検証する[認証グラント](/docs/{{version}}/authentication#adding-custom-guards)を用意しています。`passport`ドライバを使用するように`api`ガードを設定したら、有効なアクセストークンを必要とするルートで`auth:api`ミドルウェアを指定するだけで済みます。
 
     Route::get('/user', function () {
         //
@@ -920,12 +951,14 @@ Passportは送信されてきたリクエスト上のアクセストークンを
 
 Passportにより保護されているルートを呼び出す場合、あなたのアプリケーションのAPI利用者は、リクエストの`Authorization`ヘッダとして、アクセストークンを`Bearer`トークンとして指定する必要があります。Guzzle HTTPライブラリを使う場合を例として示します。
 
-    $response = $client->request('GET', '/api/user', [
-        'headers' => [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer '.$accessToken,
-        ],
-    ]);
+    use Illuminate\Support\Facades\Http;
+
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Authorization' => 'Bearer '.$accessToken,
+    ])->get('https://passport-app.com/api/user');
+
+    return $response->json();
 
 <a name="token-scopes"></a>
 ## トークンのスコープ
@@ -935,7 +968,29 @@ Passportにより保護されているルートを呼び出す場合、あなた
 <a name="defining-scopes"></a>
 ### スコープの定義
 
-`AuthServiceProvider`の`boot`メソッドの中で、`Passport::tokensCan`メソッドを用い、皆さんのAPIのスコープを定義できます。`tokenCan`メソッドはスコープ名とスコープの説明の配列を引数に取ります。スコープの説明はお望み通りに記述でき、許可の承認ページでユーザーに表示されます。
+APIのスコープは、アプリケーションの`App\Providers\AuthServiceProvider`クラスの`boot`メソッドの`Passport::tokensCan`メソッドを使用して定義できます。`tokensCan`メソッドは、スコープ名とスコープの説明の配列を引数に取ります。スコープの説明は任意で、承認画面でユーザーに表示されます。
+
+    /**
+     * 全認証／承認サービスの登録
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->registerPolicies();
+
+        Passport::routes();
+
+        Passport::tokensCan([
+            'place-orders' => 'Place orders',
+            'check-status' => 'Check order status',
+        ]);
+    }
+
+<a name="default-scope"></a>
+### デフォルトスコープ
+
+クライアントが特定のスコープをリクエストしない場合は、`setDefaultScope`メソッドを使用して、デフォルトのスコープをトークンへアタッチするようにPassportサーバを設定できます。通常、このメソッドは、アプリケーションの`App\Providers\AuthServiceProvider`クラスの`boot`メソッドから呼び出す必要があります。
 
     use Laravel\Passport\Passport;
 
@@ -943,13 +998,6 @@ Passportにより保護されているルートを呼び出す場合、あなた
         'place-orders' => 'Place orders',
         'check-status' => 'Check order status',
     ]);
-
-<a name="default-scope"></a>
-### デフォルトスコープ
-
-クライアントが特定のスコープを要求しない場合は、`setDefaultScope`メソッドを使用しそのトークンにデフォルトスコープを付加するように、Passportサーバを設定できます。通常、このメソッドは`AuthServiceProvider`の`boot`メソッドで呼び出す必要があります。
-
-    use Laravel\Passport\Passport;
 
     Passport::setDefaultScope([
         'check-status',
@@ -972,13 +1020,13 @@ Passportにより保護されているルートを呼び出す場合、あなた
             'scope' => 'place-orders check-status',
         ]);
 
-        return redirect('http://your-app.com/oauth/authorize?'.$query);
+        return redirect('http://passport-app.com/oauth/authorize?'.$query);
     });
 
 <a name="when-issuing-personal-access-tokens"></a>
 #### パーソナルアクセストークン発行時
 
-`User`モデルの`createToken`メソッドを使用し、パーソナルアクセストークンを発行する場合、メソッドの第２引数として希望するスコープを配列で渡します。
+`App\Models\User`モデルの`createToken`メソッドを使用してパーソナルアクセストークンを発行している場合は、メソッドの２番目の引数に目的のスコープの配列を渡すことができます。
 
     $token = $user->createToken('My Token', ['place-orders'])->accessToken;
 
@@ -993,7 +1041,7 @@ Passportには、指定されたスコープが許可されているトークン
 <a name="check-for-all-scopes"></a>
 #### 全スコープの確認
 
-`scopes`ミドルウェアは、リストしたスコープが**すべて**、送信されてきたリクエストのアクセストークンに含まれていることを確認するため、ルートへ指定します。
+`scopes`ミドルウェアをルートに割り当てて、受信リクエストのアクセストークンがリストするスコープをすべて持っていることを確認できます。
 
     Route::get('/orders', function () {
         // アクセストークンは"check-status"と"place-orders"、両スコープを持っている
@@ -1002,7 +1050,7 @@ Passportには、指定されたスコープが許可されているトークン
 <a name="check-for-any-scopes"></a>
 #### 一部のスコープの確認
 
-`scope`ミドルウエアは、リストしたスコープのうち、**最低1つ**が送信されてきたリクエストのアクセストークンに含まれていることを確認するため、ルートへ指定します。
+`scope`ミドルウエアは、リストしたスコープのうち、**最低１つ**を送信されてきたリクエストのアクセストークンが持っていることを確認するため、ルートへ指定します。
 
     Route::get('/orders', function () {
         // アクセストークンは、"check-status"か"place-orders"、どちらかのスコープを持っている
@@ -1011,7 +1059,7 @@ Passportには、指定されたスコープが許可されているトークン
 <a name="checking-scopes-on-a-token-instance"></a>
 #### トークンインスタンスでのスコープチェック
 
-アクセストークンを確認されたリクエストがアプリケーションにやってきた後でも、認証済みの`User`インスタンスへ`tokenCan`メソッドを使用し、トークンが指定したスコープを持っているかを確認できます。
+アクセストークンの認証済みリクエストがアプリケーションに入力された後でも、認証済みの`App\Models\User`インスタンスで`tokenCan`メソッドを使用して、トークンに特定のスコープがあるかどうかを確認できます。
 
     use Illuminate\Http\Request;
 
@@ -1026,19 +1074,21 @@ Passportには、指定されたスコープが許可されているトークン
 
 `scopeIds`メソッドは定義済みの全ID／名前の配列を返します。
 
-    Laravel\Passport\Passport::scopeIds();
+    use Laravel\Passport\Passport;
+
+    Passport::scopeIds();
 
 `scopes`メソッドは定義済みの全スコープを`Laravel\Passport\Scope`のインスタンスの配列として返します。
 
-    Laravel\Passport\Passport::scopes();
+    Passport::scopes();
 
 `scopesFor`メソッドは、指定したID／名前に一致する`Laravel\Passport\Scope`インスタンスの配列を返します。
 
-    Laravel\Passport\Passport::scopesFor(['place-orders', 'check-status']);
+    Passport::scopesFor(['place-orders', 'check-status']);
 
 指定したスコープが定義済みであるかを判定するには、`hasScope`メソッドを使います。
 
-    Laravel\Passport\Passport::hasScope('place-orders');
+    Passport::hasScope('place-orders');
 
 <a name="consuming-your-api-with-javascript"></a>
 ## APIをJavaScriptで利用
@@ -1052,9 +1102,9 @@ API構築時にJavaScriptアプリケーションから、自分のAPIを利用�
         \Laravel\Passport\Http\Middleware\CreateFreshApiToken::class,
     ],
 
-> {note} ミドルウェアの指定の中で、`CreateFreshApiToken`ミドルウェアを確実に最後へリストしてください。
+> {note} ミドルウェアの指定の中で、`CreateFreshApiToken`ミドルウェアは確実に最後へリストしてください。
 
-このPassportミドルウェアは`laravel_token`クッキーを送信するレスポンスへ付加します。このクッキーはPassportが、皆さんのJavaScriptアプリケーションからのAPIリクエストを認可するために使用する、暗号化されたJWTを含んでいます。JWTは`session.lifetime`設定値と同じ有効期間です。これで、アクセストークンを明示的に渡さなくても、あなたのアプリケーションのAPIへリクエストを作成できるようになります。
+このミドルウェアは、送信レスポンスに`laravel_token`クッキーを添付します。このクッキーには、PassportがJavaScriptアプリケーションからのAPIリクエストを認証するために使用する暗号化されたJWTが含まれています。JWTの有効期間は、`session.lifetime`設定値と同じです。これで、ブラウザは後続のすべてのリクエストでクッキーを自動的に送信するため、アクセストークンを明示的に渡さなくても、アプリケーションのAPIにリクエストを送信できます。
 
     axios.get('/api/user')
         .then(response => {
@@ -1064,7 +1114,7 @@ API構築時にJavaScriptアプリケーションから、自分のAPIを利用�
 <a name="customizing-the-cookie-name"></a>
 #### クッキー名のカスタマイズ
 
-必要であれば、`Passport::cookie`メソッドを使用し、`laravel_token`クッキーの名前をカスタマイズできます。通常、このメソッドは`AuthServiceProvider`の`boot`メソッドから呼び出します。
+必要に応じて、`Passport::cookie`メソッドを使用して`laravel_token`クッキーの名前をカスタマイズできます。通常、このメソッドは、アプリケーションの`App\Providers\AuthServiceProvider`クラスの`boot`メソッドから呼び出す必要があります。
 
     /**
      * 全認証／認可の登録
@@ -1090,7 +1140,7 @@ API構築時にJavaScriptアプリケーションから、自分のAPIを利用�
 <a name="events"></a>
 ## イベント
 
-Passportはアクセストークン発行時とトークンリフレッシュ時にイベントを発行します。これらのイベントをデータベース状の他のアクセストークンを破棄したり、無効にしたりするために使用できます。アプリケーションの`EventServiceProvider`で、これらのイベントをリッスンできます。
+Passportは、アクセストークンと更新トークンを発行するときにイベントを発行します。これらのイベントを使用して、データベース内の他のアクセストークンを整理または取り消すことができます。必要に応じて、アプリケーションの`App\Providers\EventServiceProvider`クラスでこうしたイベントへリスナを指定できます。
 
     /**
      * アプリケーションのイベントリスナマッピング
@@ -1115,7 +1165,7 @@ Passportの`actingAs`メソッドは、現在認証中のユーザーを指定�
     use App\Models\User;
     use Laravel\Passport\Passport;
 
-    public function testServerCreation()
+    public function test_servers_can_be_created()
     {
         Passport::actingAs(
             User::factory()->create(),
@@ -1132,7 +1182,7 @@ Passportの`actingAsClient`メソッドは、現在認証中のクライアン�
     use Laravel\Passport\Client;
     use Laravel\Passport\Passport;
 
-    public function testGetOrders()
+    public function test_orders_can_be_retrieved()
     {
         Passport::actingAsClient(
             Client::factory()->create(),

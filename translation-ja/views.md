@@ -1,42 +1,78 @@
 # ビュー
 
-- [ビューの作成](#creating-views)
+- [イントロダクション](#introduction)
+- [ビューの作成とレンダー](#creating-and-rendering-views)
+    - [ネストしたビューディレクトリ](#nested-view-directories)
+    - [最初に利用可能なビュー](#creating-the-first-available-view)
+    - [ビューの存在の判定](#determining-if-a-view-exists)
 - [ビューにデータを渡す](#passing-data-to-views)
     - [全ビュー間のデータ共有](#sharing-data-with-all-views)
 - [ビューコンポーザ](#view-composers)
+    - [View Creators](#view-creators)
 - [ビューの最適化](#optimizing-views)
 
-<a name="creating-views"></a>
-## ビューの作成
+<a name="introduction"></a>
+## イントロダクション
 
-> {tip} Bladeテンプレートをどう書いたら良いのかをもっと知りたいですか？取り掛かるには、[Bladeのドキュメント](/docs/{{version}}/blade)を確認してください。
+もちろん、ルートやコントローラから直接HTMLドキュメントの文字列全体を返すことは実用的ではありません。幸い、Laravelのビュー機能はすべてのHTMLを別々のファイルに配置できる便利な方法を提供します。ビューはプレゼンテーションロジックをコントローラ／アプリケーションロジックから分離し、`resources/views`ディレクトリ下へ保存します。単純なビューは以下のようになります。
 
-ビューはアプリケーションとして動作するHTMLにより構成されており、コントローラ／アプリケーションロジックをプレゼンテーションロジックから分離します。ビューは`resources/views`ディレクトリに保存します。 シンプルなビューは、以下のような形態です。
+```html
+<!-- View stored in resources/views/greeting.blade.php -->
 
-    <!-- resources/views/greeting.blade.phpとして保存されているビュー -->
+<html>
+    <body>
+        <h1>Hello, {{ $name }}</h1>
+    </body>
+</html>
+```
 
-    <html>
-        <body>
-            <h1>Hello, {{ $name }}</h1>
-        </body>
-    </html>
-
-このビューを`resources/views/greeting.blade.php`として保存していますので、以下のようにグローバル`view`ヘルパ関数を使用し結果を返します。
+このビューを`resources/views/greeting.blade.php`として保存し、以下のようにグローバル`view`ヘルパ関数を使用し結果を返します。
 
     Route::get('/', function () {
         return view('greeting', ['name' => 'James']);
     });
 
-ご覧の通り、`view`ヘルパに渡している最初の引数は、`resources/views`ディレクトリ中のビューファイル名に対応しています。２つ目の引数は、ビューで使用するデータの配列です。上記の例では、ビューに`name`変数を渡し、それは[Blade記法](/docs/{{version}}/blade)を使用しているビューの中に表示されます。
+> {tip} Bladeテンプレートの作成方法の詳細をお探しですか？最初に完全な[Bladeドキュメント](/docs/{{version}}/ブレード)を確認してください。
 
-ビューは`resources/views`ディレクトリのサブディレクトリにネストすることもできます。ネストしたビューを参照するために「ドット」記法が使えます。たとえば、ビューを`resources/views/admin/profile.blade.php`として保存するなら、次のように指定します。
+<a name="creating-and-rendering-views"></a>
+## ビューの作成とレンダー
+
+アプリケーションの`resources/views`ディレクトリに`.blade.php`拡張子の付いたファイルを配置することで、ビューを作成できます。`.blade.php`拡張子は、ファイルに[Bladeテンプレート](/docs/{{version}}/blade)が含まれていることをフレームワークに通知します。BladeテンプレートはHTML、値を簡単にエコーしたり、"if"文を作成したり、データを反復処理したりできるBladeディレクティブを含みます。
+
+ビューを作成したら、グローバルな`view`ヘルパを使用して、アプリケーションのルートまたはコントローラからビューを返すことができます。
+
+    Route::get('/', function () {
+        return view('greeting', ['name' => 'James']);
+    });
+
+ビューは、`View`ファサードを使用して返すこともできます。
+
+    use Illuminate\Support\Facades\View;
+
+    return View::make('greeting', ['name' => 'James']);
+
+ご覧のとおり、`view`ヘルパに渡たす最初の引数は、`resources/views`ディレクトリ内のビューファイルの名前に対応しています。２番目の引数は、ビューで使用するデータの配列です。この場合、[Blade構文](/docs/{{version}}/ブレード)を使用してビューに表示する、`name`変数を渡しています。
+
+<a name="nested-view-directories"></a>
+### ネストしたビューディレクトリ
+
+ビューは、`resources/views`ディレクトリのサブディレクトリ内にネストすることもできます。「ドット」表記は、ネストしたビューを参照するために使用できます。たとえば、ビューが`resources/views/admin/profile.blade.php`に保存されている場合、以下のようにアプリケーションのルート／コントローラからビューを返すことができます。
 
     return view('admin.profile', $data);
 
 > {note} ビューのディレクトリ名には、`.`文字を含めてはいけません。
 
+<a name="creating-the-first-available-view"></a>
+### 最初に利用可能なビュー
+
+`View`ファサードの`first`メソッドを使用して、指定したビューの配列に存在する最初のビューを生成できます。これは、アプリケーションまたはパッケージでビューのカスタマイズまたは上書きが許可されている場合に役立つでしょう。
+
+    use Illuminate\Support\Facades\View;
+
+    return View::first(['custom.admin', 'admin'], $data);
+
 <a name="determining-if-a-view-exists"></a>
-#### ビューの存在を検査
+### ビューの存在の判定
 
 ビューが存在しているかを判定する必要があれば、`View`ファサードを使います。ビューが存在していれば、`exists`メソッドは`true`を返します。
 
@@ -46,34 +82,25 @@
         //
     }
 
-<a name="creating-the-first-available-view"></a>
-#### 利用可能な最初のViewの作成
-
-`first`メソッドは、指定したビュー配列の中で、最初に存在するビューを作成します。これはアプリケーションやパッケージで、ビューをカスタマイズ、上書きする場合に役立ちます。
-
-    return view()->first(['custom.admin', 'admin'], $data);
-
-`View`[ファサード](/docs/{{version}}/facades)を使い、このメソッドを呼び出すこともできます。
-
-    use Illuminate\Support\Facades\View;
-
-    return View::first(['custom.admin', 'admin'], $data);
-
 <a name="passing-data-to-views"></a>
 ## ビューにデータを渡す
 
-前例で見たように、簡単にデータを配列でビューに渡せます。
+前例で見たように、データの配列をビューに渡し、そのデータをビューで使用できます。
 
     return view('greetings', ['name' => 'Victoria']);
 
-この方法で情報を渡す場合、その情報はキー／値ペアの配列です。ビューの中で各値へは対抗するキーでアクセスできます。たとえば`<?php echo $key; ?>`のように表示可能です。全データを`view`ヘルパ関数へ渡す代わりに、`with`メソッドでビューに渡すデータを個別に追加することもできます。
+この方法で情報を渡す場合、データはキー／値ペアの配列です。ビューにデータを渡した後、`<?php echo $name; ?>`などのデータキーを使用して、ビュー内の各値にアクセスします。
 
-    return view('greeting')->with('name', 'Victoria');
+データの完全な配列を`view`ヘルパ関数に渡す代わりに、`with`メソッドを使用して個々のデータをビューへ追加することもできます。`with`メソッドはビューオブジェクトのインスタンスを返すため、ビューを返す前にメソッドのチェーンを続けられます。
+
+    return view('greeting')
+                ->with('name', 'Victoria')
+                ->with('occupation', 'Astronaut');
 
 <a name="sharing-data-with-all-views"></a>
-#### 全ビュー間のデータ共有
+### すべてのビューでデータを共有
 
-アプリケーションでレンダーする全ビューに対し、一部のデータを共有する必要があることも多いと思います。Viewファサードの`share`メソッドを使ってください。 通常、サービスプロバイダの`boot`メソッド内で`share`を呼び出します。`AppServiceProvider`に追加しても良いですし、独立したサービスプロバイダを作成することもできます。
+時に、アプリケーションがレンダーするすべてのビューとデータを共有する必要が起きます。これは、`View`ファサードの`share`メソッドで可能です。通常、サービスプロバイダの`boot`メソッド内で`share`メソッドを呼び出す必要があります。それらを`App\Providers\AppServiceProvider`クラスへ追加するか、それらを収容するための別のサービスプロバイダを生成することもできます。
 
     <?php
 
@@ -107,14 +134,17 @@
 <a name="view-composers"></a>
 ## ビューコンポーザ
 
-ビューコンポーザはビューがレンダーされる時に呼び出される、コールバックかクラスメソッドのことです。ビューがレンダーされるたびに結合したい情報があるなら、ビューコンポーザがロジックを一箇所へまとめるのに役立ちます。
+ビューコンポーザは、ビューをレンダーするときに呼び出すコールバックまたはクラスメソッドです。ビューをレンダーするたびにビューへ結合するデータがある場合、ビューコンポーザを使用すると、そのロジックを１つの場所に集約できます。ビューコンポーザは、アプリケーション内の複数のルートかコントローラが同じビューを返し、常に特定のデータが必要な場合にきわめて役立ちます。
 
-この例の[サービスプロバイダ](/docs/{{version}}/providers)の中に、ビューコンポーザを組み込みましょう。`View`ファサードの裏で動作している、`Illuminate\Contracts\View\Factory`契約の実装にアクセスします。Laravelはデフォルトのビューコンポーザ置き場を用意していないことに注意してください。お好きな場所に置くことができます。たとえば、`app/Http/View/Composers`ディレクトリを作成することもできます。
+通常、ビューコンポーザーは、アプリケーションの[サービスプロバイダ](/docs/{{version}}/provider)のいずれかで登録します。この例では、このロジックを格納するために新しい`App\Providers\ViewServiceProvider`を作成したと想定しましょう。
+
+`View`ファサードの`composer`メソッドを使用して、ビューコンポーザを登録します。Laravelには、クラスベースのビューコンポーザーのデフォルトディレクトリが含まれていないため、自由に整理できます。たとえば、`app/Http/View/Composers`ディレクトリを作成して、アプリケーションのすべてのビューコンポーザを保存できます。
 
     <?php
 
     namespace App\Providers;
 
+    use App\Http\View\Composers\ProfileComposer;
     use Illuminate\Support\Facades\View;
     use Illuminate\Support\ServiceProvider;
 
@@ -138,20 +168,18 @@
         public function boot()
         {
             // クラスベースのコンポーザを使用する
-            View::composer(
-                'profile', 'App\Http\View\Composers\ProfileComposer'
-            );
+            View::composer('profile', ProfileComposer::class);
 
-            // クロージャベースのコンポーザを使用する
+            // クロージャベースのコンポーザを使用
             View::composer('dashboard', function ($view) {
                 //
             });
         }
     }
 
-> {note} 新しいサービスプロバイダをビューコンポーザ登録のために作成したら、`config/app.php`設定ファイルの`providers`配列へ追加する必要があるのを忘れないでください。
+> {note} 新しいサービスプロバイダをビューコンポーザ登録のために作成した場合は、`config/app.php`設定ファイルの`providers`配列へ追加する必要があるのを忘れないでください。
 
-では`profile`ビューがレンダーされるたび実行される、`ProfileComposer@compose`メソッドをコンポーザとして登録してみましょう。まず、このコンポーザクラスを定義します。
+コンポーザを登録したので、`profile`ビューがレンダーされるたびに`App\Http\View\Composers\ProfileComposer`クラスの`compose`メソッドが実行されます。コンポーザクラスの例を見てみましょう。
 
     <?php
 
@@ -172,7 +200,7 @@
         /**
          * 新しいプロフィールコンポーザの生成
          *
-         * @param  UserRepository  $users
+         * @param  \App\Repositories\UserRepository  $users
          * @return void
          */
         public function __construct(UserRepository $users)
@@ -184,7 +212,7 @@
         /**
          * データをビューと結合
          *
-         * @param  View  $view
+         * @param  \Illuminate\View\View  $view
          * @return void
          */
         public function compose(View $view)
@@ -193,39 +221,42 @@
         }
     }
 
-ビューがレンダーされる直前に、`Illuminate\View\View`インスタンスに対しコンポーザの`compose`メソッドが呼びだされます。
-
-> {tip} すべてのビューコンポーザは[サービスコンテナ](/docs/{{version}}/container)により依存解決されます。ですから、コンポーザのコンストラクターで必要な依存をタイプヒントで指定できます。
+ご覧のとおり、すべてのビューコンポーザは[サービスコンテナ](/docs/{{version}}/container)を介して依存解決されるため、コンポーザのコンストラクタ内で必要な依存関係を依存注入できます。
 
 <a name="attaching-a-composer-to-multiple-views"></a>
 #### 複数ビューへの適用
 
 複数のビューにビューコンポーザを適用するには、`composer`メソッドの最初の引数にビューの配列を渡してください。
 
+    use App\Http\Views\Composers\MultiComposer;
+
     View::composer(
         ['profile', 'dashboard'],
-        'App\Http\View\Composers\MyViewComposer'
+        MultiComposer::class
     );
 
-全ビューコンポーザに適用できるように、`composer`メソッドでは`*`をワイルドカードとして使用できます。
+全ビューコンポーザに適用するため、`composer`メソッドは`*`をワイルドカードとして使用できます。
 
     View::composer('*', function ($view) {
         //
     });
 
 <a name="view-creators"></a>
-#### Viewクリエーター
+### ビュークリエータ
 
-ビュー**クリエイター**は、ビューコンポーザとほぼ同じ働きをします。しかし、ビューがレンダーされるまで待つのではなく、インスタンス化されるとすぐに実行されます。ビュークリエイターを登録するには、`creator`メソッドを使います。
+ビューの「クリエータ」は、ビューコンポーザと非常によく似ています。ただし、ビューがレンダリングされるまで待つのではなく、ビューがインスタンス化された直後に実行されます。ビュークリエータを登録するには、`creator`メソッドを使用します。
 
-    View::creator('profile', 'App\Http\View\Creators\ProfileCreator');
+    use App\Http\View\Creators\ProfileCreator;
+    use Illuminate\Support\Facades\View;
+
+    View::creator('profile', ProfileCreator::class);
 
 <a name="optimizing-views"></a>
 ## ビューの最適化
 
-デフォルトでビューは必要時にコンパイルされます。ビューをレンダーするリクエストを受け取ると、Laravelはコンパイル済みのビューがすでに存在するか確認します。存在する場合、コンパイル時より後にビューが更新されているか確認します。コンパイル済みビューが存在しないか、ビューが更新されている場合、Laravelはそのビューをコンパイルします。
+Bladeテンプレートビューはデフォルトでは、オンデマンドでコンパイルされます。ビューをレンダーするリクエストが実行されると、Laravelはコンパイル済みバージョンのビューが存在するかどうかを判断します。ファイルが存在する場合、Laravelはコンパイルされていないビューがコンパイル済みビューよりも最近変更されたかどうかを判断します。コンパイル済みビューが存在しないか、コンパイルされていないビューが変更されている場合、Laravelはビューをコンパイルします。
 
-リクエスト中にビューをコンパイルするとパフォーマンスに悪い影響が起きます。そのため、アプリケーションで使用しているすべてのビューを事前にコンパイルする`view:cache` Artisanコマンドを用意してあります。パフォーマンスを上げるには、デプロイ過程の一部としてこのコマンドを実行してください。
+リクエスト中にビューをコンパイルすると、パフォーマンスにわずかな悪影響が及ぶ可能性があるため、Laravelは、アプリケーションで使用するすべてのビューをプリコンパイルするために`view:cache`　Artisanコマンドを提供しています。パフォーマンスを向上させるために、デプロイプロセスの一部として次のコマンドを実行することを推奨します。
 
     php artisan view:cache
 

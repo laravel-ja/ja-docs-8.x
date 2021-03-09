@@ -3,40 +3,45 @@
 - [イントロダクション](#introduction)
 - [環境](#environment)
 - [テストの生成と実行](#creating-and-running-tests)
-    - [Artisan Test Runner](#artisan-test-runner)
+    - [Artisanテストランナー](#artisan-test-runner)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelはユニットテストも考慮して構築されています。実際、PHPUnitをサポートしており、最初から含まれています。アプリケーションのために`phpunit.xml`ファイルも最初から準備されています。さらにフレームワークはアプリケーションを記述的にテストするために便利なヘルパメソッドも持っています。
+Laravelはユニットテストも考慮して構築されています。実際、PHPUnitをサポートしており、最初から含まれています。アプリケーションのために`phpunit.xml`ファイルも最初から準備されています。さらにフレームワークはアプリケーションを記述的にテストするために便利なヘルパメソッドも用意しています。
 
-デフォルトでアプリケーションの`tests`ディレクトリには、２つのディレクトリが存在しています。`Feature` と`Unit`です。ユニットテストは極小さい、コードの独立した一部をテストします。実際、ほとんどのユニット(Unit)テストは一つのメソッドに焦点をあてます。機能(Feature)テストは、多くのオブジェクトがそれぞれどのように関しているかとか、JSONエンドポイントへ完全なHTTPリクエストを送ることさえ含む、コードの幅広い範囲をテストします。
+デフォルトでは、アプリケーションの`tests`ディレクトリには、`Feature`と`Unit`の２つのディレクトリを用意しています。単体テストは、コードの非常に小さな孤立した部分に焦点を当てたテストです。実際、ほとんどの単体テストはおそらく単一のメソッドに焦点を合わせています。「ユニット」テストディレクトリ内のテストはLaravelアプリケーションを起動しないため、アプリケーションのデータベースやその他のフレームワークサービスにアクセスできません。
 
-`Feature`と`Unit`、両テストディレクトリには、`ExampleTest.php`が用意されています。真新しいLaravelアプリケーションをインストールしたらテストを実行するため、コマンドラインから`vendor/bin/phpunit`を実行してください。
+機能テストでは、複数のオブジェクトが相互作用する方法や、JSONエンドポイントへの完全なHTTPリクエストなど、コードの広い部分をテストします。**一般的に、ほとんどのテストは機能テストである必要があります。これらのタイプのテストは、システム全体が意図したとおりに機能しているという信頼性を一番提供します。**
+
+`ExampleTest.php`ファイルは`Feature`と`Unit`の両方のテストディレクトリで提供されます。新しいLaravelアプリケーションをインストールした後なら、`vendor/bin/phpunit`または`phpartisantest`コマンドを実行してテストを実行できます。
 
 <a name="environment"></a>
 ## 環境
 
-`phpunit.xml`ファイル中で環境変数が設定されているため、`vendor/bin/phpunit`を実行するとLaravelは自動的に設定環境を`testing`にセットします。Laravelはまた、セッションとキャッシュの設定を`array`ドライバーに設定し、テスト中のセッションやキャッシュデータが残らないようにします。
+`vendor/bin/phpunit`を介してテストを実行すると、Laravelは`phpunit.xml`ファイルで定義してある[設定環境](/docs/{{version}}/configuration#environment-configuration)により、設定環境を自動的に`testing`に設定します。Laravelはまた、テスト中にセッションとキャッシュを`array`ドライバに自動的に設定します。つまり、テスト中のセッションまたはキャッシュデータが保持されることはありません。
 
-必要であれば他のテスト設定環境を自由に作成することもできます。`testing`動作環境変数は`phpunit.xml`の中で設定されています。テスト実行前には、`config:clear` Artisanコマンドを実行し、設定キャッシュをクリアするのを忘れないでください。
+必要に応じて、他のテスト環境設定値を自由に定義できます。`testing`環境変数はアプリケーションの`phpunit.xml`ファイルで設定していますが、テストを実行する前は必ず`config:clear` Artisanコマンドを使用して設定のキャッシュをクリアしてください。
 
-さらに、プロジェクトのルートディレクトリで、`.env.testing`ファイルを生成することも可能です。PHPUnitテストやArtisanコマンドを`--env=testing`オプション付きで実行する場合、`.env`ファイルをこのファイルの内容でオーバーライドします。
+<a name="the-env-testing-environment-file"></a>
+#### `.env.testing`環境ファイル
+
+さらに、プロジェクトのルートに`.env.testing`ファイルを作成することもできます。このファイルは、PHPUnitテストを実行するとき、または`--env=tests`オプションを指定してArtisanコマンドを実行するときに、`.env`ファイルの代わりに使用されます。
 
 <a name="creating-and-running-tests"></a>
 ## テストの生成と実行
 
-新しいテストケースを作成するには、`make:test` Artisanコマンドを使います。
+新しいテストケースを作成するには、`make:test` Artisanコマンドを使用します。デフォルトでは、テストは`tests/Feature`ディレクトリへ配置されます。
 
-    // Featureディレクトリにテストを生成する
     php artisan make:test UserTest
 
-    // Unitディレクトリにテストを生成する
+`tests/Unit`ディレクトリ内にテストを作成したい場合は、`make:test`コマンドを実行するときに`--unit`オプションを使用します。
+
     php artisan make:test UserTest --unit
 
 > {tip} [stubのリソース公開](/docs/{{version}}/artisan#stub-customization) を使って、Testスタブをカスタマイズできます。
 
-テストを生成したら、PHPUnitを使用するときと同じようにテストメソッドを定義してください。テストを実行するには、ターミナルで`phpunit`か`artisan test`コマンドを実行します。
+テストを生成したら、[PHPUnit](https://phpunit.de)を使用する場合と同様にテストメソッドを定義します。テストを実行するには、ターミナルから`vendor/bin/phpunit`または`phpartisantest`コマンドを実行します。
 
     <?php
 

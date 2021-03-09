@@ -1,37 +1,37 @@
 # HTTPクライアント
 
 - [イントロダクション](#introduction)
-- [リクエスト作成](#making-requests)
+- [リクエストの作成](#making-requests)
     - [リクエストデータ](#request-data)
     - [ヘッダ](#headers)
     - [認証](#authentication)
     - [タイムアウト](#timeout)
-    - [リトライ](#retries)
+    - [再試行](#retries)
     - [エラー処理](#error-handling)
     - [Guzzleオプション](#guzzle-options)
 - [テスト](#testing)
-    - [レスポンスのFake](#faking-responses)
-    - [レスポンスの調査](#inspecting-requests)
+    - [レスポンスのfake](#faking-responses)
+    - [レスポンスの検査](#inspecting-requests)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-他のWebアプリケーションと連携を取る、送信HTTPリクエストを簡単に作成できるよう、Laravelは小さくて読み書きしやすい[Guzzle HTTPクライアント](http://docs.guzzlephp.org/en/stable/)のAPIを提供しています。LaravelのGuzzleラッパーはもっとも繁用されるユースケースと開発者が素晴らしい体験をできることに重点を置いています。
+Laravelは、[Guzzle HTTPクライアント](http://docs.guzzlephp.org/en/stable/)の周りに表現力豊かで最小限のAPIを提供し、他のWebアプリケーションと通信するための外部HTTPリクエストをすばやく作成できるようにします。LaravelによるGuzzleのラッパーは、最も一般的なユースケースと素晴らしい開発者エクスペリエンスに焦点を当てています。
 
-取り掛かる前に、アプリケーションの依存パッケージとしてGuzzleパッケージをインストールする必要があります。Laravelはデフォルトとしてこの依存パッケージを含んでいます。
+使い始める前に、アプリケーションの依存関係としてGuzzleパッケージを確実にインストールしてください。デフォルトでLaravelはこの依存パッケージを自動的に含めます。もし、以前にパッケージを削除したことがある場合は、Composerを介して再度インストールしてください。
 
     composer require guzzlehttp/guzzle
 
 <a name="making-requests"></a>
-## リクエスト作成
+## リクエストの作成
 
-リクエストを作成するには、`get`、`post`、`put`、`patch`、`delete`メソッドを使用します。最初に基本となる`GET`リクエストをどのように作成するのか見てみましょう。
+リクエストを行うには、`Http`ファサードが提供する`get`、`post`、`put`、`patch`、`delete`メソッドを使用します。まず、外部のURLに対して基本的な`GET`リクエストを行う方法を見てみましょう。
 
     use Illuminate\Support\Facades\Http;
 
     $response = Http::get('http://example.com');
 
-`get`メソッドは`Illuminate\Http\Client\Response`のインスタンスを返します。これはレスポンスを調べるために使用できるさまざまなメソッドを持っています。
+`get`メソッドは`Illuminate\Http\Client\Response`のインスタンスを返します。これは、レスポンスを調べるために使用できるさまざまなメソッドを提供します。
 
     $response->body() : string;
     $response->json() : array|mixed;
@@ -44,14 +44,16 @@
     $response->header($header) : string;
     $response->headers() : array;
 
-`Illuminate\Http\Client\Response`オブジェクトは、レスポンス上のJSONレスポンスデータへ直接アクセスできるように、PHPの`ArrayAccess`インターフェイスも実装しています。
+`Illuminate\Http\Client\Response`オブジェクトはPHPの`ArrayAccess`インターフェイスも実装しており、そのレスポンスのJSONレスポンスデータへ直接アクセスできます。
 
     return Http::get('http://example.com/users/1')['name'];
 
 <a name="request-data"></a>
 ### リクエストデータ
 
-もちろん、`POST`、`PUT`、`PATCH`を使用する場合は、リクエストと追加のデータを一緒に送るのが一般的です。そのため、これらのメソッドは第２引数にデータの配列を受け取ります。データはデフォルトで`application/json`コンテンツタイプを使用して送信されます。
+もちろん、`POST`、`PUT`、`PATCH`リクエストを作成するときは、リクエストとともに追加のデータを送信するのが一般的であるため、これらのメソッドは２番目の引数としてデータの配列を受け入れます。デフォルトでデータは`application/json`コンテンツタイプを使用して送信されます。
+
+    use Illuminate\Support\Facades\Http;
 
     $response = Http::post('http://example.com/users', [
         'name' => 'Steve',
@@ -59,9 +61,9 @@
     ]);
 
 <a name="get-request-query-parameters"></a>
-#### GETリクエストのクエリパラメータ
+#### GETリクエストクエリパラメータ
 
-`GET`リクエストの作成時はクエリ文字列をURLに直接追加するか、キー／値ペアの配列を第２引数として`get`メソッドに渡します。
+`GET`リクエストを行うときは、クエリ文字列をURLに直接追加するか、キー／値ペアの配列を`get`メソッドの２番目の引数として渡せます。
 
     $response = Http::get('http://example.com/users', [
         'name' => 'Taylor',
@@ -69,9 +71,9 @@
     ]);
 
 <a name="sending-form-url-encoded-requests"></a>
-#### URLエンコードされたリクエストのフォーム送信
+#### フォームURLエンコードされたリクエストの送信
 
-`application/x-www-form-urlencoded`コンテンツタイプを使用してデータを送信したい場合は、リクエストを作成する前に`asForm`メソッドを呼び出す必要があります。
+`application/x-www-form-urlencoded`コンテンツタイプを使用してデータを送信する場合は、リクエストを行う前に`asForm`メソッドを呼び出す必要があります。
 
     $response = Http::asForm()->post('http://example.com/users', [
         'name' => 'Sara',
@@ -79,9 +81,9 @@
     ]);
 
 <a name="sending-a-raw-request-body"></a>
-#### リクエスト本体をそのまま送信する
+#### 素のリクエスト本文の送信
 
-リクエスト作成時に、リクエストの本体をそのまま指定したい場合は、`withBody`メソッドを使います。
+リクエストを行うときに素のリクエスト本文を指定する場合は、`withBody`メソッドを使用できます。コンテンツタイプは、メソッドの２番目の引数を介して提供できます。
 
     $response = Http::withBody(
         base64_encode($photo), 'image/jpeg'
@@ -90,13 +92,13 @@
 <a name="multi-part-requests"></a>
 #### マルチパートリクエスト
 
-ファイルをマルチパートリクエストとして送信したい場合は、リクエストを作成する前に`attach`メソッドを呼び出す必要があります。このメソッドはファイル名と、その内容を引数に受け取ります。オプションとして第３引数に、ファイルのファイル名と想定できる文字列を指定できます。
+ファイルをマルチパートリクエストとして送信する場合は、リクエストを行う前に`attach`メソッドを呼び出す必要があります。このメソッドは、ファイルの名前とその内容を引数に取ります。必要に応じて、ファイルのファイル名と見なす３番目の引数を指定できます。
 
     $response = Http::attach(
         'attachment', file_get_contents('photo.jpg'), 'photo.jpg'
     )->post('http://example.com/attachments');
 
-ファイルのコンテンツ内容をそのまま渡す代わりに、ストリームリソースも指定できます。
+ファイルの素の内容を渡す代わりに、ストリームリソースを渡すこともできます。
 
     $photo = fopen('photo.jpg', 'r');
 
@@ -107,7 +109,7 @@
 <a name="headers"></a>
 ### ヘッダ
 
-`withHeaders`メソッドで、リクエストにヘッダを追加できます。この`withHeaders`メソッドは、キー／値ペアの配列を引数に取ります。
+ヘッダは、`withHeaders`メソッドを使用してリクエストに追加できます。この`withHeaders`メソッドは、キー／値ペアの配列を引数に取ります。
 
     $response = Http::withHeaders([
         'X-First' => 'foo',
@@ -119,75 +121,75 @@
 <a name="authentication"></a>
 ### 認証
 
-`withBasicAuth`と`withDigestAuth`メソッドを使うと、Basic認証やDigest認証に使用する認証データを指定できます。
+基本認証のログイン情報とダイジェスト認証ログイン情報は、それぞれ`withBasicAuth`メソッドと`withDigestAuth`メソッドを使用して指定します。
 
-    // Basic認証
+    // BASIC認証
     $response = Http::withBasicAuth('taylor@laravel.com', 'secret')->post(...);
 
-    // Digest認証
+    // ダイジェスト認証
     $response = Http::withDigestAuth('taylor@laravel.com', 'secret')->post(...);
 
 <a name="bearer-tokens"></a>
 #### Bearerトークン
 
-手早く`Authorization` bearerトークンをリクエストのヘッダに追加したい場合は、`withToken`メソッドを使います。
+リクエストの`Authorization`ヘッダにBearerトークンをすばやく追加したい場合は、`withToken`メソッドを使用できます。
 
     $response = Http::withToken('token')->post(...);
 
 <a name="timeout"></a>
 ### タイムアウト
 
-`timeout`メソッドはレスポンスを待つ最大秒数を指定するために使用します。
+`timeout`メソッドを使用して、レスポンスを待機する最大秒数を指定できます。
 
     $response = Http::timeout(3)->get(...);
 
-指定したタイムアウト時間が過ぎたら、`Illuminate\Http\Client\ConnectionExceptionのインスタンスが投げられます。
+指定したタイムアウトを超えると、`Illuminate\Http\Client\ConnectionException`インスタンスを投げます。
 
 <a name="retries"></a>
-### リトライ
+### 再試行
 
-クライアントかサーバでエラーが発生したときに、HTTPクライアントへそのリクエストを自動的に再試行させたい場合は、`retry`メソッドを使います。`retry`メソッドは２つの引数を取ります。試行回数と、次に試みるまでLaravelに待たせるミリ秒です。
+クライアントまたはサーバのエラーが発生した場合に、HTTPクライアントがリクエストを自動的に再試行するようにしたい場合は、`retry`メソッドを使用します。`retry`メソッドは２つの引数をとります。リクエストを試行する最大回数とLaravelが試行の間に待機するミリ秒数です。
 
     $response = Http::retry(3, 100)->post(...);
 
-リクエストに全部失敗したら、`Illuminate\Http\Client\RequestException`のインスタンスが投げられます。
+すべてのリクエストが失敗した場合、`Illuminate\Http\Client\RequestException`インスタンスを投げます。
 
 <a name="error-handling"></a>
 ### エラー処理
 
-Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラッパーはクライアントの例外を投げたり、サーバからの`400`と`500`レベルのレスポンスとしてエラーレスポンスを返したりしません。こうしたエラーが発生したかは`successful`、`clientError`、`serverError`メソッドで判定できます。
+Guzzleのデフォルト動作とは異なり、LaravelのHTTPクライアントラッパーは、クライアントまたはサーバのエラー(サーバからの「400」および「500」レベルの応答)で例外を投げません。`successful`、`clientError`、`serverError`メソッドを使用して、これらのエラーのいずれかが返されたかどうかを判定できます。
 
-    // ステータスコードが２００以上、３００より小さいレスポンスであったかを判定
+    // ステータスコードが200以上300未満か判定
     $response->successful();
 
-    // ステータスコードが４００より大きいかを判定
+    // ステータスコードが400以上か判定
     $response->failed();
 
-    // ステータスコードが４００レベルのレスポンスであったかを判定
+    // レスポンスに400レベルのステータスコードがあるかを判定
     $response->clientError();
 
-    // ステータスコードが５００レベルのレスポンスであったかを判定
+    // レスポンスに500レベルのステータスコードがあるかを判定
     $response->serverError();
 
 <a name="throwing-exceptions"></a>
 #### 例外を投げる
 
-レスポンスインスタンスを受け取り、そのレスポンスがクライアントかサーバエラーであった場合に、`Illuminate\Http\Client\RequestException`のインスタンスを投げる場合は、`throw`メソッドを使います。
+あるレスポンスインスタンスのレスポンスステータスコードがクライアントまたはサーバのエラーを示している場合に`Illuminate\Http\Client\RequestException`のインスタンスを投げたい場合場合は、`throw`メソッドを使用します。
 
     $response = Http::post(...);
 
-    // クライアントかサーバエラーが発生したため例外を投げる
+    // クライアントまたはサーバのエラーが発生した場合は、例外を投げる
     $response->throw();
 
     return $response['user']['id'];
 
-`Illuminate\Http\Client\RequestException`インスタンスはパブリックの`$response`プロパティを持ち、返されたレスポンスを調査できるようになっています。
+`Illuminate\Http\Client\RequestException`インスタンスにはパブリック`$response`プロパティがあり、返ってきたレスポンスを検査できます。
 
-`throw`メソッドはエラーが起きていない場合にレスポンスインスタンスを返すため、別の操作を続けて記述できます。
+`throw`メソッドは、エラーが発生しなかった場合にレスポンスインスタンスを返すので、他の操作を`throw`メソッドにチェーンできます。
 
     return Http::post(...)->throw()->json();
 
-例外が投げられる前に追加ロジックを実行したい場合、クロージャを`throw`メソッドに渡すことができます。クロージャが呼び出された後、その例外は自動的に投げられるため、クロージャ内から例外を再度投げる必要はありません。
+例外がなげられる前に追加のロジックを実行したい場合は、`throw`メソッドにクロージャを渡せます。クロージャを呼び出した後に、例外を自動的に投げるため、クロージャ内から例外を再発行する必要はありません。
 
     return Http::post(...)->throw(function ($response, $e) {
         //
@@ -196,7 +198,7 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 <a name="guzzle-options"></a>
 ### Guzzleオプション
 
-`withOptions`メソッドを使用し、[Guzzleリクエストオプション](http://docs.guzzlephp.org/en/stable/request-options.html)を追加指定できます。`withOptions`メソッドはキー／値ペアの配列を引数に取ります。
+`withOptions`メソッドを使用して、追加の[Guzzleリクエストオプション](http://docs.guzzlephp.org/en/stable/request-options.html)を指定できます。`withOptions`メソッドは、キー／値ペアの配列を引数に取ります。
 
     $response = Http::withOptions([
         'debug' => true,
@@ -205,12 +207,12 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 <a name="testing"></a>
 ## テスト
 
-多くのLaravelサービスは簡単に記述的なテストが書ける機能を提供していますが、HTTPラッパーも例外ではありません。`Http`ファサードの`fake`メソッドで、リクエストが作成されるときに、スタブ／ダミーのレスポンスを返すようにHTTPクライアントに支持できます。
+多くのLaravelサービスは、テストを簡単かつ表現力豊かに作成するのに役立つ機能を提供しています。LaravelのHTTPラッパーも例外ではありません。`Http`ファサードの`fake`メソッドを使用すると、リクエストが行われたときに、スタブ/ダミーレスポンスを返すようにHTTPクライアントに指示できます。
 
 <a name="faking-responses"></a>
-### レスポンスのFake
+### レスポンスのfake
 
-たとえば、すべてのリクエストに`200`ステータスコードを持つ空のレスポンスをHTTPクライアントから返したい場合は、`fake`メソッドを引数なしで呼びます。
+たとえば、リクエストごとに空の`200`ステータスコードレスポンスを返すようにHTTPクライアントに指示するには、引数なしで`fake`メソッドを呼びだしてください。
 
     use Illuminate\Support\Facades\Http;
 
@@ -218,75 +220,78 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
 
     $response = Http::post(...);
 
-> {note} リクエストをFakeする時、HTTPクライアントミドルウェアは実行されません。Fakeするレスポンスでこうしたミドルウェアが正しく実行されたかのように、エクスペクションを定義する必要があります。
+> {note} リクエストをfakeする場合、HTTPクライアントミドルウェアは実行されません。これらのミドルウェアが正しく実行されたかのように、fakeレスポンスに対するエクスペクテーションを定義する必要があります。
 
 <a name="faking-specific-urls"></a>
-#### 特定URLのFake
+#### 特定のURLのfake
 
-`fake`メソッドに配列を渡すこともできます。配列のキーはfakeするURLパターンを表し、値はレスポンスです。`*`文字はワイルドカードとして使えます。FakeしないURLに対するリクエストは、実際に実行されます。エンドポイントに対するスタブ／fakeを組み立てるために、`response`メソッドを使います。
+もしくは、配列を`fake`メソッドに渡すこともできます。配列のキーは、fakeしたいURLパターンとそれに関連するレスポンスを表す必要があります。`*`文字はワイルドカード文字として使用できます。FakeしないURLに対して行うリクエストは、実際に実行されます。`Http`ファサードの`response`メソッドを使用して、これらのエンドポイントのスタブ/fakeのレスポンスを作成できます。
 
     Http::fake([
-        // GitHubエンドポイントに対するJSONレスポンスをスタブ
-        'github.com/*' => Http::response(['foo' => 'bar'], 200, ['Headers']),
+        // GitHubエンドポイントのJSONレスポンスをスタブ
+        'github.com/*' => Http::response(['foo' => 'bar'], 200, $headers),
 
-        // Googleエンドポイントに対する文字列レスポンスをスタブ
-        'google.com/*' => Http::response('Hello World', 200, ['Headers']),
+        // Googleエンドポイントの文字列レスポンスをスタブ
+        'google.com/*' => Http::response('Hello World', 200, $headers),
     ]);
 
-一致しないURLをすべてスタブするフォールバックURLパターンを指定する場合は、`*`文字だけを使います。
+一致しないすべてのURLをスタブするフォールバックURLパターンを指定する場合は、単一の`*`文字を使用します。
 
     Http::fake([
-        // GitHubエンドポイントに対するJSONレスポンスをスタブ
+        // GitHubエンドポイントのJSONレスポンスをスタブ
         'github.com/*' => Http::response(['foo' => 'bar'], 200, ['Headers']),
 
-        // その他すべてのエンドポイントに対して文字列レスポンスをスタブ
+        // 他のすべてのエンドポイントの文字列をスタブ
         '*' => Http::response('Hello World', 200, ['Headers']),
     ]);
 
 <a name="faking-response-sequences"></a>
-#### 一連のレスポンスのFake
+#### fakeレスポンスの順番
 
-特定の順番で一連のfakeレスポンスを一つのURLに対して指定する必要がある場合もときどきあります。このレスポンスを組み立てるには、`Http::sequence`メソッドを使用します。
+場合によっては、単一のURLが特定の順序で一連のkakeレスポンスを返すように指定する必要があります。これは、`Http::sequence`メソッドを使用してレスポンスを作成することで実現できます。
 
     Http::fake([
-        // GitHubエンドポイントに対して一連のレスポンスをスタブ
+        // GitHubエンドポイントの一連のレスポンスをスタブ
         'github.com/*' => Http::sequence()
                                 ->push('Hello World', 200)
                                 ->push(['foo' => 'bar'], 200)
                                 ->pushStatus(404),
     ]);
 
-一連のレスポンスを全部返し終えると、そのエンドポイントに対する以降のリクエストには例外が投げられます。このとき例外を発生させる代わりに特定のレスポンスを返すように指定したい場合は、`whenEmpty`メソッドを使用します。
+レスポンスシーケンス内のすべてのレスポンスが消費されると、以降のリクエストに対し、レスポンスシーケンスは例外を投げます。シーケンスが空になったときに返すデフォルトのレスポンスを指定する場合は、`whenEmpty`メソッドを使用します。
 
     Http::fake([
-        // GitHubエンドポイントに対して一連のレスポンスをスタブ
+        // GitHubエンドポイントの一連の応答をスタブ
         'github.com/*' => Http::sequence()
                                 ->push('Hello World', 200)
                                 ->push(['foo' => 'bar'], 200)
                                 ->whenEmpty(Http::response()),
     ]);
 
-順番のあるレスポンスをfakeしたいが、fakeする特定のURLパターンを指定する必要がなければ、`Http::fakeSequence`メソッドを使います。
+一連のレスポンスをfakeしたいが、fakeする必要がある特定のURLパターンを指定する必要がない場合は、`Http::fakeSequence`メソッドを使用します。
 
     Http::fakeSequence()
             ->push('Hello World', 200)
             ->whenEmpty(Http::response());
 
 <a name="fake-callback"></a>
-#### コールバックのFake
+#### Fakeコールバック
 
-特定のエンドポイントでどんなレスポンスを返すか決めるために、より複雑なロジックが必要な場合は、`fake`メソッドへコールバックを渡してください。このコールバックは`Illuminate\Http\Client\Request`のインスタンスを受け取るので、レスポンスインスタンスを返してください。
+特定のエンドポイントに対して返すレスポンスを決定するために、より複雑なロジックが必要な場合は、`fake`メソッドにクロージャを渡すことができます。このクロージャは`Illuminate\Http\Client\Request`インスタンスを受け取り、レスポンスインスタンスを返す必要があります。クロージャ内で、返すレスポンスのタイプを決定するために必要なロジックを実行できます。
 
     Http::fake(function ($request) {
         return Http::response('Hello World', 200);
     });
 
 <a name="inspecting-requests"></a>
-### レスポンスの調査
+### レスポンスの検査
 
-レスポンスをfakeしているとまれに、自分のアプリケーションが正しいデータやヘッダを送っていることを確認するため、クライアントが受け取るリクエストを調べたくなります。これを行うには、`Http::fake`を呼び出したあとに`Http::assertSent`メソッドを呼び出します。
+レスポンスをfakeする場合、アプリケーションが正しいデータまたはヘッダを送信していることを確認するために、クライアントが受信するリクエストを調べたい場合があります。これは、`Http::fake`を呼び出した後に`Http::assertSent`メソッドを呼び出し実現します。
 
-`assertSent`メソッドは`Illuminate\Http\Client\Request`インスタンスを受け取るコールバックを引数に取り、そのリクエストが期待通りであったかを示す論理値をそのコールバックから返します。テストにパスするには、指定した期待に合致する最低一つのリクエストが発送されている必要があります。
+`assertSent`メソッドは、`Illuminate\Http\Client\Request`インスタンスを受け取るクロージャを引数に受け、リクエストがエクスペクテーションに一致するかを示す論理値を返す必要があります。テストに合格するには、指定するエクスペクテーションに一致する少なくとも１つのリクエストが発行される必要があります。
+
+    use Illuminate\Http\Client\Request;
+    use Illuminate\Support\Facades\Http;
 
     Http::fake();
 
@@ -297,14 +302,17 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
         'role' => 'Developer',
     ]);
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function (Request $request) {
         return $request->hasHeader('X-First', 'foo') &&
                $request->url() == 'http://example.com/users' &&
                $request['name'] == 'Taylor' &&
                $request['role'] == 'Developer';
     });
 
-必要であれば`assertNotSent`メソッドを用い、指定するリクエストが送信されなかった事をアサートすることもできます。
+必要に応じて、`assertNotSent`メソッドを使用して特定のリクエストが送信されないことを宣言できます。
+
+    use Illuminate\Http\Client\Request;
+    use Illuminate\Support\Facades\Http;
 
     Http::fake();
 
@@ -317,7 +325,7 @@ Guzzleのデフォルト動作と異なり、LaravelのHTTPクライアントラ
         return $request->url() === 'http://example.com/posts';
     });
 
-もしくは、リクエストがまったく送信されないことをアサートしたい場合には、`assertNothingSent`メソッドを使用してください。
+または、`assertNothingSent`メソッドを使用して、テスト中にリクエストが送信されないことを宣言することもできます。
 
     Http::fake();
 

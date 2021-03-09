@@ -1,14 +1,16 @@
 # Laravel Valet
 
 - [イントロダクション](#introduction)
-    - [ValetとHomestead](#valet-or-homestead)
 - [インストール](#installation)
-    - [アップグレード](#upgrading)
+    - [Valetのアップグレード](#upgrading-valet)
 - [サイト動作](#serving-sites)
     - ["Park"コマンド](#the-park-command)
     - ["Link"コマンド](#the-link-command)
     - [TLSによる安全なサイト](#securing-sites)
-- [サイトの共有](#sharing-sites)
+- [サイト共有](#sharing-sites)
+    - [Ngrokによるサイト共有](#sharing-sites-via-ngrok)
+    - [Exposeによるサイト共有](#sharing-sites-via-expose)
+    - [ローカルネットワーク上のサイト共有](#sharing-sites-on-your-local-network)
 - [サイト限定環境変数](#site-specific-environment-variables)
 - [プロキシサーバ](#proxying-services)
 - [カスタムValetドライバ](#custom-valet-drivers)
@@ -19,11 +21,9 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-Valet（ベレット：従者）はMacミニマニストのためのLaravel開発環境です。Vagrantも不要、/etc/hostsファイルも不要です。さらに、ローカルトンネルを使って、サイトを公開し、シェアすることもできます。**ええ、私達はこういうのも好きなんですよね。**
+Valet（バレット：従者）は、macOSミニマリスト向けのLaravel開発環境です。Larave lValetは、マシンの起動時に常にバックグラウンドで[Nginx](https://www.nginx.com/)を実行するようにMacを設定します。次に、[DnsMasq](https://en.wikipedia.org/wiki/Dnsmasq)を使用して、Valetは`*.test`ドメイン上のすべてのリクエストをプロキシし、ローカルマシンにインストールしているサイトへ転送します。
 
-Laravel Valetはマシン起動時にバックグランドで[Nginx](https://www.nginx.com/)がいつも実行されるように、Macを設定します。そのため、[DnsMasq](https://en.wikipedia.org/wiki/Dnsmasq)を使用し、Valetは`*.test`ドメインへの全リクエストを、ローカルマシンのインストール済みサイトへ向けるようにプロキシ動作します。
-
-言い換えれば、約7MBのRAMを使うとても早いLaravelの開発環境です。ValetはVagrantやHomesteadを完全に置き換えるものではありませんが柔軟な基礎、とくにスピード重視であるか、RAMが限られているマシンで動作させるのに素晴らしい代替になります。
+言い換えれば、Valetは、約７MBのRAMを使用する非常に高速なLaravel開発環境です。Valetは、[Sail](/docs/{{version}}/sale)や[Homestead](/docs/{{version}}/homestead)の完全な代替ではありませんが、極端に速度を好むとかRAMの量が限られているマシンで作業しているなど、柔軟な開発環境の基本が必要な場合は優れた代替手段になるでしょう。
 
 Valetは以下をサポートしていますが、これらに限定されません。
 
@@ -61,41 +61,35 @@ Valetは以下をサポートしていますが、これらに限定されませ
 
 独自の[カスタムドライバ](#custom-valet-drivers)でValetを拡張できます。
 
-<a name="valet-or-homestead"></a>
-### ValetとHomestead
-
-ご存知のように、ローカルのLaravel開発環境として[Homestead](/docs/{{version}}/homestead)も用意しています。HomesteadとValetは利用者の目的とローカルの開発についてのアプローチが異なります。Homesteadは自動的にNginx設定を行うUbuntuの完全な仮想マシンを提供しています。HomesteadはLinux開発環境の完全な仮想化を行いたい、もしくはWindows／Linux上で動作させたい場合、素晴らしい選択肢になります。
-
-ValetはMac上でのみサポートされ、PHPとデータベースサーバを直接ローカルマシンへインストールする必要があります。[Homebrew](https://brew.sh/)を利用し、`brew install php`と`brew install mysql`のようなコマンドを実行すれば、簡単にインストールできます。Valetは最低限度のリソースを使い、とても早いローカル開発環境を提供します。そのため、PHPとMySQLだけが必要で、完全な仮想開発環境は必要ない場合にぴったりです。
-
-ValetとHomesteadのどちらを選んでも、Laravelの開発環境に向け設定されており、良い選択になるでしょう。どちらを選ぶかは、自分の好みとチームの必要により決まるでしょう。
-
 <a name="installation"></a>
 ## インストール
 
-**ValetにはMacオペレーティングシステムと[Homebrew](https://brew.sh/)が必要です。インストールする前に、ApacheやNginxのようなローカルマシンの８０番ポートへバインドするプログラムがないことを確認してください。**
+> {note} ValetにはmacOSと[Homebrew](https://brew.sh/)が必要です。インストールする前に、ApacheやNginxなどの他のプログラムがローカルマシンのポート80をバインド指定なことを確認する必要があります。
 
-<div class="content-list" markdown="1">
-- `brew update`で最新バージョンの[Homebrew](https://brew.sh/)をインストール、もしくはアップデートしてください。
-- Homebrewを使い、`brew install php`でPHP8.0をインストールしてください。
-- [Composer](https://getcomposer.org)をインストールしてください。
-- `composer global require laravel/valet`でValetをインストールしてください。`~/.composer/vendor/bin`ディレクトリが実行パスに含まれていることを確認してください。
-- `valet install`コマンドを実行してください。これによりValetとDnsMasqがインストール／設定され、システム起動時に起動されるValetのデーモンが登録されます。
-</div>
+開始するには、最初に`update`コマンドを使用してHomebrewが最新であることを確認する必要があります。
 
-Valetがインストールできたら、`ping foobar.test`のようなコマンドで、ターミナルから`*.test`ドメインに対してpingを実行してください。Valetが正しくインストールされていれば、このドメインは`127.0.0.1`へ対応していることがわかるでしょう。
+    brew update
 
-Valetはマシンが起動されると、毎回デーモンを自動的に起動します。Valetが完全にインストールされていれば、`valet start`や`valet install`を再び実行する必要は永久にありません。
+次に、Homebrewを使用してPHPをインストールする必要があります。
 
-<a name="database"></a>
-#### データベース
+    brew install php
 
-データベースを使いたい場合、コマンドラインで`brew install mysql@5.7`を実行し、MySQLを試してください。MySQLがインストールできたら、`brew services start mysql@5.7`コマンドを使い、起動します。`127.0.0.1`でデータベースに接続し、ユーザー名は`root`、パスワードは空文字列です。
+PHPをインストールしたら、[Composerパッケージマネージャー](https://getcomposer.org)をインストールする準備が整います。さらに、`〜/.composer/vendor/bin`ディレクトリがシステムの「PATH」にあることを確認する必要があります。Composerをインストールできたら、Laravel ValetをグローバルComposerパッケージとしてインストールできます。
+
+    composer global require laravel/valet
+
+最後に、Valetの`install`コマンドを実行します。これにより、ValetとDnsMasqが設定およびインストールされます。さらに、Valetデーモンは、システムの起動時に起動するように設定されます。
+
+    valet install
+
+Valetをインストールしたら、`pingfoobar.test`などのコマンドを使用してターミナルの`*.test`ドメインにpingを実行してみてください。Valetが正しくインストールされている場合、このドメインが`127.0.0.1`でレスポンスしているのがわかります。
+
+Valetは、マシンが起動するたびにデーモンを自動的に起動します。最初のValetインストールが完了したら、`valet start`や`valet install`を再度実行する必要ありません。
 
 <a name="php-versions"></a>
 #### PHPバージョン
 
-Valetでは`valet use php@version`コマンドにより、PHPバージョンを変更できます。指定されたPHPバージョンがインストールされていない場合、ValetはBrewによりインストールします。
+Valetでは、`valet use php@version`コマンドを使用してPHPのバージョンを切り替えることができます。Valetは、指定するPHPバージョンがまだインストールされていない場合、Homebrewを介してインストールします。
 
     valet use php@7.2
 
@@ -103,84 +97,111 @@ Valetでは`valet use php@version`コマンドにより、PHPバージョンを�
 
 > {note} 複数のPHPバージョンをインストールしている場合でも、Valetは一度に一つのPHPバージョンのみを提供します。
 
+<a name="database"></a>
+#### データベース
+
+アプリケーションにデータベースが必要な場合は、[DBngin](https://dbngin.com)を確認してください。DBnginは、MySQL、PostgreSQL、およびRedisを含む無料のオールインワンデータベース管理ツールを提供します。DBnginをインストールした後、`root`ユーザー名とパスワードに空の文字列を使用して、`127.0.0.1`でデータベースに接続できます。
+
 <a name="resetting-your-installation"></a>
 #### インストレーションのリセット
 
 Valetインストレーションが正しく動作せずに問題が起きた時は、`composer global update`の後に、`valet install`を実行してください。これによりインストール済みのValetがリセットされ、さまざまな問題が解決されます。稀にValetを「ハードリセット」する必要がある場合もあり、その場合は`valet install`の前に`valet uninstall --force`を実行してください。
 
-<a name="upgrading"></a>
-### アップグレード
+<a name="upgrading-valet"></a>
+### Valetのアップグレード
 
-Valetインストールをアップデートするには、ターミナルで`composer global update`コマンドを実行します。アップグレードできたら、`valet install`コマンドを実行し、必要な設定ファイルの追加アップグレードを行うのは、グッドプラクティスです。
+ターミナルで`composer global update`コマンドを実行すると、Valetのインストールを更新できます。アップグレード後、`valet install`コマンドを実行して、Valetが必要に応じて設定ファイルへ追加のアップグレードを行うことを推奨します。
 
 <a name="serving-sites"></a>
 ## サイト動作
 
-Valetがインストールできたら、サイトを動作させる準備ができました。Laravelサイトを動作させるために役立つ、`park`と`link`の２コマンドを用意しています。
+Valetがインストールされると、Laravelアプリケーションの提供を開始する準備が整います。Valetは、アプリケーションの提供に役立つ２つのコマンド`park`と`link`を提供しています。
 
 <a name="the-park-command"></a>
-#### `park`コマンド
+### `park`コマンド
 
-<div class="content-list" markdown="1">
-- `mkdir ~/Sites`のように、Mac上に新しいディレクトリを作成ししてください。次に`cd ~/Sites`し、`valet park`を実行します。このコマンドはカレントワーキングディレクトリをValetがサイトを探す親パスとして登録します。
-- 次に、このディレクトリ内で、新しいLaravelサイトを作成します。`laravel new blog`
-- `http://blog.test`をブラウザで開きます。
-</div>
+`park`コマンドは、アプリケーションを含むマシン上のディレクトリを登録します。ディレクトリがValetで「パーク」されると、そのディレクトリ内のすべてのディレクトリにWebブラウザの`http://<directory-name>.test`からアクセスできるようになります。
 
-**必要なのはこれだけです。** これで"parked"ディレクトリ内に作成されたLaravelプロジェクトは、`http://フォルダ名.test`規約に従い、自動的に動作します。
+    cd ~/Sites
+
+    valet park
+
+これだけです。これで、「パークした」ディレクトリ内に作成したアプリケーションはすべて、「http://<directory-name>.test」規則を使用して自動的に提供されます。したがって、パーキングディレクトリに「laravel」という名前のディレクトリが含まれている場合、そのディレクトリ内のアプリケーションには「http://laravel.test」からアクセスできます。
 
 <a name="the-link-command"></a>
-#### `link`コマンド
+### `link`コマンド
 
-`link`コマンドは`park`のように親ディレクトリを指定するのではなく、各ディレクトリ中で一つのサイトを動作させるのに便利です。
+`link`コマンドを使用してLaravelアプリケーションを提供することもできます。このコマンドは、ディレクトリ全体ではなく、ディレクトリ内の単一のサイトにサービスを提供する場合に役立ちます。
 
-<div class="content-list" markdown="1">
-- ターミナルでプロジェクトのディレクトリへ移動し、`valet link アプリケーション名`を実行します。Valetはカレントワーキングディレクトリから`~/.config/valet/Sites`内へシンボリックリンクを張ります。
-- `link`コマンド実行後、ブラウザで`http://アプリケーション名.test`にアクセスできます。
-</div>
+    cd ~/Sites/laravel
 
-リンクされた全ディレクトリをリストするには、`valet links`コマンドを実行してください。シンボリックリンクを外すときは、`valet unlink app-name`を使います。
+    valet link
 
-> {tip} 複数の（サブ）ドメインで同じプロジェクトを動かすために、`valet link`を使用できます。サブドメインや他のドメインをプロジェクトに追加するためには、プロジェクトフォルダから`valet link subdomain.app-name`を実行します。
+`link`コマンドを使用してアプリケーションがValetにリンクされると、そのディレクトリ名を使用してアプリケーションにアクセスできます。したがって、上記の例でリンクされたサイトは、`http://laravel.test`でアクセスできます。
+
+別のホスト名でアプリケーションを提供する場合は、ホスト名を`link`コマンドへ渡せます。たとえば、以下のコマンドを実行して、アプリケーションを`http://application.test`で利用できます。
+
+    cd ~/Sites/laravel
+
+    valet link application
+
+`links`コマンドを実行して、リンクされているすべてのディレクトリのリストを表示できます。
+
+    valet links
+
+`unlink`コマンドは、サイトへのシンボリックリンクを破棄できます。
+
+    cd ~/Sites/laravel
+
+    valet unlink
 
 <a name="securing-sites"></a>
-#### TLSを使ったサイト安全化
+### TLSによるサイト保護
 
-Valetはデフォルトで通常のHTTP通信で接続します。しかし、HTTP/2を使った暗号化されたTLSで通信したい場合は、`secure`コマンドを使ってください。たとえば、`laravel.test`ドメインでValetによりサイトが動作している場合、以下のコマンドを実行することで安全な通信を行います。
+デフォルトでは、ValetはHTTP経由でサイトへサービスを提供します。ただし、HTTP/2を使用して暗号化されたTLSを介してサイトにサービスを提供する場合は、`secure`コマンドを使用できます。たとえば、サイトが`laravel.test`ドメインでValetによって提供されている場合は、次のコマンドを実行してサイトを保護する必要があります。
 
     valet secure laravel
 
-サイトを「安全でない」状態へ戻し、通常のHTTP通信を使いたい場合は、`unsecure`コマンドです。`secure`コマンドと同様に、セキュアな通信を辞めたいホスト名を指定します。
+サイトを「保護解除」し、プレーンHTTPを介したトラフィックの提供に戻すには、`unsecure`コマンドを使用します。`secure`コマンドと同様に、このコマンドはセキュリティで保護しなくするホスト名を指定します。
 
     valet unsecure laravel
 
 <a name="sharing-sites"></a>
-## サイトの共有
+## サイト共有
 
-Valetはローカルサイトをモバイルでテストしたり、チームメンバーや顧客と共有したりするため、世界に公開するコマンドも用意しています。Valetがインストールしてあれば、他のソフトウェアは必要ありません。
+Valetには、ローカルサイトを世界へ公開し共有するコマンドも含まれており、モバイルデバイスでサイトをテストしたり、チームメンバーやクライアントと共有したりする簡単な方法を提供しています。
 
 <a name="sharing-sites-via-ngrok"></a>
 ### Ngrokを使用した公開
 
-サイトを共有するには、ターミナルでサイトのディレクトリに移動し、`valet share`コマンドを実行します。公開用のURLはクリップボードにコピーされますので、ブラウザに直接ペーストしてください。これだけでブラウザで閲覧したり、チームでシェアできます。
+サイトを共有するには、ターミナルでサイトのディレクトリに移動し、Valetの`share`コマンドを実行します。公開URLがクリップボードにコピーされ、ブラウザに直接貼り付けたり、チームと共有したりする準備が整います。
 
-To stop sharing your site, hit `Control + C` to cancel the process.
+    cd ~/Sites/laravel
 
-> {tip} 共有コマンドには、`valet share --region=eu`のようなオプションのパラメータを渡せます。詳しい情報は、[ngrokのドキュメント](https://ngrok.com/docs)をご覧ください。
+    valet share
+
+サイトの共有を停止するには、`Control + C`を押します。
+
+> {tip} `valet share --region=eu`など、追加のNgrokパラメータをshareコマンドに渡すことができます。詳細は、[ngrokのドキュメント](https://ngrok.com/docs)を参照してください。
 
 <a name="sharing-sites-via-expose"></a>
 ### Exposeによりサイトを共有する
 
-[Expose](https://beyondco.de/docs/expose)がインストールされている場合は、ターミナルでサイトのディレクトリへ移動し、`expose`コマンドを実行すればサイトを共有できます。サポートされているコマンドラインパラメータは、exposeドキュメントを参照してください。サイトを共有すると、Exposeは他のデバイスやチームメンバー間で使用できる共有可能URLを表示します。
+[Expose](https://beyondco.de/docs/expose)がインストールされている場合は、ターミナルのサイトのディレクトリに移動して「expose」コマンドを実行することで、サイトを共有できます。サポートされている追加のコマンドラインパラメーターについては、[Exposeのドキュメント](https://beyondco.de/docs/expose/introduction)を参照してください。サイトを共有した後、Exposeは他のデバイスまたはチームメンバー間で使用できる共有可能なURLを表示します。
 
-To stop sharing your site, hit `Control + C` to cancel the process.
+    cd ~/Sites/laravel
+
+    valet expose
+
+サイトの共有を停止するには、`Control + C`を押します。
 
 <a name="sharing-sites-on-your-local-network"></a>
 ### ローカルネットワークでのサイト共有
 
-Valetは内部の`127.0.0.1`インターフェイスへ送信されるトラフィックをデフォルトで制限しています。これにより、開発マシンをインターネットからのセキュリティリスクに晒すのを防いでいます。
+Valetは、開発マシンがインターネットからのセキュリティリスクにさらされないように、デフォルトで内部の`127.0.0.1`インターフェイスへの受信トラフィックを制限します。
 
-たとえば、`192.168.1.10/app-name.test`のようにIPアドレスにより、あなたのマシン上のValetサイトへローカルネットワーク上の他のデバイスからのアクセスを許す必要があるとしましょう。８０ポートと４４３ポートへ向けての`127.0.0.1:`プレフィックスを削除することで、`listen`ディレクティブの制限を解除するために、適切なNginx設定ファイルを編集する必要があります、
+ローカルネットワーク上の他のデバイスが自分のマシンのIPアドレス（例:`192.168.1.1.10/application.test`）を介して自分のマシン上のValetサイトにアクセスできるようにしたい場合は、そのサイトの適切なNginx設定ファイルを手動で編集して`listen`ディレクティブの制限を取り除く必要があります。ポート80と443の`listen`ディレクティブのプレフィックス`127.0.0.0.1:`を削除する必要があります。
+
 
 プロジェクトで`valet secure`を実行していない場合は、`/usr/local/etc/nginx/valet/valet.conf`ファイルを編集し、HTTPSではないサイトへのネットワークアクセスを開けます。あるサイトに対し`valet secure`を実行することで、HTTPSにてプロジェクトサイトを動かしている場合は、`~/.config/valet/Nginx/app-name.test`ファイルを編集する必要があります。
 
@@ -189,19 +210,17 @@ Nginx設定を更新したら、設定の変更を反映するために`valet re
 <a name="site-specific-environment-variables"></a>
 ## サイト限定環境変数
 
-あるアプリケーションでは、サーバ環境変数に依存するフレームワークを使っているが、プロジェクトでそのような変数を設定する手段を提供していないことがあります。Valetでは、プロジェクトのルートに`.valet-env.php`ファイルを追加することで、サイト限定の環境変数を設定できます。
+他のフレームワークを使用する一部のアプリケーションは、サーバ環境変数に依存する場合がありますが、それらの変数をプロジェクト内で設定する方法を提供しません。Valetを使用すると、プロジェクトのルート内に`.valet-env.php`ファイルを追加することにより、サイト固有の環境変数を設定できます。このファイルは、配列で指定する各サイトのグローバル`$_SERVER`配列へ追加するサイト／環境変数のペアの配列を返す必要があります。
 
     <?php
 
-    // foo.testサイトのために、$_SERVER['key']へ"value"をセットする
     return [
-        'foo' => [
+        // laravel.testサイトの$_SERVER['key']を"value"へ設定
+        'laravel' => [
             'key' => 'value',
         ],
-    ];
 
-    // 全サイトのために、$_SERVER['key']へ"value"をセットする
-    return [
+        // すべてのサイトで$_SERVER['key']を"value"へ設定
         '*' => [
             'key' => 'value',
         ],
@@ -214,24 +233,26 @@ Nginx設定を更新したら、設定の変更を反映するために`valet re
 
 これを解決するには、`proxy`コマンドを使いプロキシを生成してください。たとえば、`http://elasticsearch.test`からのトラフィックをすべて`http://127.0.0.1:9200`へ仲介するには、以下のとおりです。
 
-    valet proxy elasticsearch http://127.0.0.1:9200
+```bash
+valet proxy elasticsearch http://127.0.0.1:9200
+```
 
 `unproxy`コマンドでプロキシを削除できます。
 
     valet unproxy elasticsearch
 
-`proxies`コマンドを使い、プロキシとしてサイト設定している全サイトをリスト表示できます。
+`proxies`コマンドを使用して、プロキシするすべてのサイト設定を一覧表示できます。
 
     valet proxies
 
 <a name="custom-valet-drivers"></a>
 ## カスタムValetドライバ
 
-Valetでサポートされていない、他のフレームワークやCMSでPHPアプリケーションを実行するには、独自のValet「ドライバ」を書く必要があります。Valetをインストールすると作成される、`~/.config/valet/Drivers`ディレクトリに`SampleValetDriver.php`ファイルが存在しています。このファイルは、カスタムドライバーをどのように書いたら良いかをデモンストレートするサンプルドライバの実装コードです。ドライバを書くために必要な`serves`、`isStaticFile`、`frontControllerPath`の３メソッドを実装するだけです。
+独自のValet「ドライバ」を作成して、ValetがネイティブにサポートしていないフレームワークやCMSで実行するPHPアプリケーションを提供できます。Valetをインストールすると、`SampleValetDriver.php`ファイルを含む`〜/.config/valet/Drivers`ディレクトリが作成されます。このファイルには、カスタムドライバの作成方法を示すサンプルドライバ実装が含まれています。ドライバを作成するには、`serves`、`isStaticFile`、および`frontControllerPath`の３つのメソッドを実装するだけです。
 
 全３メソッドは`$sitePath`、`$siteName`、`$uri`を引数で受け取ります。`$sitePath`は、`/Users/Lisa/Sites/my-project`のように、サイトプロジェクトへのフルパスです。`$siteName`は"ホスト" / "サイト名"記法のドメイン(`my-project`)です。`$uri`はやって来たリクエストのURI(`/foo/bar`)です。
 
-カスタムValetドライバを書き上げたら、`フレームワークValetDriver.php`命名規則をつかい、`~/.config/valet/Drivers`ディレクトリ下に設置してください。たとえば、WordPress用にカスタムValetドライバを書いたら、ファイル名は`WordPressValetDriver.php`になります。
+カスタムValetドライバが完成したら、`FrameworkValetDriver.php`命名規則を使用して`〜/.config/valet/Drivers`ディレクトリに配置します。たとえば、WordPress用のカスタムバレットドライバを作成している場合、ファイル名は`WordPressValetDriver.php`である必要があります。
 
 カスタムValetドライバで実装する各メソッドのサンプルコードを見ていきましょう。
 
@@ -240,7 +261,7 @@ Valetでサポートされていない、他のフレームワークやCMSでPHP
 
 `serves`メソッドは、そのドライバがやって来たリクエストを処理すべき場合に、`true`を返してください。それ以外の場合は`false`を返してください。そのためには、メソッドの中で、渡された`$sitePath`の内容が、動作させようとするプロジェクトタイプを含んでいるかを判定します。
 
-では擬似サンプルとして、`WordPressValetDriver`を書いてみましょう。`serves`メソッドは以下のようになります。
+たとえば、`WordPressValetDriver`を書いていると仮定してみましょう。`serves`メソッドは次のようになります。
 
     /**
      * このドライバでリクエストを処理するか決める
@@ -282,7 +303,7 @@ Valetでサポートされていない、他のフレームワークやCMSでPHP
 <a name="the-frontcontrollerpath-method"></a>
 #### `frontControllerPath`メソッド
 
-`frontControllerPath`メソッドは、アプリケーションの「フロントコントローラ」への絶対パスを返します。通常は"index.php`ファイルか、似たようなファイルでしょう。
+`frontControllerPath`メソッドは、アプリケーションの「フロントコントローラ」への完全修飾パスを返す必要があります。これは通常、「index.php」ファイルまたは同等のものです。
 
     /**
      * アプリケーションのフロントコントローラへの絶対パスの取得
@@ -300,7 +321,7 @@ Valetでサポートされていない、他のフレームワークやCMSでPHP
 <a name="local-drivers"></a>
 ### ローカルドライバ
 
-一つのアプリケーションに対して、Valetのカスタムドライバを定義する場合は、アプリケーションのルートディレクトリに`LocalValetDriver.php`を作成してください。カスタムドライバは、ベースの`ValetDriver`クラスか、`LaravelValetDriver`のような、既存のアプリケーション専用のドライバを拡張します。
+単一のアプリケーション用にカスタムValetドライバを定義する場合は、アプリケーションのルートディレクトリに`LocalValetDriver.php`ファイルを作成します。カスタムドライバは、基本の`ValetDriver`クラスを拡張するか、`LaravelValetDriver`などの既存のアプリケーション固有のドライバを拡張する場合があります。
 
     class LocalValetDriver extends LaravelValetDriver
     {
@@ -348,22 +369,64 @@ Valetでサポートされていない、他のフレームワークやCMSでPHP
 <a name="valet-directories-and-files"></a>
 ## Valetのディレクトリとファイル
 
-Valet環境の問題を追求／解決するときに役立つ、ディレクトリとファイルの一覧です。
+Valet環境の問題のトラブルシューティングを行う際に、次のディレクトリとファイルの情報が役立つでしょう。
 
-ファイル／ディレクトリ | 説明
---------- | -----------
-`~/.config/valet/` | Valetの設定すべてが含まれます。このフォルダのバックアップを管理しておきましょう。
-`~/.config/valet/dnsmasq.d/` | DNSMasqの設定が含まれます。
-`~/.config/valet/Drivers/` | カスタムValetドライバが含まれます。
-`~/.config/valet/Extensions/` | カスタムValet拡張／コマンドが含まれます。
-`~/.config/valet/Nginx/` | Valetが生成したNginxサイト設定すべてが含まれます。生成済みファイルは`install`、`secure`、`tld`コマンド実行時に再生成されます。
-`~/.config/valet/Sites/` | リンク済みプロジェクへのシンボリックリンクすべてが含まれます。
-`~/.config/valet/config.json` | Valetの主設定ファイルです。
-`~/.config/valet/valet.sock` | ValetのNginx設定で指定されているPHP-FPMソケットです。PHPが正しく実行されているときのみ存在します。
-`~/.config/valet/Log/fpm-php.www.log` | PHPエラーのユーザーログです。
-`~/.config/valet/Log/nginx-error.log` | Nginxエラーのユーザーログです。
-`/usr/local/var/log/php-fpm.log` | PHP-FPMエラーのシステムログです。
-`/usr/local/var/log/nginx` | Nginxのアクセスとエラーログが含まれます。
-`/usr/local/etc/php/X.X/conf.d` | さまざまなPHP設定に使用される`*.ini`ファイルが含まれます。
-`/usr/local/etc/php/X.X/php-fpm.d/valet-fpm.conf` | PHP-FPMプール設定ファイルです。
-`~/.composer/vendor/laravel/valet/cli/stubs/secure.valet.conf` | サイト認証を構築するのに使用されるデフォルトNginx設定です。
+#### `~/.config/valet`
+
+Valetのすべての設定が含まれます。定期的にこのディレクトリをバックアップすることを推奨します。
+
+#### `~/.config/valet/dnsmasq.d/`
+
+このディレクトリは、DNSMasq設定を保存しています。
+
+#### `~/.config/valet/Drivers/`
+
+このディレクトリは、Valetのドライバを保存しています。ドライバは、特定のフレームワーク／CMSをどのように提供するかを決めています。
+
+#### `~/.config/valet/Extensions/`
+
+このディレクトリは、カスタムのValet拡張機能／コマンドを保存します。
+
+#### `~/.config/valet/Nginx/`
+
+このディレクトリは、ValetのNginxサイト設定をすべて保存しています。ディレクトリ内のファイルは、`install`、`secure`、および`tld`コマンドを実行すると再構築されます。
+
+#### `~/.config/valet/Sites/`
+
+このディレクトリには、[リンクしたプロジェクト](#the-link-command)のすべてのシンボリックリンクが保存されます。
+
+#### `~/.config/valet/config.json`
+
+このファイルは、Valetのマスター設定ファイルです。
+
+#### `~/.config/valet/valet.sock`
+
+このファイルは、ValetのNginxインストールが使用するPHP-FPMソケットです。これは、PHPが正しく実行されている場合にのみ存在します。
+
+#### `~/.config/valet/Log/fpm-php.www.log`
+
+このファイルは、PHPエラーのユーザーログです。
+
+#### `~/.config/valet/Log/nginx-error.log`
+
+このファイルは、Nginxエラーのユーザーログです。
+
+#### `/usr/local/var/log/php-fpm.log`
+
+このファイルは、PHP-FPMエラーのシステムログです。
+
+#### `/usr/local/var/log/nginx`
+
+このディレクトリは、Nginxアクセスログとエラーログを保存します。
+
+#### `/usr/local/etc/php/X.X/conf.d`
+
+このディレクトリには、さまざまなPHP設定設定用の`*.ini`ファイルが含まれています。
+
+#### `/usr/local/etc/php/X.X/php-fpm.d/valet-fpm.conf`
+
+このファイルは、PHP-FPMプール設定ファイルです。
+
+#### `~/.composer/vendor/laravel/valet/cli/stubs/secure.valet.conf`
+
+このファイルは、サイトのSSL証明書を構築するために使用するデフォルトのNginx設定です。

@@ -3,55 +3,93 @@
 - [イントロダクション](#introduction)
 - [インストール](#installation)
     - [設定](#configuration)
+    - [バランス戦略](#balancing-strategies)
     - [ダッシュボードの認可](#dashboard-authorization)
 - [Horizonのアップグレード](#upgrading-horizon)
 - [Horizonの実行](#running-horizon)
     - [Horizonのデプロイ](#deploying-horizon)
 - [タグ](#tags)
 - [通知](#notifications)
-- [メトリックス](#metrics)
+- [メトリクス](#metrics)
 - [失敗したジョブの削除](#deleting-failed-jobs)
-- [キューのジョブのクリア](#clearing-jobs-from-queues)
+- [キューのジョブをクリア](#clearing-jobs-from-queues)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-Horizon（水平線、展望）は、Laravelで動作するRedisキューのための、美しいダッシュボードとコード駆動による設定を提供します。Horizonにより、ジョブのスループット、ランタイム、実行の失敗など、キューシステムのキーメトリックを簡単に監視できます。
+> {tip} Laravel Horizo​​nを掘り下げる前に、Laravelの基本的な[キューサービス](/docs/{{version}}/queues)をよく理解しておく必要があります。Horizo​​nは、Laravelが提供する基本的なキュー機能にまだ慣れていない場合は混乱してしまう可能性がある追加機能であり、Laravelのキューを拡張します。
 
-一つのシンプルな設定ファイルにすべてのワーカ設定を保存するため、チーム全体がコラボレート可能なソースコントロール下に、設定を保持できます。
+Laravel Horizo​​nは、Laravelを利用した[Redisキュー](/docs/{{version}}/queues)に美しいダッシュボードとコード駆動型の設定を提供します。Horizo​​nを使用すると、ジョブのスループット、ランタイム、ジョブの失敗など、キューシステムの主要なメトリックを簡単に監視できます。
+
+Horizo​​nを使用する場合、すべてのキューワーカ設定は単一の単純な設定ファイルへ保存します。バージョン管理されたファイルでアプリケーションのワーカ設定を定義することにより、アプリケーションのデプロイ時に、キューワーカを簡単にスケーリングや変更できます。
 
 <img src="https://laravel.com/img/docs/horizon-example.png">
 
 <a name="installation"></a>
 ## インストール
 
-> {note} `queue`設定ファイルで、`redis`をキューコネクションへ確実に指定してください。
+> {note} Laravel Horizo​​nは、[Redis](https://redis.io)を使用してキューを使用する必要があります。したがって、アプリケーションの`config/queue.php`設定ファイルでキュー接続が`redis`に設定されていることを確認する必要があります。
 
-Composerを使い、LaravelプロジェクトにHorizonをインストールします。
+Composerパッケージマネージャーを使用して、Horizo​​nをプロジェクトにインストールします。
 
     composer require laravel/horizon
 
-Horizonをインストールしたら、`horizon:install` Artisanコマンドを使用し、アセットを公開します。
+Horizo​​nをインストールした後、`horizo​​n:install` Artisanコマンドを使用してアセット公開します。
 
     php artisan horizon:install
 
 <a name="configuration"></a>
 ### 設定
 
-Horizonのアセットを公開すると、`config/horizon.php`に一番重要な設定ファイルが設置されます。この設定ファイルにより、ワーカのオプションを設置します。各オプションにはその目的が説明されていますので、ファイル全体をしっかりと確認してください。
+Horizo​​nのアセットを公開すると、そのプライマリ設定ファイルは`config/horizo​​n.php`へ設置されます。この設定ファイルでアプリケーションのキューワーカオプションを設定できます。各設定オプションにはその目的の説明が含まれているため、このファイルを徹底的に調べてください。
 
-> {note} Horizonを実行する予定の環境ごとのエントリーを`horizon`設定ファイルの`environments`部分へ確実に含めてください。
+<a name="environments"></a>
+#### 環境
 
-<a name="balance-options"></a>
-#### バランスオプション
+インストール後に、よく理解する必要のある主要なHorizo​​n設定オプションは、`environments`設定オプションです。この設定オプションは、アプリケーションを実行する環境の配列であり、各環境のワーカプロセスオプションを定義します。デフォルトのこのエントリは`production`環境と`local`環境です。ただし、環境は必要に応じ自由に追加できます。
 
-Horizonでは３つのバランシング戦略が選択できます。`simple`と`auto`、`false`です。`simple`戦略は設定ファイルのデフォルトで、投入されたジョブをプロセス間に均等に割り当てます。
+    'environments' => [
+        'production' => [
+            'supervisor-1' => [
+                'maxProcesses' => 10,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+        ],
+
+        'local' => [
+            'supervisor-1' => [
+                'maxProcesses' => 3,
+            ],
+        ],
+    ],
+
+Horizo​​nを起動すると、アプリケーションを実行する環境のワーカープロセス設定オプションが使用されます。通常、環境は`APP_ENV`[環境変数](/docs/{{version}}/configuration#determining-the-current-environment)の値によって決定されます。たとえば、デフォルトの`local` Horizo​​n環境は、３つのワーカープロセスを開始し、各キューに割り当てられたワーカプロセスの数のバランスを自動的にとるように設定されています。デフォルトの`production`環境は、最大１０個のワーカプロセスを開始し、各キューに割り当てられたワーカプロセスの数のバランスを自動的にとるように設定されています。
+
+> {note} `horizo​​n`設定ファイルの`environments`部分に、Horizonを実行する予定の各[環境](/docs/{{version}}/configuration#environment-configuration)のエントリを確実に指定してください。
+
+<a name="supervisors"></a>
+#### スーパーバイザ
+
+Horizo​​nのデフォルトの設定ファイルでわかるように。各環境には、１つ以上の「スーパーバイザ（supervisor）」を含めることができます。デフォルトでは、設定ファイルはこのスーパーバイザを`supervisor-1`として定義します。ただし、スーパーバイザには自由に名前を付けることができます。各スーパーバイザは、基本的にワーカプロセスのグループを「監視」する責任があり、キュー間でワーカプロセスのバランスを取ります。
+
+特定の環境で実行する必要があるワーカプロセスの新しいグループを定義する場合は、指定環境にスーパーバイザを追加します。アプリケーションが使用する特定のキューへ他のバランス戦略やワーカープロセス数を指定することもできます。
+
+<a name="default-values"></a>
+#### デフォルト値
+
+Horizo​​nのデフォルト設定ファイル内に、`defaults`設定オプションがあります。この設定オプションにアプリケーションの[スーパーバイザ](#supervisors)のデフォルト値を指定します。スーパーバイザのデフォルト設定値は、各環境のスーパーバイザの設定にマージされるため、スーパーバイザを定義するときに不必要な繰り返しを回避できます。
+
+<a name="balancing-strategies"></a>
+### バランス戦略
+
+Laravelのデフォルトのキューシステムとは異なり、Horizo​​nでは３つのワーカーバランス戦略(`simple`、`auto`、`false`)から選択できます。設定ファイルのデフォルトである`simple`戦略は、受信ジョブをワーカープロセス間で均等に分割します。
 
     'balance' => 'simple',
 
-`auto`戦略は、現在のキュー負荷に基づき、それぞれのキューへ割り当てるワーカプロセス数を調整します。たとえば、`notifications`キューに千個のジョブが溜まっており、一方で`render`キューが空の場合、Horizonは空になるまで`notifications`キューにより多くのワーカを割り当てます。`balance`オプションへ`false`を設定すると、設定にリストした順番でキューが処理される、Laravelデフォルトの振る舞いが使われます。
+`auto`戦略は、キューの現在のワークロードに基づいて、キューごとのワーカープロセスの数を調整します。たとえば、`render`キューが空のときに`notifications`キューに1,000の保留中のジョブがある場合、Horizo​​nはキューが空になるまで`notifications`キューにさらに多くのワーカを割り当てます。
 
-`auto`戦略を使う場合、Horizonがスケールアップ／ダウンで使用すべきプロセス数の最小値と最大値をコントロールするために、`minProcesses`と`maxProcesses`設定オプションを定義してください。
+`auto`戦略を使用する場合、`minProcesses`および`maxProcesses`設定オプションを定義して、Horizo​​nがスケールアップおよびスケールダウンするワーカープロセスの最小数と最大数を制御します。
 
     'environments' => [
         'production' => [
@@ -68,27 +106,19 @@ Horizonでは３つのバランシング戦略が選択できます。`simple`�
         ],
     ],
 
-`balanceMaxShift`と`balanceCooldown`の設定値はいかに素早くHorizonをワーカの要求に合わせてスケールするかを決めるためのものです。上の例の場合、３秒毎に最大１つの新しいプロセスを生成するか、破棄します。アプリケーションの必要性を基にし、自由にこの値を調整してください。
+`balanceMaxShift`と`balanceCooldown`の設定値は、Horizo​​nがワーカの需要を満たすためにどれだけ迅速にスケーリングするかを決定します。上記の例では、３秒ごとに最大１つの新しいプロセスが作成または破棄されます。アプリケーションのニーズに基づいて、必要に応じてこれらの値を自由に調整できます。
 
-<a name="job-trimming"></a>
-#### ジョブのクリア
-
-`horizon`設定ファイルで、現在がどのくらいの長さなのか、それと失敗したジョブをどのくらい保持しているかを分数で設定できます。デフォルトでは、現在のジョブは１時間、失敗したジョブは１週間保持されます。
-
-    'trim' => [
-        'recent' => 60,
-        'failed' => 10080,
-    ],
+`balance`オプションを`false`へ設定している場合、デフォルトのLaravel動作が使用され、設定にリストされている順序でキューを処理します。
 
 <a name="dashboard-authorization"></a>
 ### ダッシュボードの認可
 
-Horizonは、`/horizon`でダッシュボードを表示します。デフォルトでは`local`環境でのみ、このダッシュボードへアクセスできます。`app/Providers/HorizonServiceProvider.php`ファイルの中に、`gate`メソッドが存在しています。この認可ゲートは**local以外**の環境における、Horizonへのアクセスをコントロールします。Horizonへのアクセスを必要に応じ制限するために、自由に変更してください。
+Horizo​​nは、`/horizo​​n`のURIでダッシュボードを公開します。デフォルトでは、このダッシュボードにアクセスできるのは`local`環境のみです。ただし、`app/Providers/Horizo​​nServiceProvider.php`ファイル内には、[認可ゲート](/docs/{{version}}/authentication#gates)の定義があります。この認証ゲートは、**非ローカル**環境でのHorizo​​nへのアクセスを制御します。必要に応じてこのゲートを自由に変更して、Horizo​​nインストールへのアクセスを制限できます。
 
     /**
      * Horizonゲートの登録
      *
-     * このゲートはlocal以外の環境で、誰がHorizonへアクセスできるか決定している。
+     * このゲートは、非ローカル環境で誰がHorizo​​nにアクセスできるかを決定します。
      *
      * @return void
      */
@@ -101,18 +131,19 @@ Horizonは、`/horizon`でダッシュボードを表示します。デフォル
         });
     }
 
-> {note} LaravelはGateへ自動的に**認証済み**ユーザーを依存注入します。IP制限のような別のHorizonセキュリティ方法をアプリケーションで提供する場合は、Horizonユーザーは「ログイン」している必要はいらないでしょう。そのため、上記の`function ($user)`を`function ($user = null)`へ変更し、Laravelに認証は必要ないと強制的に知らせてください。
+<a name="alternative-authentication-strategies"></a>
+#### その他の認証戦略
+
+Laravelは認証済みユーザーをゲートクロージャへ自動的に依存挿入することを忘れないでください。アプリケーションがIP制限などの別の方法でHorizo​​nセキュリティを提供する場合、Horizo​​nユーザーは「ログイン」する必要がない場合もあります。したがって、Laravelの認証を必要としないようにするには、上記の`function($user)`クロージャ引数を`function($user=null)`に変更する必要があります。
 
 <a name="upgrading-horizon"></a>
 ## Horizonのアップグレード
 
-Horizonの新しいメジャーバージョンへアップグレードする場合は、注意深く[アップグレードガイド](https://github.com/laravel/horizon/blob/master/UPGRADE.md)を確認するのが重要です。
-
-付け加えて、新しいHorizonへバージョンアップするときは、アセットを再公開する必要があります。
+Horizo​​nの新しいメジャーバージョンにアップグレードするときは、[アップグレードガイド](https://github.com/laravel/horizo​​n/blob/master/UPGRADE.md)を注意深く確認することが重要です。さらに、新しいHorizo​​nバージョンにアップグレードするときは、Horizo​​nのアセットを再公開する必要があります。
 
     php artisan horizon:publish
 
-最新の更新状態を維持し、将来のアップデートで起きる問題を防ぐために、`composer.json`ファイルの`post-update-cmd`スクリプトへこのコマンドを追加しておくのが良いでしょう。
+アセットを最新の状態に保ち、将来の更新で問題が発生しないようにするには、アプリケーションの`composer.json`ファイルの`post-update-cmd`スクリプトに`horizo​​n:publish`コマンドを追加します。
 
     {
         "scripts": {
@@ -125,65 +156,69 @@ Horizonの新しいメジャーバージョンへアップグレードする場�
 <a name="running-horizon"></a>
 ## Horizonの実行
 
-`config/horizon.php`設定ファイルでワーカの設定を済ませたら、`horizon` Artisanコマンドを使用し、Horizonを使用開始します。このコマンド一つで、設定済みのワーカ全部を起動できます。
+アプリケーションの`config/horizo​​n.php`設定ファイルでスーパーバイザとワーカを設定したら、`horizo​​n` Artisanコマンドを使用してHorizo​​nを起動できます。この単一のコマンドは、現在の環境用に設定されたすべてのワーカプロセスを開始します。
 
     php artisan horizon
 
-Horizonプロセスを`horizon:pause` Artisanコマンドで一時停止したり、`horizon:continue`コマンドで処理を続行したりできます。
+`horizo​​n:pause`と`horizo​​n:continue` Artisanコマンドで、Horizo​​nプロセスを一時停止したり、ジョブの処理を続行するように指示したりできます。
 
     php artisan horizon:pause
 
     php artisan horizon:continue
 
-`horizo​​n：pause-supervisor`、` horizo​​n：continue-supervisor` Artisanコマンドを使用して、特定のHorizo​​nスーパーバイザー（ワーカーグループ）を一時停止、続行することもできます。
+`horizo​​n:pause-supervisor`と`horizo​​n:continue-supervisor` Artisanコマンドを使用して、特定のHorizo​​n[スーパーバイザ](#supervisors)を一時停止／続行することもできます。
 
     php artisan horizon:pause-supervisor supervisor-1
 
     php artisan horizon:continue-supervisor supervisor-1
 
-`horizon:status` Artisanコマンドにより、Horizonプロセスの現在の状態を確認できます。
+`horizo​​n:status` Artisanコマンドを使用して、Horizo​​nプロセスの現在のステータスを確認できます。
 
     php artisan horizon:status
 
-マシン上のマスタHorizonプロセスを穏やかに終了させたい場合は、`horizon:terminate` Artisanコマンドを使用します。現在処理中のジョブが完了した後に、Horizonは停止します。
+`horizo​​n:terminate` Artisanコマンドを使用して、Horizo​​nプロセスを正常に終了できます。現在処理されているジョブがすべて完了してから、Horizo​​nは実行を停止します。
 
     php artisan horizon:terminate
 
 <a name="deploying-horizon"></a>
 ### Horizonのデプロイ
 
-Horizonを実働サーバにデプロイする場合、`php artisan horizon`コマンドをプロセスモニタで監視し、予期せず終了した場合には再起動をかけるように設定する必要があります。サーバに新しいコードをデプロイしたときに、Horizonプロセスを停止指示する必要があります。その結果、プロセスモニタにより再起動され、コードの変更が反映されます。
+Horizo​​nをアプリケーションの実際のサーバにデプロイする準備ができたら、`php artisan horizo​​n`コマンドを監視するようにプロセスモニタを設定し、予期せず終了した場合は再起動する必要があります。心配ありません。以下からプロセスモニタのインストール方法について説明します。
+
+アプリケーションのデプロイメントプロセス中で、Horizo​​nプロセスへ終了するように指示し、プロセスモニターによって再起動され、コードの変更を反映するようにする必要があります。
+
+    php artisan horizon:terminate
 
 <a name="installing-supervisor"></a>
 #### Supervisorのインストール
 
-SupervisorはLinuxオペレーティングシステムのプロセスモニターで、`horizon`システムが停止すると自動的に再起動してくれます。UbuntuへSupervisorをインストールするには、次のようにコマンドを入力します。
+SupervisorはLinuxオペレーティングシステムのプロセスモニタであり、実行が停止すると`horizon`プロセスを自動的に再起動してくれます。UbuntuにSupervisorをインストールするには、次のコマンドを使用できます。Ubuntuを使用していない場合は、オペレーティングシステムのパッケージマネージャーを使用してSupervisorをインストールしてください。
 
     sudo apt-get install supervisor
 
-> {tip} Supervisorの設定を自分で行うのに圧倒されるようでしたら、[Laravel Forge](https://forge.laravel.com)の使用を考慮してください。LaravelプロジェクトのためにSupervisorを自動的にインストールし、設定します。
+> {tip} 自分でSupervisorを設定するのが難しいと思われる場合は、[Laravel Forge](https://forge.laravel.com)の使用を検討してください。これにより、LaravelプロジェクトのSupervisorは自動的にインストールおよび設定されます。
 
 <a name="supervisor-configuration"></a>
 #### Supervisor設定
 
-Supervisorの設定ファイルは通常`/etc/supervisor/conf.d`へ保存されています。このディレクトリの中では、Supervisorへプロセスをどのようにモニタリングするのかを指示するために、設定ファイルをいくつでも作成できます。一例として、`horizon.conf`ファイルを作成し、`horizon`プロセスを起動・監視してみましょう。
+Supervisor設定ファイルは通常、サーバの`/etc/supervisor/conf.d`ディレクトリ内に保管されます。このディレクトリ内に、プロセスの監視方法をスSupervisorに指示する設定ファイルをいくつでも作成できます。たとえば、`horizo​​n`プロセスを開始および監視する`horizo​​n.conf`ファイルを作成しましょう。
 
     [program:horizon]
     process_name=%(program_name)s
-    command=php /home/forge/app.com/artisan horizon
+    command=php /home/forge/example.com/artisan horizon
     autostart=true
     autorestart=true
     user=forge
     redirect_stderr=true
-    stdout_logfile=/home/forge/app.com/horizon.log
+    stdout_logfile=/home/forge/example.com/horizon.log
     stopwaitsecs=3600
 
-> {note} 一番時間がかかるジョブが消費する秒数より大きな値を`stopwaitsecs`へ必ず指定してください。そうしないと、Supervisorは処理が終了する前に、そのジョブをキルしてしまうでしょう。
+> {note} `stopwaitsecs`の値が、最も長く実行されているジョブにより消費される秒数よりも大きいことを確認する必要があります。そうしないと、Supervisorは、処理が完了する前にジョブを強制終了する可能性があります。
 
 <a name="starting-supervisor"></a>
-#### Supervisorの起動
+#### Supervisorの開始
 
-設定ファイルが作成できたら、Supervisor設定をを更新し、起動するために次のようにコマンドを入力します。
+設定ファイルを作成したら、以下のコマンドを使用して、Supervisor設定を更新し、監視対象プロセスを開始できます。
 
     sudo supervisorctl reread
 
@@ -191,12 +226,12 @@ Supervisorの設定ファイルは通常`/etc/supervisor/conf.d`へ保存され�
 
     sudo supervisorctl start horizon
 
-Supervisorの詳細については、[Supervisorドキュメント](http://supervisord.org/index.html)をお読みください。
+> {tip} Supervisorの実行の詳細は、[Supervisorのドキュメント](http://supervisord.org/index.html)を参照してください。
 
 <a name="tags"></a>
 ## タグ
 
-Horizonでは、mailableやイベントブロードキャスト、通知、キューイベントリスナなどを含むジョブに「タグ」を割り付けられます。実際、ジョブへ割り付けたEloquentモデルに基づいて、ほとんどのジョブでは賢く自動的にHorizonがタグ付けします。例として、以下のジョブをご覧ください。
+Horizo​​nを使用すると、メール可能、ブロードキャストイベント、通知、キュー投入するイベントリスナなどのジョブに「タグ」を割り当てることができます。実際、Horizo​​nは、ジョブに関連付けられているEloquentモデルに応じて、ほとんどのジョブにインテリジェントかつ自動的にタグを付けます。たとえば、以下のジョブを見てみましょう。
 
     <?php
 
@@ -214,7 +249,7 @@ Horizonでは、mailableやイベントブロードキャスト、通知、キ�
         use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
         /**
-         * ビデオインスタンス
+         * Videoインスタンス
          *
          * @var \App\Models\Video
          */
@@ -242,21 +277,24 @@ Horizonでは、mailableやイベントブロードキャスト、通知、キ�
         }
     }
 
-`id`が`1`の`App\Models\Video`インスタンスを持つジョブがキューされると、自動的に`App\Models\Video:1`タグが付けられます。HorizonはジョブのプロパティがEloquentモデルであるかを確認するからです。Eloquentモデルが見つかると、Horizonはモデルのクラス名と主キーを使用し、賢くタグ付けします。
+このジョブが`id`属性は`1`の`App\Models\Video`インスタンスでキューに投入されると、タグ`App\Models\Video:1`が自動的に付けられます。これは、Horizo​​nがジョブのプロパティでEloquentモデルを検索するためです。Eloquentモデルが見つかった場合、Horizo​​nはモデルのクラス名と主キーを使用してジョブにインテリジェントにタグを付けます。
 
-    $video = App\Models\Video::find(1);
+    use App\Jobs\RenderVideo;
+    use App\Models\Video;
 
-    App\Jobs\RenderVideo::dispatch($video);
+    $video = Video::find(1);
 
-<a name="manually-tagging"></a>
-#### 手動のタグ付け
+    RenderVideo::dispatch($video);
 
-queueableオブジェクトのタグを任意に定義したい場合は、そのクラスで`tags`メソッドを定義してください。
+<a name="manually-tagging-jobs"></a>
+#### ジョブに手動でタグ付ける
+
+Queueableオブジェクトの１つにタグを手動で定義する場合は、クラスに`tags`メソッドを定義します。
 
     class RenderVideo implements ShouldQueue
     {
         /**
-         * ジョブに割り付けるタグの取得
+         * ジョブに割り当てるタグを取得
          *
          * @return array
          */
@@ -269,18 +307,28 @@ queueableオブジェクトのタグを任意に定義したい場合は、そ�
 <a name="notifications"></a>
 ## 通知
 
-> **Note:** Horizonから、SlackかSMS通知を送る設定を行う場合は、[対応するドライバの動作要件](/docs/{{version}}/notifications)についても、確認する必要があります。
+>{note}SlackまたはSMS通知を送信するようにHorizo​​nを設定する場合は、[関連する通知チャネルの前提条件](/docs/{{version}}/notifys)を確認する必要があります。
 
-あるキューが長時間waitしている時に、通知を受け取りたい場合は、`Horizon::routeSlackNotificationsTo`や、`Horizon::routeSlackNotificationsTo`、`Horizon::routeSmsNotificationsTo`メソッドを利用してください。これらのメソッドは、`HorizonServiceProvider`から呼び出すのが良いでしょう。
+キューの１つに長い待機時間があったときに通知を受け取りたい場合は、`Horizo​​n::routeMailNotificationsTo`、`Horizo​​n::routeSlackNotificationsTo`、および`Horizo​​n::routeSmsNotificationsTo`メソッドが使用できます。これらのメソッドは、アプリケーションの`App\Providers\Horizo​​nServiceProvider`の`boot`メソッドから呼び出せます。
 
-    Horizon::routeMailNotificationsTo('example@example.com');
-    Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');
-    Horizon::routeSmsNotificationsTo('15556667777');
+    /**
+     * 全アプリケーションサービスの初期起動処理
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        parent::boot();
+
+        Horizon::routeSmsNotificationsTo('15556667777');
+        Horizon::routeMailNotificationsTo('example@example.com');
+        Horizon::routeSlackNotificationsTo('slack-webhook-url', '#channel');
+    }
 
 <a name="configuring-notification-wait-time-thresholds"></a>
-#### 通知wait時間のシュレッドホールド設定
+#### 待機通知の時間のしきい値の設定
 
-何秒を「長時間」と考えるかは、`config/horizon.php`設定ファイルで指定できます。このファイルの`waits`設定オプションで、接続／キューの組み合わせごとに、長時間と判定するシュレッドホールドをコントロールできます。
+アプリケーションの`config/horizo​​n.php`設定ファイル内で「長時間待機」と見なす秒数を設定できます。このファイル内の`waits`設定オプションを使用すると、各接続/キューの組み合わせの長時間待機しきい値を制御できます。
 
     'waits' => [
         'redis:default' => 60,
@@ -288,9 +336,9 @@ queueableオブジェクトのタグを任意に定義したい場合は、そ�
     ],
 
 <a name="metrics"></a>
-## メトリックス
+## メトリクス
 
-Horizonはジョブとキューの待ち時間とスループットの情報をダッシュボードに表示します。このダッシュボードを表示するために、アプリケーションの[スケジューラ](/docs/{{version}}/scheduling)で、５分毎に`snapshot` Artisanコマンドを実行する設定を行う必要があります。
+Horizo​​nには、ジョブとキューの待機時間とスループットに関する情報を提供するメトリックダッシュボードが含まれています。このダッシュボードにデータを表示するには、アプリケーションの[スケジューラ](/docs/{{version}}/scheduleing)で５分ごとにHorizo​​nの`snapshot` Artisanコマンドを実行するように設定する必要があります。
 
     /**
      * アプリケーションのコマンドスケジュールの定義
@@ -306,17 +354,17 @@ Horizonはジョブとキューの待ち時間とスループットの情報を�
 <a name="deleting-failed-jobs"></a>
 ## 失敗したジョブの削除
 
-失敗したジョブを削除する場合は、`horizon：forget`コマンドを使用します。`horizon：forget`コマンドは、失敗したジョブのIDを唯一の引数に取ります。
+失敗したジョブを削除したい場合は、`horizo​​n:forget`コマンドを使用します。`horizo​​n:forget`コマンドは、失敗したジョブのIDを唯一の引数に取ります。
 
     php artisan horizon:forget 5
 
 <a name="clearing-jobs-from-queues"></a>
-## キューのジョブのクリア
+## キューのジョブをクリア
 
-デフォルトのキューからすべてのジョブを削除したい場合は、`horizon：clear`　Artisanコマンドを使用し削除します。
+アプリケーションのデフォルトキューからすべてのジョブを削除する場合は、`horizo​​n:clear` Artisanコマンドを使用して削除します。
 
     php artisan horizon:clear
 
-`queue`オプションでジョブを削除するキューを指定することも可能です。
+特定のキューからジョブを削除するために`queue`オプションが指定できます。
 
     php artisan horizon:clear --queue=emails

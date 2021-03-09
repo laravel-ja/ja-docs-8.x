@@ -1,8 +1,14 @@
 # ブロードキャスト
 
 - [イントロダクション](#introduction)
+- [サーバ側インストール](#server-side-installation)
     - [設定](#configuration)
-    - [ドライバ要求](#driver-prerequisites)
+    - [Pusherチャンネル](#pusher-channels)
+    - [Ably](#ably)
+    - [オープンソースの代替](#open-source-alternatives)
+- [クライアント側インストール](#client-side-installation)
+    - [Pusherチャンネル](#client-pusher-channels)
+    - [Ably](#client-ably)
 - [概論](#concept-overview)
     - [サンプルアプリケーションの使用](#using-example-application)
 - [ブロードキャストイベントの定義](#defining-broadcast-events)
@@ -10,20 +16,20 @@
     - [ブロードキャストデータ](#broadcast-data)
     - [ブロードキャストキュー](#broadcast-queue)
     - [ブロードキャスト条件](#broadcast-conditions)
-- [認証中チャンネル](#authorizing-channels)
-    - [認証ルート定義](#defining-authorization-routes)
-    - [認証コールバック定義](#defining-authorization-callbacks)
-    - [チャンネル名の登録](#defining-channel-classes)
+    - [ブロードキャストとデータベーストランザクション](#broadcasting-and-database-transactions)
+- [チャンネルの認可](#authorizing-channels)
+    - [認可ルートの定義](#defining-authorization-routes)
+    - [認可コールバックの定義](#defining-authorization-callbacks)
+    - [チャンネルクラスの定義](#defining-channel-classes)
 - [ブロードキャストイベント](#broadcasting-events)
-    - [認証中ユーザーの回避](#only-to-others)
+    - [他の人だけへの送信](#only-to-others)
 - [ブロードキャストの受け取り](#receiving-broadcasts)
-    - [Laravel Echoのインストール](#installing-laravel-echo)
     - [イベントのリッスン](#listening-for-events)
     - [チャンネルの離脱](#leaving-a-channel)
     - [名前空間](#namespaces)
 - [プレゼンスチャンネル](#presence-channels)
-    - [プレゼンスチャンネルの許可](#authorizing-presence-channels)
-    - [プレゼンスチャンネルへの参加](#joining-presence-channels)
+    - [プレゼンスチャンネルの認可](#authorizing-presence-channels)
+    - [プレゼンスチャンネルへの接続](#joining-presence-channels)
     - [プレゼンスチャンネルへのブロードキャスト](#broadcasting-to-presence-channels)
 - [クライアントイベント](#client-events)
 - [通知](#notifications)
@@ -31,133 +37,208 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-多くの近代的なアプリケーションでは、リアルタイムでライブ更新されるユーザーインターフェイスを実装するために、WebSocketが使用されています。サーバ上で何かのデータが更新されると、通常WebSocket接続を通じメッセージが送信され、クライアントにより処理されます。これは変更をアプリケーションに対しポーリングし続ける方法よりも、強固で効率的です。
+最近の多くのWebアプリケーションでは、WebSocketを使用して、リアルタイムのライブ更新ユーザーインターフェイスを実装しています。サーバ上で一部のデータが更新されると、通常、メッセージはWebSocket接続を介して送信され、クライアントによって処理されます。WebSocketは、UIに反映する必要のあるデータの変更をアプリケーションのサーバから継続的にポーリングするよりも、効率的な代替手段を提供しています。
 
-こうしたタイプのアプリケーション構築を援助するため、LaravelはWebSocket接続経由で、[イベント](/docs/{{version}}/events)を簡単に「ブロードキャスト」できます。Laravelでイベントをブロードキャストすることにより、サーバサイドのコードとクライアントサイドのJavaScriptで、同じ名前のイベントを共有できます。
+たとえば、アプリケーションがユーザーのデータをCSVファイルにエクスポートして電子メールで送信できると想像してください。ただし、このCSVファイルの作成には数分かかるため、[キュー投入したジョブ](/docs/{{version}}/queues)内でCSVを作成してメールで送信することを選択します。CSVを作成しユーザーにメール送信すると、イベントブロードキャストを使用して、アプリケーションのJavaScriptで受信する`App\Events\UserDataExported`イベントをディスパッチできます。イベントを受信すると、ページを更新することなく、CSVがメールで送信されたことを示すメッセージをユーザーへ表示できます。
 
-> {tip} ブロードキャストを開始する前に、Laravelの[イベントとリスナ](/docs/{{version}}/events)に関するドキュメントをすべてしっかりと読んでください。
+こうしたタイプの機能の構築を支援するため、LaravelはWebSocket接続を介してサーバ側のLaravel[イベント](/docs/{{version}}/events)を簡単に「ブロードキャスト」できます。Laravelイベントをブロードキャストすると、サーバ側のLaravelアプリケーションとクライアント側のJavaScriptアプリケーション間で同じイベント名とデータを共有できます。
+
+<a name="supported-drivers"></a>
+#### サポートしているドライバ
+
+Laravelはデフォルトで、[Pusherチャンネル](https://pusher.com/channels)と[Ably](https://ably.io)、２つのサーバ側ブロードキャストドライバーを用意しています。ただし、[laravel-websockets](https://beyondco.de/docs/laravel-websockets/getting-started/introduction)などのコミュニティ主導のパッケージは、商業プロバイダを必要としないブロードキャストドライバを提供しています。
+
+> {tip} イベントブロードキャストに飛び込む前に、[イベントとリスナ](/docs/{{version}}/events)に関するLaravelのドキュメントをしっかりと読んでください。
+
+<a name="server-side-installation"></a>
+## サーバ側インストール
+
+Laravelのイベントブロードキャストの使用を開始するには、Laravelアプリケーション内でいくつかの設定を行い、いくつかのパッケージをインストールする必要があります。
+
+イベントブロードキャストは、Laravel Echo(JavaScriptライブラリ)がブラウザクライアント内でイベントを受信できるように、Laravelイベントをブロードキャストするサーバ側ブロードキャストドライバーによって実行されます。心配いりません。インストール手順の各部分を段階的に説明します。
 
 <a name="configuration"></a>
 ### 設定
 
-イベントブロードキャストの設定オプションは、すべて`config/broadcasting.php`設定ファイルの中にあります。Laravelはドライバをいくつか準備しています。[Pusherチャンネル](https://pusher.com/channels)や[Redis](/docs/{{version}}/redis)、それにローカルの開発とデバッグのための`log`ドライバがあります。さらにブロードキャストを完全に無効にするための、`null`ドライバも用意しています。`config/broadcasting.php`設定ファイルに、各ドライバの設定例が含まれています。
+アプリケーションのイベントブロードキャスト設定はすべて、`config/broadcasting.php`設定ファイルに保存します。Laravelは、すぐに使用できるブロードキャストドライバーをいくつかサポートしています。[Pusherチャンネル](https://pusher.com/channels)、[Redis](/docs/{{version}}/redis)、およびローカルでの開発とデバッグ用の`log`ドライバです。さらに、テスト中にブロードキャストを完全に無効にできる`null`ドライバーも用意しています。これら各ドライバーの設定例は、`config/broadcasting.php`設定ファイルにあります。
 
 <a name="broadcast-service-provider"></a>
 #### ブロードキャストサービスプロバイダ
 
-イベントをブロードキャストするには、事前に`App\Providers\BroadcastServiceProvider`を登録する必要があります。インストールしたばかりのLaravelアプリケーションで、`config/app.php`設定ファイル中の、`providers`配列配列にある、このプロバイダのコメントを外してください。このプロバイダはブロードキャスト認証ルートとコールバックを登録します。
+イベントをブロードキャストする前に、まず`App\Providers\BroadcastServiceProvider`を登録する必要があります。新しいLaravelアプリケーションでは、`config/app.php`設定ファイルの`providers`配列で、このプロバイダをアンコメントするだけです。この`BroadcastServiceProvider`には、ブロードキャスト認可ルートとコールバックを登録するために必要なコードが含まれています。
 
-<a name="csrf-token"></a>
-#### CSRFトークン
+<a name="queue-configuration"></a>
+#### キュー設定
 
-[Laravel Echo](#installing-laravel-echo)は、現在のセッションのCSRFトークンへアクセスする必要があります。アプリケーションの`head` HTML要素を確認し、CSRFトークンを含むように`meta`タグを定義してください。
-
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-<a name="driver-prerequisites"></a>
-### ドライバ要求
+また、[キューワーカ](/docs/{{version}}/queues)を設定して実行する必要があります。すべてのイベントブロードキャストはジョブをキュー投入し行われるため、アプリケーションの応答時間は、ブロードキャストされるイベントにより深刻な影響を受けません。
 
 <a name="pusher-channels"></a>
-#### Pusherチャンネル
+### Pusherチャンネル
 
-イベントを[Pusherチャンネル](https://pusher.com/channels)によりブロードキャストする場合、Composerパッケージマネージャを使い、PusherチャンネルPHP SDKをインストールする必要があります。
+[Pusherチャンネル](https://pusher.com/channels)を使用してイベントをブロードキャストする場合は、Composerパッケージマネージャーを使用してPusher Channels PHP SDKをインストールする必要があります。
 
     composer require pusher/pusher-php-server "~4.0"
 
-次に、チャンネルの認証情報を`config/broadcasting.php`設定ファイル中で設定する必要があります。Pusherチャンネルの設定例はこのファイルに含まれ、チャンネルキーと秘密キー、アプリケーションIDを簡単に指定できます。`config/broadcasting.php`ファイルの`pusher`設定では、チャンネルでサポートされているクラスタなど、追加のオプション（`options`）も設定可能です。
+次に、`config/broadcasting.php`設定ファイルでPusherチャンネルの利用資格情報を設定する必要があります。Pusherチャンネル設定の例はすでにこのファイルに含まれているため、キー、シークレット、およびアプリケーションIDを手軽に指定できます。通常、これらの値は、`PUSHER_APP_KEY`、`PUSHER_APP_SECRET`、`PUSHER_APP_ID`[環境変数](/docs/{{version}}/configuration#environment-configuration)を介して設定する必要があります。
 
-    'options' => [
-        'cluster' => 'eu',
-        'useTLS' => true
-    ],
+    PUSHER_APP_ID=your-pusher-app-id
+    PUSHER_APP_KEY=your-pusher-key
+    PUSHER_APP_SECRET=your-pusher-secret
+    PUSHER_APP_CLUSTER=mt1
 
-チャンネルと[Laravel Echo](#installing-laravel-echo)を使用する場合、`resources/js/bootstrap.js`ファイルのEchoインスタンスをインスタンス化する時に、使用するブロードキャスタとして、`pusher`を指定する必要があります。
+`config/broadcasting.php`ファイルの`pusher`設定では、クラスターなどチャンネルでサポートされている追加の`options`を指定することもできます。
 
-    import Echo from "laravel-echo";
-
-    window.Pusher = require('pusher-js');
-
-    window.Echo = new Echo({
-        broadcaster: 'pusher',
-        key: 'your-pusher-channels-key'
-    });
-
-最後に、`.env`ファイル中のブロードキャストドライバーを`pusher`へ変更する必要があります。
+次に、`.env`ファイルでブロードキャストドライバを`pusher`に変更する必要があります。
 
     BROADCAST_DRIVER=pusher
 
+これで、クライアント側でブロードキャストイベントを受信する[Laravel Echo](#client-side-installation)をインストールして設定する準備が整いました。
+
 <a name="pusher-compatible-laravel-websockets"></a>
-#### Pusher互換のLaravel　WebSocket
+#### Pusher互換のLaravel　Websocket
 
-[laravel-websockets](https://github.com/beyondcode/laravel-websockets)はPHPで実装された、Laravel用のPusher互換のWebSocketパッケージです。このパッケージは外部WebソケットプロバイダやNodeを使用しなくてもLaravelブロードキャストの能力を最大限に活用できます。このパッケージのインストールと使用の詳細は、[公式ドキュメント]（https://beyondco.de/docs/laravel-websockets）を参照してください。
+[laravel-websockets](https://github.com/beyondcode/laravel-websockets)パッケージは、PHP製でLaravel用のPusher互換WebSocketパッケージです。このパッケージを使用すると、商用WebSocketプロバイダなしにLaravelブロードキャストの全機能を活用できます。このパッケージのインストールと使用の詳細については、[公式ドキュメント](https://beyondco.de/docs/laravel-websockets)を参照してください。
 
-<a name="redis"></a>
-#### Redis
+<a name="ably"></a>
+### Ably
 
-Redisブロードキャスタを使用する場合は、phpredis PHP拡張をPECLを使いインストールするか、PredisライブラリをComposerを使用しインストールする必要があります。
+[Ably](https://ably.io)を使用してイベントをブロードキャストする場合は、Composerパッケージマネージャーを使用してAbly PHP SDKをインストールする必要があります。
 
-    composer require predis/predis
+    composer require ably/ably-php
 
-次に、`.env`ファイル中のブロードキャストドライバーを`redis`へ変更する必要があります。
+次に、`config/broadcasting.php`設定ファイルでAblyの接続資格情報を設定する必要があります。Ablyの設定例はすでにこのファイルに用意されているため、キーを手軽に指定できます。通常、この値は`ABLY_KEY`[環境変数](/docs/{{version}}/configuration#environment-configuration)により設定する必要があります。
 
-    BROADCAST_DRIVER=redis
+    ABLY_KEY=your-ably-key
 
-RedisブロードキャスタはRedisのpub/sub機能を使用し、メッセージをブロードキャストします。Redisからのメッセージを受け、WebSocketチャンネルへブロードキャストできるように、これをWebSocketとペアリングする必要があります。
+次に、`.env`ファイルでブロードキャストドライバを`ably`に変更する必要があります。
 
-Redisブロードキャスタがイベントを発行すると、そのイベントに指定されたチャンネル名へ発行され、イベント名、`data`ペイロード、イベントのソケットIDを生成したユーザー（該当する場合）を含む、ペイロードはJSONエンコードされた文字列になります。
+    BROADCAST_DRIVER=ably
 
-<a name="socketio"></a>
-#### Socket.IO
+これで、クライアント側でブロードキャストイベントを受信するための[Laravel Echo](#client-side-installation)をインストールして設定する準備が整いました。
 
-RedisブロードキャスタとSocket.IOサーバをペアリングする場合、アプリケーションへSocket.IO JavaScriptクライアントライブラリをインクルードする必要があります。NPMパッケージマネージャにより、インストールできます。
+<a name="open-source-alternatives"></a>
+### オープンソースの代替
 
-    npm install --save-dev socket.io-client@2
+[laravel-websockets](https://github.com/beyondcode/laravel-websockets)パッケージは、PHP製のLaravel用Pusher互換WebSocketパッケージです。このパッケージを使用すると、商用WebSocketプロバイダを使用せずとも、Laravelブロードキャストの全機能を活用できます。このパッケージのインストールと使用の詳細は、[公式ドキュメント](https://beyondco.de/docs/laravel-websockets)を参照してください。
 
-次に、`socket.io`コネクタと`host`を指定し、Echoをインスタンス化します。
+<a name="client-side-installation"></a>
+## クライアント側インストール
 
-    import Echo from "laravel-echo"
+<a name="client-pusher-channels"></a>
+### Pusherチャンネル
 
-    window.io = require('socket.io-client');
+Laravel EchoはJavaScriptライブラリであり、チャンネルをサブスクライブして、サーバ側のブロードキャストドライバがブロードキャストしたイベントを簡単にリッスンできます。NPMパッケージマネージャーを介してEchoをインストールします。以下の例では、Pusherチャンネルブロードキャスタを使用するため、`pusher-js`パッケージもインストールしています。
 
-    window.Echo = new Echo({
-        broadcaster: 'socket.io',
-        host: window.location.hostname + ':6001'
-    });
+```bash
+npm install --save-dev laravel-echo pusher-js
+```
 
-最後に、Socket.IOのコンパチブルサーバを実行する必要があります。LaravelにはSocket.IOサーバの実装は含まれていません。しかし、[tlaverdure/laravel-echo-server](https://github.com/tlaverdure/laravel-echo-server) GitHubリポジトリで、コミュニティにより現在、Socket.IOサーバがメンテナンスされています。
+Echoをインストールできたら、アプリケーションのJavaScriptで新しいEchoインスタンスを生成する用意が整います。これを実行するのに最適な場所は、Laravelフレームワークに含まれている`resources/js/bootstrap.js`ファイルの下部です。デフォルトで、Echo設定の例はすでにこのファイルに含まれています。コメントアウトするだけです。
 
-<a name="queue-prerequisites"></a>
-#### キュー事前要件
+```js
+import Echo from 'laravel-echo';
 
-イベントをブロードキャストし始める前に、[キューリスナ](/docs/{{version}}/queues)を設定し、実行する必要もあります。イベントのブロードキャストは、すべてキュージョブとして行われるため、アプリケーションのレスポンスタイムにはシリアスな影響はでません。
+window.Pusher = require('pusher-js');
+
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: process.env.MIX_PUSHER_APP_KEY,
+    cluster: process.env.MIX_PUSHER_APP_CLUSTER,
+    forceTLS: true
+});
+```
+
+コメントを外し、必要に応じEcho設定を調整したら、アプリケーションのアセットをコンパイルします。
+
+    npm run dev
+
+> {tip} アプリケーションのJavaScriptアセットのコンパイルの詳細は、[Laravel Mix](/docs/{{version}}/mix)のドキュメントを参照してください。
+
+<a name="using-an-existing-client-instance"></a>
+#### 既存のクライアントインスタンスの使用
+
+Echoで利用したい事前設定済みのPusherチャンネルクライアントインスタンスがすでにある場合は、`client`設定オプションによりEchoへ渡せます。
+
+```js
+import Echo from 'laravel-echo';
+
+const client = require('pusher-js');
+
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: 'your-pusher-channels-key',
+    client: client
+});
+```
+
+<a name="client-ably"></a>
+### Ably
+
+Laravel EchoはJavaScriptライブラリであり、チャンネルをサブスクライブして、サーバ側のブロードキャストドライバがブロードキャストしたイベントを簡単にリッスンできます。NPMパッケージマネージャーを介してEchoをインストールします。この例では、`pusher-js`パッケージもインストールしています。
+
+イベントのブロードキャストにAblyを使用しているのに、なぜ`pusher-js`JavaScriptライブラリをインストールするのか不思議に思うかもしれません。ありがたいことに、AblyにはPusher互換モードが含まれており、クライアント側アプリケーションでイベントをリッスンするときにPusherプロトコルを使用できます。
+
+```bash
+npm install --save-dev laravel-echo pusher-js
+```
+
+**続行する前に、Ablyアプリケーション設定でPusherプロトコルサポートを有効にする必要があります。この機能は、Ablyアプリケーションの設定ダッシュボードの「プロトコルアダプター設定」部分で有効にできます。**
+
+Echoをインストールしたら、アプリケーションのJavaScriptで新しいEchoインスタンスを生成する準備が整います。これを実行するのに最適な場所は、Laravelフレームワークに含まれている`resources/js/bootstrap.js`ファイルの下部です。デフォルトでは、Echo設定の例はすでにこのファイルに用意してあります。ただし、`bootstrap.js`ファイルのデフォルト設定はPusherを対象としています。以下の設定をコピーして、設定をAbly向きに変更できます。
+
+```js
+import Echo from 'laravel-echo';
+
+window.Pusher = require('pusher-js');
+
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: process.env.MIX_ABLY_PUBLIC_KEY,
+    wsHost: 'realtime-pusher.ably.io',
+    wsPort: 443,
+    disableStats: true,
+    encrypted: true,
+});
+```
+
+Ably　Echo設定は`MIX_ABLY_PUBLIC_KEY`環境変数を参照していることに注意してください。この変数の値へAbly公開鍵を指定する必要があります。公開鍵は、`:`文字の前にあるAbly鍵の部分です。
+
+アンコメントし、必要に応じEcho設定を調整したら、アプリケーションのアセットをコンパイルします。
+
+    npm run dev
+
+> {tip} アプリケーションのJavaScriptアセットコンパイルの詳細は、[Laravel Mix](/docs/{{version}}/mix)のドキュメントを参照してください。
 
 <a name="concept-overview"></a>
 ## 概論
 
-LaravelのイベントブロードキャストはサーバサイドのLaravelイベントから、WebSocketに対する駆動ベースのアプローチを使っているあなたのクライアントサイドのJavaScriptアプリケーションへ、ブロードキャストできるようにします。現在、[Pusherチャンネル](https://pusher.com/channels)とRedisドライバーが用意されています。[Laravel Echo](#installing-laravel-echo) JavaScriptパッケージを使用したクライアントサイド上で、イベントは簡単に利用できます。
+Laravelのイベントブロードキャストを使用すると、WebSocketに対するドライバベースのアプローチを使用して、サーバ側のLaravelイベントをクライアント側のJavaScriptアプリケーションへブロードキャストできます。現在、Laravelは[Pusherチャンネル](https://pusher.com/channels]と[Ably](https://ably.io)ドライバを用意しています。イベントは、[Laravel Echo](#client-side-installation) JavaScriptパッケージを用い、クライアント側で簡単に利用できます。
 
-パブリック、もしくはプライベートに指定された「チャンネル」上で、イベントはブロードキャストされます。アプリケーションの全訪問者は、認証も認可も必要ないパブリックチャンネルを購入できます。しかし、プライベートチャンネルを購入するためには、認証され、そのチャンネルをリッスンできる認可が必要です。
+イベントは「チャンネル」を介してブロードキャストされます。チャンネルは、パブリックまたはプライベートとして指定できます。アプリケーションへの訪問者は全員、認証や認可なしにパブリックチャンネルにサブスクライブできます。ただし、プライベートチャンネルをサブスクライブするには、ユーザーがそのチャンネルでリッスンする認証と認可を持っている必要があります。
 
-> {tip} Pusherの代替になるPHPで動作するオープンソースを使用したい場合は、[laravel-websockets](https://github.com/beyondcode/laravel-websockets)パッケージをチェックしてください。
+> {tip} Pusherの代わりにPHP駆動のオープンソースを使用したい場合は、[laravel-websockets](https://github.com/beyondcode/laravel-websockets)パッケージを調べてください。
 
 <a name="using-example-application"></a>
 ### サンプルアプリケーションの使用
 
-イベントブロードキャストの各コンポーネントへ飛び込む前に、例としてeコマースショップを使い、ハイレベルな概念を把握しましょう。このドキュメント中の別のセクションで詳細を説明するため、[Pusherチャンネル](https://pusher.com/channels)と[Laravel Echo](#installing-laravel-echo)の設定についての詳細は省きます。
+イベントブロードキャストの各コンポーネントに飛び込む前に、ｅコマースストアのサンプルを使用して概要を説明しましょう。
 
-このアプリケーションでは、ユーザーに注文の発送状態を確認してもらうビューページがあるとしましょう。さらに、アプリケーションが発送状態を変更すると、`ShippingStatusUpdated`イベントが発行されるとしましょう。
+このアプリケーションでは、ユーザーが注文の配送ステータスを表示できるページがあると仮定します。また、出荷ステータスの更新がアプリケーションによって処理されるときに、`OrderShipmentStatusUpdated`イベントが発生すると仮定します。
 
-    event(new ShippingStatusUpdated($update));
+    use App\Events\OrderShipmentStatusUpdated;
+
+    OrderShipmentStatusUpdated::dispatch($order);
 
 <a name="the-shouldbroadcast-interface"></a>
 #### `ShouldBroadcast`インターフェイス
 
-ユーザーがある注文を閲覧している時に、ビューの状態を変更するために、ユーザーがページを再読込しなくてはならないなんてしたくありません。代わりにアップデートがあることをアプリケーションへブロードキャストしたいわけです。そのため、`ShouldBroadcast`インターフェイスを実装した、`ShippingStatusUpdated`イベントを作成する必要があります。このインターフェイスはイベントが発行されると、ブロードキャストすることをLaravelへ指示しています。
+ユーザーが注文の１つを表示しているときに、ステータスの更新を表示するためにページを更新する必要はありません。その代わりに、発生時にアプリケーションへ更新をブロードキャストしたいと思います。したがって、`OrderShipmentStatusUpdated`イベントを`ShouldBroadcast`インターフェイスでマークする必要があります。これにより、イベントが発生したときにイベントをブロードキャストするようにLaravelへ指示します。
 
     <?php
 
     namespace App\Events;
 
+    use App\Order;
     use Illuminate\Broadcasting\Channel;
     use Illuminate\Broadcasting\InteractsWithSockets;
     use Illuminate\Broadcasting\PresenceChannel;
@@ -165,57 +246,61 @@ LaravelのイベントブロードキャストはサーバサイドのLaravelイ
     use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
     use Illuminate\Queue\SerializesModels;
 
-    class ShippingStatusUpdated implements ShouldBroadcast
+    class OrderShipmentStatusUpdated implements ShouldBroadcast
     {
         /**
-         * 発送状態更新の情報
+         * 注文インスタンス
          *
-         * @var string
+         * @var \App\Order
          */
-        public $update;
+        public $order;
     }
 
-`ShouldBroadcast`インターフェイスはイベントで、`broadcastOn`メソッドを定義することを求めています。このメソッドはイベントをブロードキャストすべきチャンネルを返す責任を持っています。イベントクラスを生成すると、すでにこのメソッドは空のスタブクラスに作成されていますので、詳細を埋めるだけになっています。オーダーの発注者だけに状態の変更を見てもらいたいので、そのオーダーに紐付いたプライベートチャンネルへ、イベントをブロードキャストしましょう。
+`ShouldBroadcast`インターフェイスは、イベントに対し`broadcastOn`メソッドを定義するよう要求しています。このメソッドは、イベントがブロードキャストする必要があるチャンネルを返す役割を持っています。このメソッドの空のスタブは、生成したイベントクラスですでに定義済みなため、詳細を入力するだけで済みます。注文の作成者だけがステータスの更新を表示できるようにしたいので、その注文に関連付いたプラ​​イベートチャンネルでイベントをブロードキャストします。
 
     /**
-     * イベントをブロードキャストすべき、チャンネルの取得
+     * イベントをブロードキャストするチャンネルを取得
      *
      * @return \Illuminate\Broadcasting\PrivateChannel
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('order.'.$this->update->order_id);
+        return new PrivateChannel('orders.'.$this->order->id);
     }
 
 <a name="example-application-authorizing-channels"></a>
-#### 認証中チャンネル
+#### チャンネルの認可
 
-プライベートチャンネルをリッスンするには、ユーザーは認可されている必要があることを思い出してください。`routes/channels.php`ファイルでチャンネルの認可ルールを定義してください。この例の場合、プライベート`order.1`チャンネルをリッスンしようとするユーザーは、実際にそのオーダーの発注者であることを確認しています。
+ユーザーはプライベートチャンネルをリッスンする許可を持っている必要があることを忘れないでください。アプリケーションの`routes/channels.php`ファイルでチャンネル認可ルールを定義できます。この例では、プライベートの`order.1`チャンネルをリッスンしようとしているユーザーが、実際に注文の作成者であることを確認する必要があります。
 
-    Broadcast::channel('order.{orderId}', function ($user, $orderId) {
+    use App\Models\Order;
+
+    Broadcast::channel('orders.{orderId}', function ($user, $orderId) {
         return $user->id === Order::findOrNew($orderId)->user_id;
     });
 
-`channel`メソッドは引数を２つ取ります。チャンネルの名前と、ユーザーにそのチャネルをリッスンする認可があるかどうかを`true`か`false`で返すコールバックです。
+`channel`メソッドは、チャンネルの名前と、ユーザーがチャンネルでのリッスンを許可されているかどうかを示す`true`または`false`を返すコールバックの２つの引数を取ります。
 
-認可コールバックは、最初の引数に現在認証中のユーザーを受け取ります。引き続き、追加のプレースホルダパラメータを指定します。この例の場合、チャンネル名中で"ID"の部分を表す、`{orderID}`プレースホルダーを使っています。
+すべての認可コールバックは、現在認証されているユーザーを最初の引数として受け取り、追加のワイルドカードパラメーターを後続の引数として受け取ります。この例では、`{orderId}`プレースホルダーを使用して、チャンネル名の「ID」部分がワイルドカードであることを示しています。
 
 <a name="listening-for-event-broadcasts"></a>
 #### イベントブロードキャストのリッスン
 
-次に、皆さんのJavaScriptアプリケーションでイベントをリッスンします。このために、Laravel Echoが利用できます。最初に、プライベートチャンネルを購読するために、`private`メソッドを使います。それから、`ShippingStatusUpdated`イベントをリッスンするために、`listen`メソッドを使用します。デフォルトでは、イベントのpublicプロパティは、すべてブロードキャストイベントに含まれています。
+他に残っているのは、JavaScriptアプリケーションでイベントをリッスンすることだけです。Laravel Echoを使用してこれを行えます。まず、`private`メソッドを使用し、プライベートチャンネルをサブスクライブします。次に、`listen`メソッドを使用して`OrderShipmentStatusUpdated`イベントをリッスンします。デフォルトでは、イベントのすべてのパブリックプロパティがブロードキャストイベントに含まれます。
 
-    Echo.private('order.' + orderId)
-        .listen('ShippingStatusUpdated', (e) => {
-            console.log(e.update);
-        });
+```js
+Echo.private(`orders.${orderId}`)
+    .listen('OrderShipmentStatusUpdated', (e) => {
+        console.log(e.order);
+    });
+```
 
 <a name="defining-broadcast-events"></a>
 ## ブロードキャストイベントの定義
 
-Laravelへイベントをブロードキャストすることを知らせるためには、そのイベントクラスで`Illuminate\Contracts\Broadcasting\ShouldBroadcast`インターフェイスを実装します。このインターフェイスは、フレームワークにより生成されたすべてのイベントクラスで、useされていますので、イベントへ簡単に追加できます。
+特定のイベントをブロードキャストする必要があることをLaravelに通知するには、イベントクラスに`Illuminate\Contracts\Broadcasting\ShouldBroadcast`インターフェイスを実装する必要があります。このインターフェイスは、フレームワークにより生成したすべてのイベントクラスで最初からインポートされているため、どのイベントでも簡単に追加できます。
 
-`ShouldBroadcast`インターフェイスは、`broadcastOn`メソッド一つのみ実装を求めています。`broadcastOn`メソッドは、そのイベントをブロードキャストすべきチャンネルか、チャンネルの配列を返します。チャンネルは`Channel`、`PrivateChannel`、`PresenceChannel`のインスタンスです。`Channel`インスタンスはユーザーが行動するパブリックチャンネルを表しています。一方、`PrivateChannel`と`PresenceChannel`は、[チャンネル認可](#authorizing-channels)が必要な、プライベートチャンネルを表しています。
+`ShouldBroadcast`インターフェイスでは、`broadcastOn`という単一のメソッドを実装する必要があります。`broadcastOn`メソッドは、イベントがブロードキャストする必要があるチャンネルまたはチャンネルの配列を返す必要があります。チャンネルは、`Channel`、`PrivateChannel`、`PresenceChannel`のインスタンスである必要があります。`Channel`インスタンスは、すべてのユーザーがサブスクライブできるパブリックチャンネルを表し、`PrivateChannels`と`PresenceChannels`は、[チャンネル認証](#authorizing-channels)を必要とするプライベートチャンネルを表します。
 
     <?php
 
@@ -233,11 +318,17 @@ Laravelへイベントをブロードキャストすることを知らせるた�
     {
         use SerializesModels;
 
+        /**
+         * サーバを作成したユーザー
+         *
+         * @var \App\Models\User
+         */
         public $user;
 
         /**
          * 新しいイベントインスタンスの生成
          *
+         * @param  \App\Models\User  $user
          * @return void
          */
         public function __construct(User $user)
@@ -246,7 +337,7 @@ Laravelへイベントをブロードキャストすることを知らせるた�
         }
 
         /**
-         * イベントをブロードキャストすべき、チャンネルの取得
+         * イベントがブロードキャストするチャンネルを取得
          *
          * @return Channel|array
          */
@@ -256,15 +347,15 @@ Laravelへイベントをブロードキャストすることを知らせるた�
         }
     }
 
-これで、あと必要なのは、通常通りに[イベントを発行](/docs/{{version}}/events)するだけです。イベントを発行すると、[キュージョブ](/docs/{{version}}/queues)が指定済みのドライバを通して、自動的にそのイベントをブロードキャストします。
+`ShouldBroadcast`インターフェイスを実装した後は、通常どおり[イベントを発生させる](/docs/{{version}}/events)だけです。イベントが発生すると、[キュー投入済みのジョブ](/docs/{{version}}/queues)で、指定したブロードキャストドライバを使用し、イベントを自動的にブロードキャストします。
 
 <a name="broadcast-name"></a>
 ### ブロードキャスト名
 
-デフォルトでLaravelはイベントのクラス名を使い、そのイベントをブロードキャストします。イベントに`broadcastAs`メソッドを定義することにより、ブロードキャスト名をカスタマイズできます。
+デフォルトでは、Laravelはイベントのクラス名を使用してイベントをブロードキャストします。ただし、イベントで`broadcastAs`メソッドを定義することにより、ブロードキャスト名をカスタマイズできます。
 
     /**
-     * イベントブロードキャスト名
+     * イベントのブロードキャスト名
      *
      * @return string
      */
@@ -273,7 +364,7 @@ Laravelへイベントをブロードキャストすることを知らせるた�
         return 'server.created';
     }
 
-`broadcastAs`メソッドを使い、ブロードキャスト名をカスタマイズする場合、`.`文字を先頭に付けたリスナを登録するのを忘れないでください。これによりそのイベントへ、アプリケーションの名前空間を付けないよう、Echoに指示します。
+`broadcastAs`メソッドを使用してブロードキャスト名をカスタマイズする場合は、リスナを先頭の`.`文字で登録する必要があります。これにより、アプリケーションの名前空間をイベントの先頭に追加しないようにEchoに指示します。
 
     .listen('.server.created', function (e) {
         ....
@@ -282,7 +373,7 @@ Laravelへイベントをブロードキャストすることを知らせるた�
 <a name="broadcast-data"></a>
 ### ブロードキャストデータ
 
-イベントがブロードキャストされると、イベントのペイロードとして`public`プロパティはすべて自動的にシリアライズされます。これによりJavaScriptアプリケーションより、publicデータにアクセスできます。ですから、たとえば、あるイベントにEloquentモデルを含むpublicの`$user`プロパティがあれば、そのイベントのブロードキャストペイロードは次のようになります。
+イベントをブロードキャストすると、そのすべての`public`プロパティが自動的にシリアライズされ、イベントのペイロードとしてブロードキャストされるため、JavaScriptアプリケーションからそのパブリックデータにアクセスできます。したがって、たとえば、イベントにEloquentモデルを含む単一のパブリック`$user`プロパティがある場合、イベントのブロードキャストペイロードは次のようになります。
 
     {
         "user": {
@@ -292,7 +383,7 @@ Laravelへイベントをブロードキャストすることを知らせるた�
         }
     }
 
-しかしながら、ブロードキャストペイロードをより上手くコントロールしたければ、そのイベントへ`broadcastWith`メソッドを追加してください。このメソッドから、イベントペイロードとしてブロードキャストしたいデータの配列を返してください。
+ただし、ブロードキャストペイロードをよりきめ細かく制御したい場合は、イベントに`broadcastWith`メソッドを追加できます。このメソッドは、ブロードキャストするデータの配列をイベントペイロードとして返す必要があります。
 
     /**
      * ブロードキャストするデータを取得
@@ -307,114 +398,147 @@ Laravelへイベントをブロードキャストすることを知らせるた�
 <a name="broadcast-queue"></a>
 ### ブロードキャストキュー
 
-デフォルトでは各ブロードキャストイベントは、`queue.php`設定ファイルで指定されているデフォルトキュー接続の、デフォルトキューへ投入されます。イベントクラスの`broadcastQueue`プロパティを定義することにより、使用するキューをカスタマイズできます。このプロパティには、ブロードキャスト時に使用したいキューの名前を指定してください。
+デフォルトで各ブロードキャストイベントは、`queue.php`設定ファイルで指定したデフォルトキュー接続のデフォルトキューへ配置されます。イベントクラスで`connection`プロパティと`queue`プロパティを定義することにより、ブロードキャスタが使用するキュー接続と名前をカスタマイズできます。
 
     /**
-     * イベントを投入するキューの名前
+     * イベントをブロードキャストするときに使用するキュー接続の名前
      *
      * @var string
      */
-    public $broadcastQueue = 'your-queue-name';
+    public $connection = 'redis';
 
-デフォルトキュードライバーの代わりに、`sync`キューを使いイベントをブロードキャストする場合、`ShouldBroadcast`の代わりに`ShouldBroadcastNow`インターフェイスを実装してください。
+    /**
+     * ブロードキャストジョブを配置するキューの名前
+     *
+     * @var string
+     */
+    public $queue = 'default';
+
+デフォルトのキュードライバーの代わりに`sync`キューを使用してイベントをブロードキャストする場合は、`ShouldBroadcast`の代わりに`ShouldBroadcastNow`インターフェイスを実装できます。
 
     <?php
 
     use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-    class ShippingStatusUpdated implements ShouldBroadcastNow
+    class OrderShipmentStatusUpdated implements ShouldBroadcastNow
     {
         //
     }
+
 <a name="broadcast-conditions"></a>
 ### ブロードキャスト条件
 
-指定した条件がtrueの場合のみ、ブロードキャストを行いたい場合もあるでしょう。イベントクラスへ、`broadcastWhen`メソッドを追加すれば、こうした条件を定義できます。
+特定の条件が真である場合にのみイベントをブロードキャストしたい場合があります。イベントクラスに`broadcastWhen`メソッドを追加することで、こうした条件を定義できます。
 
     /**
-     * このイベントでブロードキャストするかを決定
+     * このイベントをブロードキャストするかどうかを判定
      *
      * @return bool
      */
     public function broadcastWhen()
     {
-        return $this->value > 100;
+        return $this->order->value > 100;
     }
 
-<a name="authorizing-channels"></a>
-## 認証中チャンネル
+<a name="broadcasting-and-database-transactions"></a>
+#### ブロードキャストとデータベーストランザクション
 
-プライベートチャンネルでは、現在の認証ユーザーが実際にそのチャンネルをリッスンできるか、認可する必要があります。これは、Laravelアプリケーションへチャンネル名を含めたHTTPリクエストを作成し、アプリケーションにそのユーザーが、そのチャンネルをリッスンできるかを決めさせることで実現します。[Laravel Echo](#installing-laravel-echo)を使用する場合、プライベートチャンネルへの購入許可HTTPリクエストは、自動的に作成されます。しかし、そうしたリクエストに対してレスポンスする、ルートを確実に定義する必要があります。
+ブロードキャストイベントがデータベーストランザクション内でディスパッチされると、データベーストランザクションがコミットされる前にキューによって処理される場合があります。これが起きると、データベーストランザクション中にモデルまたはデータベースレコードに加えた更新は、データベースにまだ反映されていない可能性があります。さらに、トランザクション内で作成されたモデルまたはデータベースレコードは、データベースに存在しない可能性があります。イベントがこれらのモデルに依存している場合、イベントをブロードキャストするジョブの処理時に予期しないエラーが発生する可能性があります。
+
+キュー接続の`after_commit`設定オプションが`false`に設定されている場合でも、イベントクラスで`$afterCommit`プロパティを定義することにより、開いているすべてのデータベーストランザクションがコミットされた後に特定のブロードキャストイベントをディスパッチする必要があることを示すことができます。
+
+    <?php
+
+    namespace App\Events;
+
+    use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+    use Illuminate\Queue\SerializesModels;
+
+    class ServerCreated implements ShouldBroadcast
+    {
+        use SerializesModels;
+
+        public $afterCommit = true;
+    }
+
+> {tip} こうした問題の回避方法の詳細は、[キュー投入済みジョブとデータベーストランザクション](/docs/{{version}}/queues#jobs-and-database-transactions)に関するドキュメントを確認してください。
+
+<a name="authorizing-channels"></a>
+## チャンネルの認可
+
+プライベートチャンネルでは現在認証済みのユーザーが、実際にチャンネルをリッスンできることを認可する必要があります。これは、チャンネル名を使用してLaravelアプリケーションにHTTPリクエストを送信し、ユーザーがそのチャンネルでリッスンできるかどうかをアプリケーションが判断できるようにすることで実現します。[Laravel Echo](#client-side-installation)を使用すると、プライベートチャンネルへのサブスクリプションを認可するためのHTTPリクエストが自動的に行われます。ただし、これらのリクエストに応答するには、適切なルートを定義する必要があります。
 
 <a name="defining-authorization-routes"></a>
-### 認証ルート定義
+### 認可ルートの定義
 
-嬉しいことに、Laravelでは、チャンネル認可にクエストに対するレスポンスのルート定義も簡単です。Laravelアプリケーションに含まれている`BroadcastServiceProvider`で、`Broadcast::routes`メソッドが呼びだされているのが見つかります。このメソッドが認可リクエストを処理する、`/broadcasting/auth`ルートを登録しています。
+便利なことに、Laravelではチャンネル認可リクエストに応答するルートを簡単に定義できます。Laravelアプリケーションに含まれている`App\Providers\BroadcastServiceProvider`で、`Broadcast::routes`メソッドの呼び出しが見つかるでしょう。このメソッドは、認可リクエストを処理するために`/Broadcasting/auth`ルートを登録します。
 
     Broadcast::routes();
 
-`Broadcast::routes`メソッドは自動的に、そのルートを`web`ミドルウェアグループの中に設置しますが、割り付ける属性をカスタマイズしたければ、メソッドへルート属性の配列を渡すことができます。
+`Broadcast::routes`メソッドは自動的にそのルートを`web`ミドルウェアグループ内に配置します。ただし、割り当てられた属性をカスタマイズする場合は、ルート属性の配列をメソッドに渡してください。
 
     Broadcast::routes($attributes);
 
 <a name="customizing-the-authorization-endpoint"></a>
 #### 認可エンドポイントのカスタマイズ
 
-デフォルトでは、チャンネルアクセスの認可にEchoは`/broadcasting/auth`エンドポイントを使用します。しかしながら、Echoインスタンスへ`authEndpoint`設定オプションを渡せば、独自の認可エンドポイントを指定できます。
+デフォルトでEchoは`/Broadcasting/auth`エンドポイントを使用してチャンネルアクセスを認可します。ただし、`authEndpoint`設定オプションをEchoインスタンスに渡すことで、独自の認可エンドポイントを指定できます。
 
     window.Echo = new Echo({
         broadcaster: 'pusher',
-        key: 'your-pusher-channels-key',
+        // ...
         authEndpoint: '/custom/endpoint/auth'
     });
 
 <a name="defining-authorization-callbacks"></a>
-### 認証コールバック定義
+### 認可コールバックの定義
 
-次に、チャンネル認可を実際に行うロジックを定義する必要があります。アプリケーションに含まれる、`routes/channels.php`ファイルで行います。このメソッドの中で、`Broadcast::channel`メソッドを使い、チャンネル認可コールバックを登録します。
+次に、現在の認証済みユーザーが特定のチャンネルをリッスンできるかどうかを実際に決定するロジックを定義する必要があります。これは、アプリケーションに含まれている`routes/channels.php`ファイルで行われます。このファイルでは、`Broadcast::channel`メソッドを使用してチャンネル認可コールバックを登録できます。
 
-    Broadcast::channel('order.{orderId}', function ($user, $orderId) {
+    Broadcast::channel('orders.{orderId}', function ($user, $orderId) {
         return $user->id === Order::findOrNew($orderId)->user_id;
     });
 
-`channel`メソッドは引数を２つ取ります。チャンネルの名前と、ユーザーにそのチャネルをリッスンする認可があるかどうかを`true`か`false`で返すコールバックです。
+`channel`メソッドは、チャンネルの名前と、ユーザーがチャンネルでのリッスンを許可されているかどうかを示す`true`または`false`を返すコールバックの２引数を取ります。
 
-認可コールバックは、最初の引数に現在認証中のユーザーを受け取ります。引き続き、追加のプレースホルダパラメータを指定します。この例の場合、チャンネル名中で"ID"の部分を表す、`{orderID}`プレースホルダーを使っています。
+すべての認可コールバックは、現在の認証済みユーザーを最初の引数に取り、追加のワイルドカードパラメーターを後続の引数として受け取ります。この例では、`{orderId}`プレースホルダーを使用して、チャンネル名の「ID」部分がワイルドカードであることを示しています。
 
 <a name="authorization-callback-model-binding"></a>
-#### 認証コールバックモデル結合
+#### 認可コールバックモデルのバインド
 
-HTTPルートと同様にチャンネルルートでも、暗黙あるいは明白な[ルートモデル結合](/docs/{{version}}/routing#route-model-binding)を利用できます。たとえば、文字列や数値の注文IDを受け取る代わりに、実際の`Order`モデルインスタンスを要求できます。
+HTTPルートと同様に、チャンネルルートも暗黙的および明示的な[ルートモデルバインディング](/docs/{{version}}/routing#route-model-binding)を利用できます。たとえば、文字列または数値の注文IDを受け取る代わりに、実際の`Order`モデルインスタンスを要求できます。
 
     use App\Models\Order;
 
-    Broadcast::channel('order.{order}', function ($user, Order $order) {
+    Broadcast::channel('orders.{order}', function ($user, Order $order) {
         return $user->id === $order->user_id;
     });
 
-<a name="authorization-callback-authentication"></a>
-#### 認可コールバックと認証
+> {note} HTTPルートモデルバインディングとは異なり、チャンネルモデルバインディングは自動[暗黙的モデルバインディングスコープ](/docs/{{version}}/routing#implicit-model-binding-scoping)をサポートしていません。ただし、ほとんどのチャンネルは単一のモデルの一意の主キーに基づいてスコープを設定できるため、これが問題になることはめったにありません。
 
-プライベートとプレゼンス・ブロードキャスト・チャンネルは、アプリケーションのデフォルト認証ガードにより、現在のユーザーを認証します。ユーザーが認証されていない場合、チャンネルの許可は自動的に拒否され、認可コールバックは実行されません。しかし必要ならば、受信したリクエストを認証するカスタムガードを複数指定可能です。
+<a name="authorization-callback-authentication"></a>
+#### 認可コールバック認証
+
+プライベートおよびプレゼンスブロードキャストチャンネルは、アプリケーションのデフォルトの認証ガードを介して現在のユーザーを認証します。ユーザーが認証されていない場合、チャンネル認可は自動的に拒否され、認可コールバックは実行されません。ただし、必要に応じて、受信リクエストを認証する複数の必要なカスタムガードを割り当てることができます。
 
     Broadcast::channel('channel', function () {
         // ...
     }, ['guards' => ['web', 'admin']]);
 
 <a name="defining-channel-classes"></a>
-### チャンネル名の登録
+### チャンネルクラスの定義
 
-アプリケーションで多くのチャンネルを利用していると、`routes/channels.php`ファイルは膨大になってしまいます。認証チャンネルのクロージャを使用する代わりに、チャンネルクラスを使用するのが良いでしょう。チャンネルクラスを生成するには、`make:channel`　Aritisanコマンドが使用できます。このコマンドは、新しいチャンネルクラスを`App/Broadcasting`ディレクトリへ生成します。
+アプリケーションが多くの異なるチャンネルを使用している場合、`routes/channels.php`ファイルがかさばる可能性が起きます。そのため、クロージャを使用してチャンネルを認可する代わりに、チャンネルクラスを使用できます。チャンネルクラスを生成するには、`make:channel` Artisanコマンドを使用します。このコマンドは、新しいチャンネルクラスを`App/Broadcasting`ディレクトリに配置します。
 
     php artisan make:channel OrderChannel
 
-次に、チャンネルを`routes/channels.php`ファイルで登録します。
+次に、チャンネルを`routes/channels.php`ファイルに登録します。
 
     use App\Broadcasting\OrderChannel;
 
-    Broadcast::channel('order.{order}', OrderChannel::class);
+    Broadcast::channel('orders.{order}', OrderChannel::class);
 
-最後に、チャンネルの認証ロジックをチャンネルクラスの`join`へ記述します。典型的な場合ではチャンネル認証クロージャに設置するのと同じロジックをこの`join`メソッドに設置します。チャンネルモデル結合の利点も利用できます。
+最後に、チャンネルの認可ロジックをチャンネルクラスの`join`メソッドに配置できます。この`join`メソッドは、チャンネル認可クロージャに通常配置するのと同じロジックを格納します。チャンネルモデルバインディングを利用することもできます。
 
     <?php
 
@@ -436,7 +560,7 @@ HTTPルートと同様にチャンネルルートでも、暗黙あるいは明�
         }
 
         /**
-         * ユーザーのチャンネルへアクセスを認証
+         * チャンネルへのユーザーのアクセスを認可
          *
          * @param  \App\Models\User  $user
          * @param  \App\Models\Order  $order
@@ -448,144 +572,118 @@ HTTPルートと同様にチャンネルルートでも、暗黙あるいは明�
         }
     }
 
-> {tip} Laravelの他のクラスと同様に、チャンネルクラスは自動的に[サービスコンテナ](/docs/{{version}}/container)により、依存を解決されます。そのため、コンストラクタでタイプヒントにより、チャンネルで必要な依存を指定できます。
+> {tip} Laravelの他の多くのクラスと同様に、チャンネルクラスは[サービスコンテナ](/docs/{{version}}/container)によって自動的に依存解決されます。そのため、コンストラクターでチャンネルに必要な依存関係をタイプヒントすることができます。
 
 <a name="broadcasting-events"></a>
 ## ブロードキャストイベント
 
-イベントを定義し、`ShouldBroadcast`インターフェイスを実装したら、後は`event`関数を使い、イベントを発行するだけです。イベントディスパッチャは、そのイベントが`ShouldBroadcast`インターフェイスにより印付けられていることに注目しており、ブロードキャストするためにイベントをキューへ投入します。
+イベントを定義し、`ShouldBroadcast`インターフェイスでマークを付けたら、イベントのディスパッチメソッドを使用してイベントを発生させるだけです。イベントディスパッチャは、イベントが`ShouldBroadcast`インターフェイスでマークされていることに気付き、ブロードキャストのためにイベントをキューに入れます。
 
-    event(new ShippingStatusUpdated($update));
+    use App\Events\OrderShipmentStatusUpdated;
+
+    OrderShipmentStatusUpdated::dispatch($order));
 
 <a name="only-to-others"></a>
-### 認証中ユーザーの回避
+### 他の人だけへの送信
 
-イベントブロードキャストを使用するアプリケーションを構築しているとき、`event`関数を`broadcast`関数へ置き換えることもできます。`event`関数と同様に、`broadcast`関数もイベントをサーバサイドリスナへディスパッチします。
+イベントブロードキャストを利用するアプリケーションを構築する場合、現在のユーザーを除く特定のチャンネルのすべてのサブスクライバーにイベントをブロードキャストする必要がある場合があります。これは、`broadcast`ヘルパと`toOthers`メソッドを使用して実行できます。
 
-    broadcast(new ShippingStatusUpdated($update));
+    use App\Events\OrderShipmentStatusUpdated;
 
-しかし、`broadcast`関数には、ブロードキャストの受取人から現在のユーザーを除外できる、`toOthers`メソッドが用意されています。
+    broadcast(new OrderShipmentStatusUpdated($update))->toOthers();
 
-    broadcast(new ShippingStatusUpdated($update))->toOthers();
-
-`toOthers`メソッドをいつ使うのかをよく理解してもらうため、タスク名を入力してもらうことにより新しいタスクをユーザーが作成できる、タスクリストアプリケーションを想像してください。タスクを作成するためにアプリケーションは、タスクの生成をブロードキャストし、新しいタスクのJSON表現を返す、`/task`エンドポイントへリクエストを作成するでしょう。JavaScriptアプリケーションがそのエンドポイントからレスポンスを受け取る時、その新しいタスクをタスクリストへ直接挿入するでしょう。次のようにです。
+`toOthers`メソッドをいつ使用したらよいかをよりよく理解するために、ユーザーがタスク名を入力して新しいタスクを作成できるタスクリストアプリケーションを想像してみましょう。タスクを作成するために、アプリケーションは、タスクの作成をブロードキャストし、新しいタスクのJSON表現を返す`/task`URLにリクエストを送信する場合があります。JavaScriptアプリケーションがエンドポイントから応答を受信すると、次のように新しいタスクをタスクリストに直接挿入する場合があるでしょう。
 
     axios.post('/task', task)
         .then((response) => {
             this.tasks.push(response.data);
         });
 
-しかしながら、タスクの生成もブロードキャストしていることを思い出してください。JavaScriptアプリケーションがこのイベントをタスクリストへタスクを追加するためにリッスンしている場合、リストにそのタスクを二重登録してしまいます。ひとつはエンドポイントから、もう一つはブロードキャストからです。これを解決するには、toOthers`メソッドを使用し、ブロードキャスターへそのイベントを現在のユーザーに対してブロードキャストしないように指示してください。
+ただし、タスクの作成もブロードキャストすることを忘れないでください。JavaScriptアプリケーションがタスクリストにタスクを追加するためにこのイベントもリッスンしている場合、リストには重複するタスクが発生します。１つはエンドポイントからのもので、もう１つはブロードキャストからのものです。これを解決するには、`toOthers`メソッドを使用して、現在のユーザーにイベントをブロードキャストしないようにブロードキャスターに指示します。
 
-> {note} イベントで`toOthers`メソッドを呼び出すには、`Illuminate\Broadcasting\InteractsWithSockets`トレイトを使用する必要があります。
+> {note} `toOthers`メソッドを呼び出すには、イベントで`Illuminate\Broadcasting\InteractsWithSockets`トレイトを使用する必要があります。
 
 <a name="only-to-others-configuration"></a>
 #### 設定
 
-Laravel Echoインスタンスを初期化する時、接続へソケットIDをアサインします。[Vue](https://vuejs.org)と[Axios](https://github.com/mzabriskie/axios)を使用していれば、`X-Socket-ID`ヘッダとして、送信する全リクエストへ自動的に付加されます。そのため、`toOthers`メソッドを呼び出す場合、LaravelはヘッダからソケットIDを取り除き、そのソケットIDを使い全接続へブロードキャストしないように、ブロードキャスタに対し指示します。
+Laravel Echoインスタンスを初期化すると、ソケットIDが接続に割り当てられます。グローバル[Axios](https://github.com/mzabriskie/axios)インスタンスを使用してJavaScriptアプリケーションからHTTPリクエストを作成している場合、ソケットIDはすべての送信リクエストに`X-Socket-ID`ヘッダとして自動的に添付されます。次に、`toOthers`メソッドを呼び出すと、LaravelはヘッダからソケットIDを抽出し、そのソケットIDを持つ接続にブロードキャストしないようにブロードキャスターに指示します。
 
-VueとAxiosを使用しない場合、JavaScriptアプリケーションで`X-Socket-ID`ヘッダを送信するように、設定する必要があります。ソケットIDは`Echo.socketId`メソッドにより取得できます。
+グローバルAxiosインスタンスを使用しない場合は、すべての送信リクエストで`X-Socket-ID`ヘッダを送信するようにJavaScriptアプリケーションを手動で設定する必要があります。`Echo.socketId`メソッドを使用してソケットIDを取得できます。
 
     var socketId = Echo.socketId();
 
 <a name="receiving-broadcasts"></a>
 ## ブロードキャストの受け取り
 
-<a name="installing-laravel-echo"></a>
-### Laravel Echoのインストール
-
-Laravel EchoはJavaScriptライブラリで、チャンネルの購読とLaravelによるイベントブロードキャストのリッスンを苦労なしに実現してくれます。EchoはNPMパッケージマネージャにより、インストールします。以降の例で、Pusherチャンネルブロードキャストを使用する予定のため、`pusher-js`パッケージもインストールしています。
-
-    npm install --save-dev laravel-echo pusher-js
-
-Echoがインストールできたら、アプリケーションのJavaScriptで、真新しいEchoインスタンスを作成する準備が整いました。これを行うには、Laravelフレームワークに含まれている、`resources/js/bootstrap.js`ファイルの最後が、良いでしょう。
-
-    import Echo from "laravel-echo"
-
-    window.Echo = new Echo({
-        broadcaster: 'pusher',
-        key: 'your-pusher-channels-key'
-    });
-
-`pusher`コネクタを使うEchoインスタンスを作成するときには、`cluster`と同時にTLS接続を行うかどうかを指定することもできます。（デフォルトはTLS接続を使います。`forceTLS`が`false`の場合は非TLS接続設定です。非TLS接続設定では、そのページをHTTPでロードするか、TLS接続に失敗した時のフォールバックとしてHTTPで接続します。）
-
-    window.Echo = new Echo({
-        broadcaster: 'pusher',
-        key: 'your-pusher-channels-key',
-        cluster: 'eu',
-        forceTLS: true
-    });
-
-<a name="using-an-existing-client-instance"></a>
-#### 既存クライアントインスタンスの利用
-
-Echoで使用したいPusherチャンネルやSocket.ioクライアントを前もって用意してあれば、`client`設定オプションによりEchoへ指定できます。
-
-    const client = require('pusher-js');
-
-    window.Echo = new Echo({
-        broadcaster: 'pusher',
-        key: 'your-pusher-channels-key',
-        client: client
-    });
-
 <a name="listening-for-events"></a>
 ### イベントのリッスン
 
-インストールが済み、Echoをインスタンス化したら、イベントブロードキャストをリスニングする準備が整いました。最初に、`channel`メソッドを使い、チャンネルインスタンスを取得し、それから`listen`メソッドで特定のイベントをリッスンしてください。
+[Laravel Echoをインストールしてインスタンス化](#client-side-installation)すると、Laravelアプリケーションからブロードキャストされるイベントをリッスンする準備が整います。まず、`channel`メソッドを使用してチャンネルのインスタンスを取得し、次に`listen`メソッドを呼び出して指定されたイベントをリッスンします。
 
-    Echo.channel('orders')
-        .listen('OrderShipped', (e) => {
-            console.log(e.order.name);
-        });
+```js
+Echo.channel(`orders.${this.order.id}`)
+    .listen('OrderShipmentStatusUpdated', (e) => {
+        console.log(e.order.name);
+    });
+```
 
-プライベートチャンネルのイベントをリッスンしたい場合は、`private`メソッドを代わりに使用してください。一つのチャンネルに対し、複数のイベントをリッスンする場合は、`listen`メソッドをチェーンして呼び出してください。
+プライベートチャンネルでイベントをリッスンする場合は、代わりに`private`メソッドを使用してください。`listen`メソッドへの呼び出しをチェーンして、単一のチャンネルで複数のイベントをリッスンすることができます。
 
-    Echo.private('orders')
-        .listen(...)
-        .listen(...)
-        .listen(...);
+```js
+Echo.private(`orders.${this.order.id}`)
+    .listen(...)
+    .listen(...)
+    .listen(...);
+```
 
 <a name="leaving-a-channel"></a>
 ### チャンネルの離脱
 
-チャンネルを離脱するには、Echoインスタンスの`leaveChannel`メソッドを呼び出してください。
+チャンネルを離れるには、Echoインスタンスで`leaveChannel`メソッドを呼び出してください。
 
-    Echo.leaveChannel('orders');
+```js
+Echo.leaveChannel(`orders.${this.order.id}`);
+```
 
-チャンネルを離脱し、関連するプライベートチャンネル、現在のチャンネルも離脱したい場合は、`leave`メソッドを呼び出してください。
+If you would like to leave a channel and also its associated private and presence channels, you may call the `leave` method:
+チャンネルとそれに関連するプライベートチャンネルおよびプレゼンスチャンネルを離れたい場合は、`leave`メソッドを呼び出してください。
 
-    Echo.leave('orders');
-
+```js
+Echo.leave(`orders.${this.order.id}`);
+```
 <a name="namespaces"></a>
 ### 名前空間
 
-上の例で、イベントクラスの完全な名前空間を指定していないことに、皆さん気がついたでしょう。その理由は、Echoはイベントが`App\Events`名前空間へ設置されると仮定しているからです。しかし、ルートの名前空間を設定変更している場合は、Echoのインスタンス化時に、`namespace`設定オプションを渡してください。
+上記の例で、イベントクラスに完全な`App\Events`名前空間を指定していないことに気付いたかもしれません。これは、Echoがイベントが`App\Events`名前空間にあると自動的に想定するためです。ただし、`namespace`設定オプションを渡すことにより、Echoをインスタンス化するときにルート名前空間を設定できます。
 
-    window.Echo = new Echo({
-        broadcaster: 'pusher',
-        key: 'your-pusher-channels-key',
-        namespace: 'App.Other.Namespace'
+```js
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    // ...
+    namespace: 'App.Other.Namespace'
+});
+```
+
+または、Echoを使用してサブスクライブするときに、イベントクラスの前に`.`を付けることもできます。これにより、常に完全修飾クラス名を指定できます。
+
+```js
+Echo.channel('orders')
+    .listen('.Namespace\\Event\\Class', (e) => {
+        //
     });
-
-もしくは、Echoを使用し購入する時点で、イベントクラスへ`.`を使い、プリフィックスを付けてください。
-
-    Echo.channel('orders')
-        .listen('.Namespace\Event\Class', (e) => {
-            //
-        });
+```
 
 <a name="presence-channels"></a>
 ## プレゼンスチャンネル
 
-プレゼンスチャンネルは、誰がチャンネルを購入しているかの情報を取得できる機能を提供しつつ、安全なプライベートチャンネルを構築します。これにより、他のユーザーが同じページを閲覧していることを知らせるような、パワフルでコラボレート可能な機能を持つアプリケーションを簡単に構築できます。
+プレゼンスチャンネルは、プライベートチャンネルのセキュリティを基盤とし、チャンネルにサブスクライブしているユーザーを認識するという追加機能を付け加えます。これにより、別のユーザーが同じページを表示しているときにユーザーに通知したり、チャットルームの住民を一覧表示したりするなど、強力なコラボレーションアプリケーション機能を簡単に構築できます。
 
 <a name="authorizing-presence-channels"></a>
-### プレゼンスチャンネルの許可
+### プレゼンスチャンネルの認可
 
-全プレゼンスチャンネルは、プライベートチャンネルでもあります。そのため、ユーザーは[アクセスする許可](#authorizing-channels)が必要です。プレゼンスチャンネルの認可コールバックを定義する場合、ユーザーがチャンネルへ参加する許可があるならば、`true`をリターンしないでください。代わりに、ユーザー情報の配列を返してください。
+すべてのプレゼンスチャンネルもプライベートチャンネルです。したがって、ユーザーは[アクセス許可](#authorizing-channels)を持つ必要があります。ただし、プレゼンスチャンネルの認可コールバックを定義する場合、ユーザーがチャンネルへの参加を認可されている場合に、`true`を返しません。代わりに、ユーザーに関するデータの配列を返す必要があります。
 
-認可コールバックから返されるデータは、JavaScriptアプリケーションのプレゼンスチャンネルイベントリスナで利用できるようになります。ユーザーがプレゼンスチャンネルへ参加する許可がない場合は、`false`か`null`を返してください。
+認可コールバックが返すデータは、JavaScriptアプリケーションのプレゼンスチャンネルイベントリスナが利用できるようになります。ユーザーがプレゼンスチャンネルへの参加を許可されていない場合は、`false`または`null`を返す必要があります。
 
     Broadcast::channel('chat.{roomId}', function ($user, $roomId) {
         if ($user->canJoinRoom($roomId)) {
@@ -594,11 +692,11 @@ Echoで使用したいPusherチャンネルやSocket.ioクライアントを前�
     });
 
 <a name="joining-presence-channels"></a>
-### プレゼンスチャンネルへの参加
+### プレゼンスチャンネルへの接続
 
-プレゼンスチャンネルへ参加するには、Echoの`join`メソッドを使用します。`join`メソッドは、すでに説明した`listen`メソッドに付け加え、`here`、`joining`、`leaving`イベントを購入できるようになっている、`PresenceChannel`実装を返します。
+プレゼンスチャンネルに参加するには、Echoの`join`メソッドを使用できます。`join`メソッドは`PresenceChannel`実装を返します。これは、`listen`メソッドを公開するとともに、`here`、`joining`、および`leaving`イベントをサブスクライブできるようにします。
 
-    Echo.join('chat.' + roomId)
+    Echo.join(`chat.${roomId}`)
         .here((users) => {
             //
         })
@@ -609,15 +707,15 @@ Echoで使用したいPusherチャンネルやSocket.ioクライアントを前�
             console.log(user.name);
         });
 
-`here`コールバックはチャンネル参加に成功すると、すぐに実行されます。そして、このチャンネルを現在購入している、他の全ユーザー情報を含む配列を返します。`joining`メソッドは、チャンネルに新しいユーザーが参加した時に実行されます。一方の`leaving`メソッドは、ユーザーがチャンネルから離脱した時に実行されます。
+`here`コールバックは、チャンネルへ正常に参加するとすぐに実行され、現在チャンネルにサブスクライブしている他のすべてのユーザーのユーザー情報を含む配列を受け取ります。`joining`メソッドは、新しいユーザーがチャンネルに参加したときに実行され、`leaving`メソッドは、ユーザーがチャンネルを離れたときに実行されます。
 
 <a name="broadcasting-to-presence-channels"></a>
 ### プレゼンスチャンネルへのブロードキャスト
 
-パブリックやプライベートチャンネルと同じように、プレゼンスチャンネルはイベントを受け取ります。チャットルームを例にしましょう。その部屋のプレゼンスチャンネルへの`NewMessage`イベントがブロードキャストされるのを受け取りたいとします。そのために、イベントの`broadcastOn`メソッドで、`PresenceChannel`のインスタンスを返します。
+プレゼンスチャンネルは、パブリックチャンネルまたはプライベートチャンネルと同じようにイベントを受信できます。チャットルームの例を使用して、`NewMessage`イベントをルームのプレゼンスチャンネルにブロードキャストしたいとしましょう。そのために、イベントの`broadcastOn`メソッドから`PresenceChannel`のインスタンスを返します。
 
     /**
-     * イベントをブロードキャストすべき、チャンネルの取得
+     * イベントがブロードキャストするチャンネルを取得
      *
      * @return Channel|array
      */
@@ -626,15 +724,15 @@ Echoで使用したいPusherチャンネルやSocket.ioクライアントを前�
         return new PresenceChannel('room.'.$this->message->room_id);
     }
 
-パブリックやプライベートイベントと同様に、プレゼンスチャンネルイベントは`broadcast`関数を使用しブロードキャストします。他のイベントと同様に、ブロードキャストが届けるイベントから現在のユーザーを除くため、`[toOthers]`メソッドも利用できます。
+他のイベントと同様に、`broadcast`ヘルパと`toOthers`メソッドを使用して、現在のユーザーをブロードキャストの受信から除外できます。
 
     broadcast(new NewMessage($message));
 
     broadcast(new NewMessage($message))->toOthers();
 
-Echoの`listen`メソッドにより、参加イベントをリッスンできます。
+他の典型的なタイプのイベントと同様に、Echoの`listen`メソッドを使用してプレゼンスチャンネルに送信されたイベントをリッスンできます。
 
-    Echo.join('chat.' + roomId)
+    Echo.join(`chat.${roomId}`)
         .here(...)
         .joining(...)
         .leaving(...)
@@ -645,20 +743,20 @@ Echoの`listen`メソッドにより、参加イベントをリッスンでき�
 <a name="client-events"></a>
 ## クライアントイベント
 
-> {tip} [Pusherチャンネル](https://pusher.com/channels)を使用する場合、クライアントイベントを送信するために、[application dashboard](https://dashboard.pusher.com/)の"App Settings"にある、"Client Events"オプションを有効にしてください。
+> {tip} [Pusherチャンネル](https://pusher.com/channels)を使用する場合は、クライアントイベントを送信するために[アプリケーションダッシュボード](https://dashboard.pusher.com/)の"App Settings"セクションの"Client Events"オプションを有効にする必要があります。
 
-Laravelアプリケーションにまったく関係ないイベントを他の接続クライアントへブロードキャストしたい場合もあることでしょう。これはとくにアプリケーションユーザーへ他のユーザーがキーボードをタイプしているメッセージをページ中で表示するための「タイプ中…」通知をする場合に便利です。
+Laravelアプリケーションにまったくアクセスせずに、接続済みの他のクライアントにイベントをブロードキャストしたい場合があります。これは、別のユーザーが特定の画面でメッセージを入力していることをアプリケーションのユーザーに警告する「入力」通知などに特に役立ちます。
 
-クライアントイベントをブロードキャストするには、Echoの`whisper`メソッドを使用します。
+クライアントイベントをブロードキャストするには、Echoの`whisper`メソッドを使用できます。
 
-    Echo.private('chat')
+    Echo.private(`chat.${roomId}`)
         .whisper('typing', {
             name: this.user.name
         });
 
-クライアントイベントをリッスンするには、`listenForWhisper`メソッドを使います。
+クライアントイベントをリッスンするには、`listenForWhisper`メソッドを使用します。
 
-    Echo.private('chat')
+    Echo.private(`chat.${roomId}`)
         .listenForWhisper('typing', (e) => {
             console.log(e.name);
         });
@@ -666,13 +764,13 @@ Laravelアプリケーションにまったく関係ないイベントを他の�
 <a name="notifications"></a>
 ## 通知
 
-イベントブロードキャストと[通知](/docs/{{version}}/notifications)をペアリングすることで、JavaScriptアプリケーションはページを再読み込みする必要なく、新しい通知を受け取ることができます。最初に、[ブロードキャスト通知チャンネル](/docs/{{version}}/notifications#broadcast-notifications)の使用法ドキュメントをよく読んでください。
+イベントブロードキャストを[通知](/docs/{{version}}/notifications)と組み合わせることで、JavaScriptアプリケーションは、ページを更新せず発生した新しい通知を受け取ることができます。実現する前に、[ブロードキャスト通知チャンネル](/docs/{{version}}/notifys#broadcast-notifications)の使用に関するドキュメントを必ずお読みください。
 
-ブロードキャストチャンネルを使用する通知の設定を終えたら、Echoの`notification`メソッドを使用し、ブロードキャストイベントをリッスンできます。チャンネル名は、通知を受けるエンティティのクラス名と一致している必要があることを覚えておいてください。
+ブロードキャストチャンネルを使用するように通知を設定すると、Echoの`notification`メソッドを使用してブロードキャストイベントをリッスンできます。チャンネル名は、通知を受信するエンティティのクラス名と一致する必要があることに注意してください。
 
     Echo.private(`App.Models.User.${userId}`)
         .notification((notification) => {
             console.log(notification.type);
         });
 
-上記の例の場合、「ブロードキャスト」チャンネルを通じ、`App\Models\User`インスタンスへ送られる通知は、全部コールバックにより受け取られます。`App.Models.User.{id}`チャンネルのチャンネル認可コールバックは、Laravelフレームワークに用意されている、デフォルトの`BroadcastServiceProvider`に含まれています。
+この例では、`broadcast`チャンネルを介して`App\Models\User`インスタンスに送信されたすべての通知は、コールバックにより受け取られます。`App.Models.User.{id}`チャンネルのチャンネル認可コールバックは、Laravelフレームワークに付属するデフォルトの`BroadcastServiceProvider`に含まれています。

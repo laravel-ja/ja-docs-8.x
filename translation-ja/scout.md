@@ -2,8 +2,8 @@
 
 - [イントロダクション](#introduction)
 - [インストール](#installation)
-    - [キュー](#queueing)
     - [ドライバの事前要件](#driver-prerequisites)
+    - [キュー投入](#queueing)
 - [設定](#configuration)
     - [モデルインデックスの設定](#configuring-model-indexes)
     - [検索可能データの設定](#configuring-searchable-data)
@@ -27,7 +27,7 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravel Scout（スカウト、斥候）は、[Eloquentモデル](/docs/{{version}}/eloquent)へ、シンプルなドライバベースのフルテキストサーチを提供します。モデルオブサーバを使い、Scoutは検索インデックスを自動的にEloquentレコードと同期します。
+Laravel Scout（Scout、斥候）は、[Eloquentモデル](/docs/{{version}}/eloquent)へ、シンプルなドライバベースのフルテキストサーチを提供します。モデルオブサーバを使い、Scoutは検索インデックスを自動的にEloquentレコードと同期します。
 
 現在、Scoutは[Algolia](https://www.algolia.com/)ドライバを用意しています。カスタムドライバは簡単に書けますので、独自の検索を実装し、Scoutを拡張できます。
 
@@ -38,11 +38,11 @@ Laravel Scout（スカウト、斥候）は、[Eloquentモデル](/docs/{{versio
 
     composer require laravel/scout
 
-Scoutをインストールしたら、`vendor:publish` Artisanコマンドを使用し、Scout設定ファイルをリソース公開します。このコマンドは、`config`ディレクトリ下に`scout.php`設定ファイルをリソース公開します。
+Scoutをインストールした後、`vendor:publish` Artisanコマンドを実行してScout設定ファイルをリソース公開する必要があります。このコマンドは、`scout.php`設定ファイルをアプリケーションの`config`ディレクトリへリソース公開します。
 
     php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
 
-最後に、検索可能にしたいモデルへ、`Laravel\Scout\Searchable`トレイトを追加します。このトレイトはモデルオブザーバを登録し、サーチドライバとモデルの同期を取り続けます。
+最後に、検索可能にしたいモデルに`Laravel\Scout\Searchable`トレイトを追加します。このトレイトは、モデルを検索ドライバと自動的に同期させるモデルオブザーバを登録します。
 
     <?php
 
@@ -56,15 +56,6 @@ Scoutをインストールしたら、`vendor:publish` Artisanコマンドを使
         use Searchable;
     }
 
-<a name="queueing"></a>
-### キュー
-
-Scoutを厳格（リアルタイム）に利用する必要がないのであれば、このライブラリを使用する前に[キュードライバ](/docs/{{version}}/queues)の設定を考えてみるべきでしょう。キューワーカの実行により、モデルの情報を検索インデックスに同期する全操作をキューイングでき、アプリケーションのWebインターフェイスのレスポンス時間を改善できるでしょう。
-
-キュードライバを設定したら、`config/scout.php`設定ファイルの`queue`オプション値を`true`に設定してください。
-
-    'queue' => true,
-
 <a name="driver-prerequisites"></a>
 ### ドライバの事前要件
 
@@ -74,6 +65,15 @@ Scoutを厳格（リアルタイム）に利用する必要がないのであれ
 Algoliaドライバを使用する場合、Algolia `id`と`secret`接続情報を`config/scout.php`設定ファイルで設定する必要があります。接続情報を設定し終えたら、Algolia PHP SDKをComposerパッケージマネージャで、インストールする必要があります。
 
     composer require algolia/algoliasearch-client-php
+
+<a name="queueing"></a>
+### キュー投入
+
+厳密にはScoutを使用する必要はありませんが、ライブラリを使用する前に、[キュードライバ](/docs/{{version}}/queues)の設定を強く考慮する必要があります。キューワーカを実行すると、Scoutはモデル情報を検索インデックスに同期するすべての操作をキューに入れることができ、アプリケーションのWebインターフェイスのレスポンス時間が大幅に短縮されます。
+
+キュードライバを設定したら、`config/scout.php`設定ファイルの`queue`オプションの値を`true`に設定します。
+
+    'queue' => true,
 
 <a name="configuration"></a>
 ## 設定
@@ -95,7 +95,7 @@ Algoliaドライバを使用する場合、Algolia `id`と`secret`接続情報�
         use Searchable;
 
         /**
-         * モデルのインデックス名取得
+         * モデルに関連付けられているインデックスの名前を取得
          *
          * @return string
          */
@@ -130,7 +130,7 @@ Algoliaドライバを使用する場合、Algolia `id`と`secret`接続情報�
         {
             $array = $this->toArray();
 
-            // 配列のカスタマイズ…
+            // データ配列をカスタマイズ
 
             return $array;
         }
@@ -139,7 +139,7 @@ Algoliaドライバを使用する場合、Algolia `id`と`secret`接続情報�
 <a name="configuring-the-model-id"></a>
 ### モデルIDの設定
 
-Scoutはデフォルトとして、モデルの主キーを検索インデックスへ保存するユニークなIDとして使用します。この振る舞いをカスタマイズしたい場合は、モデルの`getScoutKey`と`getScoutKeyName`メソッドをオーバーライドしてください。
+デフォルトでは、Scoutはモデルの主キーを、検索インデックスに保存されているモデルの一意のID／キーとして使用します。この動作をカスタマイズする必要がある場合は、モデルの`getScoutKey`メソッドと`getScoutKeyName`メソッドをオーバーライドできます。
 
     <?php
 
@@ -176,7 +176,7 @@ Scoutはデフォルトとして、モデルの主キーを検索インデック
 <a name="identifying-users"></a>
 ### ユーザーの識別
 
-ScoutはAlgoliaを使用する場合、自動的にユーザーを識別します。認証済みユーザーを検索操作と結びつけると、Algoliaダッシュボードで検索分析を閲覧する場合、役に立つでしょう。`.env`ファイル中の`SCOUT_IDENTIFY`を`true`に設定するとユーザー認証が有効になります。
+Scoutを使用すると、[Algolia](https://algolia.com)を使用するときにユーザーを自動識別することもできます。認証済みユーザーを検索操作に関連付けると、Algoliaのダッシュボード内で検索分析を表示するときに役立つ場合があります。アプリケーションの`.env`ファイルで`SCOUT_IDENTIFY`環境変数を`true`として定義することにより、ユーザー識別を有効にできます。
 
     SCOUT_IDENTIFY=true
 
@@ -188,7 +188,7 @@ ScoutはAlgoliaを使用する場合、自動的にユーザーを識別しま�
 <a name="batch-import"></a>
 ### バッチ取り込み
 
-既存プロジェクトにScoutをインストールする場合、検索ドライバへ取り込むために必要なデータベースレコードは、すでに存在しています。Scoutは既存の全レコードを検索インデックスへ取り込むために使用する、`import` Artisanコマンドを提供しています。
+Scoutを既存のプロジェクトにインストールする場合は、インデックスへインポートする必要のあるデータベースレコードがすでに存在している可能性があります。Scoutは、既存のすべてのレコードを検索インデックスにインポートするために使用できる`scout:import` Artisanコマンドを提供しています。
 
     php artisan scout:import "App\Models\Post"
 
@@ -215,79 +215,92 @@ ScoutはAlgoliaを使用する場合、自動的にユーザーを識別しま�
 <a name="adding-records"></a>
 ### レコード追加
 
-モデルに`Laravel\Scout\Searchable`トレイトを追加したら、必要なのはモデルインスタンスを`save`することです。これにより自動的に検索インデックスへ追加されます。Scoutで[キューを使用する](#queueing)設定にしている場合は、この操作はキューワーカにより、バックグランドで実行されます。
+モデルに`Laravel\Scout\Searchable`トレイトを追加したら、モデルインスタンスを`保存`または`作成`するだけで、検索インデックスに自動的に追加されます。[キューを使用](#queueing)するようにScoutを設定した場合、この操作はキューワーカによってバックグラウンドで実行されます。
 
-    $order = new App\Models\Order;
+    use App\Models\Order;
+
+    $order = new Order;
 
     // ...
 
     $order->save();
 
-<a name="adding-via-query"></a>
-#### クエリによる追加
+<a name="adding-records-via-query"></a>
+#### クエリによるレコード追加
 
-Eloquentクエリにより、検索インデックスへモデルのコレクションを追加したい場合は、Eloquentクエリに`searchable`メソッドをチェーンします。`searchable`メソッドは、クエリの[結果をチャンクへ分割](/docs/{{version}}/eloquent#chunking-results)し、レコードを検索エンジンへ追加します。この場合も、Scoutでキューを使用する設定をしていれば、キューワーカが全チャンクをバックグランドで追加します。
+Eloquentクエリを介してモデルのコレクションを検索インデックスに追加する場合は、`searchable`メソッドをEloquentクエリにチェーンできます。`searchable`メソッドはクエリの[結果をチャンク](/docs/{{version}}/eloquent#chunking-results)し、レコードを検索インデックスに追加します。繰り返しますが、キューを使用するようにScoutを設定した場合、すべてのチャンクはキューワーカによってバックグラウンドでインポートされます。
 
-    // Eloquentクエリにより追加
-    App\Models\Order::where('price', '>', 100)->searchable();
+    use App\Models\Order;
 
-    // リレーションにより、レコードを追加することもできる
+    Order::where('price', '>', 100)->searchable();
+
+Eloquentリレーションインスタンスで `searchable`メソッドを呼び出すこともできます。
+
     $user->orders()->searchable();
 
-    // コレクションにより、追加することもできる
+または、メモリ内にEloquentモデルのコレクションが既にある場合は、コレクションインスタンスで`searchable`メソッドを呼び出して、モデルインスタンスを対応するインデックスに追加できます。
+
     $orders->searchable();
 
-`searchable`メソッドは"upsert(update+insert)"操作と考えられます。言い換えれば、モデルレコードがインデックスへすでに存在していれば、更新されます。検索エンジンに存在していなければ、インデックスへ追加されます。
+>{tip}`searchable`メソッドは、「アップサート（upsert）」操作と考えるられます。つまり、モデルレコードがすでにインデックスに含まれている場合は、更新され、検索インデックスに存在しない場合は追加されます。
 
 <a name="updating-records"></a>
 ### レコード更新
 
 検索可能モデルを更新するには、モデルインスタンスのプロパティを更新し、`save`でモデルをデータベースへ保存します。Scoutは自動的に変更を検索インデックスへ保存します。
 
-    $order = App\Models\Order::find(1);
+    use App\Models\Order;
+
+    $order = Order::find(1);
 
     // 注文を更新…
 
     $order->save();
 
-モデルのコレクションを更新するためにも、Eloquentクエリの`searchable`メソッドを使用します。検索エンジンにモデルが存在していない場合は、作成します。
+Eloquentクエリインスタンスで`searchable`メソッドを呼び出して、モデルのコレクションを更新することもできます。モデルが検索インデックスに存在しない場合は作成されます。
 
-    // Eloquentクエリによる更新
-    App\Models\Order::where('price', '>', 100)->searchable();
+    Order::where('price', '>', 100)->searchable();
 
-    // リレーションによる更新も可能
+リレーションシップ内のすべてのモデルの検索インデックスレコードを更新する場合は、リレーションシップインスタンスで`searchable`を呼び出すことができます。
+
     $user->orders()->searchable();
 
-    // コレクションによる更新も可能
+または、メモリ内にEloquentモデルのコレクションが既にある場合は、コレクションインスタンスで`searchable`メソッドを呼び出して、対応するインデックスのモデルインスタンスを更新できます。
+
     $orders->searchable();
 
 <a name="removing-records"></a>
 ### レコード削除
 
-インデックスからレコードを削除するには、データベースからモデルを`delete`で削除します。この形態による削除は、モデルの[ソフト削除](/docs/{{version}}/eloquent#soft-deleting)と互換性があります。
+インデックスからレコードを削除するには、データベースからモデルを`delete`するだけです。これは、[ソフト削除](/docs/{{version}}/eloquent#soft-deleting)モデルを使用している場合でも実行できます。
 
-    $order = App\Models\Order::find(1);
+    use App\Models\Order;
+
+    $order = Order::find(1);
 
     $order->delete();
 
-レコードを削除する前に、モデルを取得したくない場合は、Eloquentクエリインスタンスかコレクションに対し、`unsearchable`メソッドを使用します。
+レコードを削除する前にモデルを取得したくない場合は、Eloquentクエリインスタンスで`unsearchable`メソッドを使用できます。
 
-    // Eloquentクエリによる削除
-    App\Models\Order::where('price', '>', 100)->unsearchable();
+    Order::where('price', '>', 100)->unsearchable();
 
-    // リレーションによる削除も可能
+リレーション内のすべてのモデルの検索インデックスレコードを削除する場合は、リレーションインスタンスで`unsearchable`を呼び出してください。
+
     $user->orders()->unsearchable();
 
-    // コレクションによる削除も可能
+または、メモリ内にEloquentモデルのコレクションが既にある場合は、コレクションインスタンスで`unsearchable`メソッドを呼び出して、対応するインデックスからモデルインスタンスを削除できます。
+
     $orders->unsearchable();
 
 <a name="pausing-indexing"></a>
 ### インデックスの一時停止
 
-Eloquentモデルをバッチ処理するが、検索インデックスへモデルデータを同期したくない場合もときどきあります。`withoutSyncingToSearch`メソッドを使用することで可能です。このメソッドは、即時に実行されるコールバックを１つ引数に取ります。コールバック中のモデル操作は、インデックスへ同期されることはありません。
+モデルデータを検索インデックスに同期せずに、モデルに対してEloquent操作のバッチを実行する必要がある場合があります。これは、`withoutSyncingToSearch`メソッドを使用して行うことができます。このメソッドは、すぐに実行される単一のクロージャを引数に取ります。クロージャ内で発行するモデル操作は、モデルのインデックスに同期されません。
 
-    App\Models\Order::withoutSyncingToSearch(function () {
-        // モデルアクションの実行…
+    use App\Models\Order;
+
+    Order::withoutSyncingToSearch(function () {
+        // モデルアクションを実行
     });
 
 <a name="conditionally-searchable-model-instances"></a>
@@ -295,77 +308,91 @@ Eloquentモデルをバッチ処理するが、検索インデックスへモデ
 
 特定の条件下でのみ、モデルを検索可能にする必要がある場合も起きるでしょう。たとえば、`App\Models\Post`モデルが、"draft"か"published"の２つのうち、どちらか１つの状態を取ると想像してください。「公開済み:published」のポストのみ検索可能にする必要があります。これを実現するには、モデルに`shouldBeSearchable`メソッドを定義してください。
 
+    /**
+     * モデルを検索可能にする判定
+     *
+     * @return bool
+     */
     public function shouldBeSearchable()
     {
         return $this->isPublished();
     }
 
-`shouldBeSearchable`メソッドは、`save`メソッド、クエリ、リレーションによるモデル操作の場合のみ適用されます。`searchable`メソッドを使用し、直接searchableなモデルかコレクションを作成する場合は、`shouldBeSearchable`メソッドの結果をオーバーライドします。
-
-    // "shouldBeSearchable"が利用される
-    App\Models\Order::where('price', '>', 100)->searchable();
-
-    $user->orders()->searchable();
-
-    $order->save();
-
-    // "shouldBeSearchable"はオーバーライドされる
-    $orders->searchable();
-
-    $order->searchable();
+`shouldBeSearchable`メソッドは、`save`および`create`メソッド、クエリ、またはリレーションを通してモデルを操作する場合にのみ適用されます。`searchable`メソッドを使用してモデルまたはコレクションを直接検索可能にすると、`shouldBeSearchable`メソッドの結果が上書きされます。
 
 <a name="searching"></a>
 ## 検索
 
 `search`メソッドにより、モデルの検索を開始しましょう。`search`メソッドはモデルを検索するために使用する文字列だけを引数に指定します。`get`メソッドを検索クエリにチェーンし、指定した検索クエリに一致するEloquentモデルを取得できます。
 
-    $orders = App\Models\Order::search('Star Trek')->get();
+    use App\Models\Order;
+
+    $orders = Order::search('Star Trek')->get();
 
 Scoutの検索ではEloquentモデルのコレクションが返されるため、ルートやコントローラから直接結果を返せば、自動的にJSONへ変換されます。
 
+    use App\Models\Order;
     use Illuminate\Http\Request;
 
     Route::get('/search', function (Request $request) {
-        return App\Models\Order::search($request->search)->get();
+        return Order::search($request->search)->get();
     });
 
-Eloquentモデルにより変換される前の、結果をそのまま取得したい場合は、`raw`メソッドを使用してください。
+Eloquentモデルへ変換する前に素の検索結果を取得したい場合は、`raw`メソッドを使用できます。
 
-    $orders = App\Models\Order::search('Star Trek')->raw();
+    $orders = Order::search('Star Trek')->raw();
 
-検索クエリは通常、モデルの[`searchableAs`](#configuring-model-indexes)メソッドに指定されたインデックスを使い実行されます。しかし、その代わりに検索で使用するカスタムインデックスを`within`メソッドで使用することもできます。
+<a name="custom-indexes"></a>
+#### カスタムインデックス
 
-    $orders = App\Models\Order::search('Star Trek')
+検索クエリは通常、モデルの[`searchableAs`](#configuring-model-indexes)メソッドで指定するインデックスに対して実行されます。ただし、`within`メソッドを使用して、代わりに検索する必要があるカスタムインデックスを指定できます。
+
+    $orders = Order::search('Star Trek')->paginate();
         ->within('tv_shows_popularity_desc')
         ->get();
 
 <a name="where-clauses"></a>
 ### Where節
 
-Scoutは検索クエリに対して"WHERE"節を単に追加する方法も提供しています。現在、この節としてサポートしているのは、基本的な数値の一致を確認することだけで、主にIDにより検索クエリを絞り込むために使用します。検索インデックスはリレーショナル・データベースではないため、より上級の"WHERE"節は現在サポートしていません。
+Scoutを使用すると、検索クエリに単純な「where」句を追加できます。現在、これらの句は基本的な数値の同等性チェックのみをサポートしており、主に所有者IDによる検索クエリのスコープに役立ちます。検索インデックスはリレーショナルデータベースではないため、現在、より高度な「where」句はサポートしていません。
 
-    $orders = App\Models\Order::search('Star Trek')->where('user_id', 1)->get();
+    use App\Models\Order;
+
+    $orders = Order::search('Star Trek')->where('user_id', 1)->get();
 
 <a name="pagination"></a>
 ### ペジネーション
 
-コレクションの取得に付け加え、検索結果を`paginate`メソッドでページづけできます。このメソッドは、`Paginator`インスタンスを返しますので、[Eloquentクエリのペジネーション](/docs/{{version}}/pagination)と同様に取り扱えます。
+モデルのコレクションを取得することに加えて、`paginate`メソッドを使用して検索結果をページ分割することができます。このメソッドは、[従来のEloquentクエリをペジネーションする](/docs/{{version}}/pagination)場合と同じように、`Illuminate\Pagination\LengthAwarePaginator`インスタンスを返します。
 
-    $orders = App\Models\Order::search('Star Trek')->paginate();
+    use App\Models\Order;
+
+    $orders = Order::search('Star Trek')->paginate();
 
 `paginate`メソッドの第１引数として、各ページごとに取得したいモデル数を指定します。
 
-    $orders = App\Models\Order::search('Star Trek')->paginate(15);
+    $orders = Order::search('Star Trek')->paginate(15);
 
 結果が取得できたら、通常のEloquentクエリのペジネーションと同様に、結果を表示し、[Blade](/docs/{{version}}/blade)を使用してページリンクをレンダーできます。
 
-    <div class="container">
-        @foreach ($orders as $order)
-            {{ $order->price }}
-        @endforeach
-    </div>
+```html
+<div class="container">
+    @foreach ($orders as $order)
+        {{ $order->price }}
+    @endforeach
+</div>
 
-    {{ $orders->links() }}
+{{ $orders->links() }}
+```
+
+もちろん、ペジネーションの結果をJSONとして取得したい場合は、ルートまたはコントローラから直接ペジネータインスタンスを返すことができます。
+
+    use App\Models\Order;
+    use Illuminate\Http\Request;
+
+    Route::get('/orders', function (Request $request) {
+        return Order::search($request->input('query'))->paginate(15);
+    });
 
 <a name="soft-deleting"></a>
 ### ソフトデリート
@@ -376,29 +403,35 @@ Scoutは検索クエリに対して"WHERE"節を単に追加する方法も提�
 
 この設定オプションを`true`にすると、Scoutは検索インデックスからソフトデリートされたモデルを削除しません。代わりに、インデックスされたレコードへ、隠し`__soft_deleted`属性をセットします。これにより、検索時にソフトデリート済みレコードを取得するために、`withTrashed`や`onlyTrashed`メソッドがつかえます。
 
+    use App\Models\Order;
+
     // 結果の取得時に、削除済みレコードも含める
-    $orders = App\Models\Order::search('Star Trek')->withTrashed()->get();
+    $orders = Order::search('Star Trek')->withTrashed()->get();
 
     // 結果の取得時に、削除済みレコードのみを対象とする
-    $orders = App\Models\Order::search('Star Trek')->onlyTrashed()->get();
+    $orders = Order::search('Star Trek')->onlyTrashed()->get();
 
 > {tip} ソフトデリートされたモデルが、`forceDelete`により完全に削除されると、Scoutは自動的に検索インデックスから削除します。
 
 <a name="customizing-engine-searches"></a>
 ### エンジンの検索のカスタマイズ
 
-エンジンの検索の振る舞いをカスタマイズする必要があれば、`search`メソッドの第２引数にコールパックを渡してください。たとえば、Algoliaへサーチクエリが渡される前に、サーチオプションにgeo-locationデータを追加するために、このコールバックが利用できます。
+エンジンの検索動作の高度なカスタマイズを実行する必要がある場合は、 `search`メソッドの２番目の引数にクロージャを渡せます。たとえば、このコールバックを使用して、検索クエリがAlgoliaに渡される前に、地理的位置データを検索オプションに追加できます。
 
     use Algolia\AlgoliaSearch\SearchIndex;
+    use App\Models\Order;
 
-    App\Models\Order::search('Star Trek', function (SearchIndex $algolia, string $query, array $options) {
-        $options['body']['query']['bool']['filter']['geo_distance'] = [
-            'distance' => '1000km',
-            'location' => ['lat' => 36, 'lon' => 111],
-        ];
+    Order::search(
+        'Star Trek',
+        function (SearchIndex $algolia, string $query, array $options) {
+            $options['body']['query']['bool']['filter']['geo_distance'] = [
+                'distance' => '1000km',
+                'location' => ['lat' => 36, 'lon' => 111],
+            ];
 
-        return $algolia->search($query, $options);
-    })->get();
+            return $algolia->search($query, $options);
+        }
+    )->get();
 
 <a name="custom-engines"></a>
 ## カスタムエンジン
@@ -424,12 +457,13 @@ Scoutは検索クエリに対して"WHERE"節を単に追加する方法も提�
 <a name="registering-the-engine"></a>
 #### エンジンの登録
 
-カスタムエンジンを書いたら、Scoutエンジンマネージャの`extend`メソッドを使用し、Scoutへ登録します。`AppServiceProvider`かアプリケーションで使用している他のサービスプロバイダの`boot`メソッドで、`extend`メソッドを呼び出してください。たとえば、`MySqlSearchEngine`を書いた場合、次のように登録します。
+カスタムエンジンを作成したら、Scoutエンジンマネージャの`extend`メソッドを使用してScoutへ登録します。Scoutのエンジンマネージャは、Laravelサービスコンテナが依存解決できます。`App\Providers\AppServiceProvider`クラスの`boot`メソッドまたはアプリケーションが使用している他のサービスプロバイダから`extend`メソッドを呼び出せます。
 
+    use App\ScoutExtensions\MySqlSearchEngine
     use Laravel\Scout\EngineManager;
 
     /**
-     * 全アプリケーションサービスの登録
+     * 全アプリケーションサービスの初期起動処理
      *
      * @return void
      */
@@ -440,40 +474,35 @@ Scoutは検索クエリに対して"WHERE"節を単に追加する方法も提�
         });
     }
 
-エンジンが登録できたら、Scoutのデフォルト`driver`として、`config/scout.php`設定ファイルで設定します。
+エンジンを登録したら、アプリケーションの`config/scout.php`設定ファイルでデフォルトのスカウト`driver`として指定できます。
 
     'driver' => 'mysql',
 
 <a name="builder-macros"></a>
 ## ビルダマクロ
 
-カスタムビルダメソッドを定義したい場合は、`Laravel\Scout\Builder`クラスの`macro`メソッドを使用してください。通常、「マクロ」は[サービスプロバイダ](/docs/{{version}}/providers)の`boot`メソッドの中で定義します。
-
-    <?php
-
-    namespace App\Providers;
+カスタムのScout検索ビルダメソッドを定義する場合は、`Laravel\Scout\Builder`クラスで`macro`メソッドが使用できます。通常、「マクロ」は[サービスプロバイダ](/docs/{{version}}/provider)の`boot`メソッド内で定義する必要があります。
 
     use Illuminate\Support\Facades\Response;
     use Illuminate\Support\ServiceProvider;
     use Laravel\Scout\Builder;
 
-    class ScoutMacroServiceProvider extends ServiceProvider
+    /**
+     * 全アプリケーションサービスの初期起動処理
+     *
+     * @return void
+     */
+    public function boot()
     {
-        /**
-         * アプリケーションのScoutマクロ登録
-         *
-         * @return void
-         */
-        public function boot()
-        {
-            Builder::macro('count', function () {
-                return $this->engine->getTotalCount(
-                    $this->engine()->search($this)
-                );
-            });
-        }
+        Builder::macro('count', function () {
+            return $this->engine->getTotalCount(
+                $this->engine()->search($this)
+            );
+        });
     }
 
-`macro`関数の最初の引数は、名前を渡します。第２引数はクロージャです。マクロのクロージャは`Laravel\Scout\Builder`実装から、そのマクロ名を呼び出されたときに実行されます。
+`macro`関数は、最初の引数にマクロ名、２番目の引数にクロージャを取ります。マクロのクロージャは、`Laravel\Scout\Builder`実装からマクロ名を呼び出すときに実行されます。
 
-    App\Models\Order::search('Star Trek')->count();
+    use App\Models\Order;
+
+    Order::search('Star Trek')->count();

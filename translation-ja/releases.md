@@ -143,7 +143,7 @@ _ジョブバッチは、[Taylor Otwell](https://github.com/taylorotwell)と[Moh
 
 Laravelのジョブバッチ処理機能を使用すると、バッチジョブを簡単に実行し、バッチの実行が完了したときに何らかのアクションを実行できます。
 
-`Bus`ファサードの新しい`batch`メソッドを使用して、バッチジョブをディスパッチできます。もちろん、バッチ処理は終了コールバックと合わせて使用すると、特に便利です。そのため、`then`、` catch`、`finally`メソッドにより、バッチの終了コールバックが定義できます。こうしたコールバックはそれぞれ呼び出し時に、`Illuminate\Bus\Batch`インスタンスを引数に受け取ります。
+`Bus`ファサードの新しい`batch`メソッドを使用して、バッチジョブをディスパッチできます。もちろん、バッチ処理は終了コールバックと合わせて使用すると、とくに便利です。そのため、`then`、` catch`、`finally`メソッドにより、バッチの終了コールバックが定義できます。こうしたコールバックはそれぞれ呼び出し時に、`Illuminate\Bus\Batch`インスタンスを引数に受け取ります。
 
     use App\Jobs\ProcessPodcast;
     use App\Podcast;
@@ -176,7 +176,7 @@ _レート制限の向上は、[Taylor Otwell](https://github.com/taylorotwell)�
 
 Laravelのリクエストレート制限機能は、以前のリリースの`throttle`ミドルウェアAPIとの下位互換性を維持しながら、柔軟性とパワーが強化されています。
 
-レート制限は、`RateLimiter`ファサードの`for`メソッドを使い定義します。`for`メソッドの引数は、レート制限名と、このレート宣言を割り当てるルートに適用する制限設定を返すクロージャです。
+レート制限は、`RateLimiter`ファサードの`for`メソッドを使用して定義します。`for`メソッドは、レート制限名と、このレート制限が割り当てられているルートへ適用する必要がある制限設定を返すクロージャを引数に取ります。
 
     use Illuminate\Cache\RateLimiting\Limit;
     use Illuminate\Support\Facades\RateLimiter;
@@ -222,7 +222,7 @@ _メンテナンスモードの向上は[Spatie](https://spatie.be)からイン�
 
 以前のLaravelリリースではアプリケーションへのアクセスを許可するIPアドレスの「許可リスト」を使用して、`php artisan down`メンテナンスモード機能をバイパスできました。この機能は、より単純な「秘密」/トークンによる解決法導入により削除しました。
 
-While in maintenance mode, you may use the `secret` option to specify a maintenance mode bypass token:メンテナンスモードの間、`secret`オプションを使用してメンテナンスモードのバイパストークンを指定します。
+メンテナンスモードの間、`secret`オプションを使用してメンテナンスモードのバイパストークンを指定します。
 
     php artisan down --secret="1630542a-246b-4b66-afa1-dd72a4c43515"
 
@@ -246,7 +246,7 @@ While in maintenance mode, you may use the `secret` option to specify a maintena
 
 _Catchの向上は[Mohamed Said](https://github.com/themsaid)が貢献しました_.
 
-新しい`catch`メソッドを使用し、キュー設定の再試行をすべて使い果たした後に、キュー投入したクロージャが正常に完了しなかった場合に実行する必要があるクロージャを指定できます。
+新しい`catch`メソッドを使用して、キューに投入されたクロージャが正常に完了しなかった場合に、キューの設定済みの再試行回数をすべて使い果たしたときに実行する、クロージャを引数へ渡せるようになりました。
 
     use Throwable;
 
@@ -265,14 +265,14 @@ _動的Bladeコンポーネントは、[Taylor Otwell](https://github.com/taylor
 
     <x-dynamic-component :component="$componentName" class="mt-4" />
 
-Bladeコンポーネントの詳細は、[Bladeのドキュメント]（/docs/{{version}}/blade＃components）をご覧ください。
+Bladeコンポーネントの詳細は、[Bladeのドキュメント]（/docs/{{version}}/blade#components）をご覧ください。
 
 <a name="event-listener-improvements"></a>
 ### イベントリスナの向上
 
 _イベントリスナの向上は、[Taylor Otwell](https://github.com/taylorotwell)[Taylor Otwell](https://github.com/taylorotwell)が貢献しました_.
 
-クロージャベースのイベントリスナは、クロージャを`Event::listen`メソッドに渡すだけで登録できるようになりました。Laravelはクロージャを調べ、リスナが処理するイベントのタイプを判別します。
+クロージャベースのイベントリスナは、クロージャを`Event::listen`メソッドへ渡すだけで登録できるようになりました。Laravelはクロージャを調べ、リスナが処理するイベントのタイプを判別します。
 
     use App\Events\PodcastProcessed;
     use Illuminate\Support\Facades\Event;
@@ -281,7 +281,7 @@ _イベントリスナの向上は、[Taylor Otwell](https://github.com/taylorot
         //
     });
 
-さらに、クロージャベースのイベントリスナは、`Illuminate\Events\queueable`関数を使用して、キュー可能としてマークされるようになりました。
+さらに、クロージャベースのイベントリスナは、`Illuminate\Events\queueable`関数を使用し、キュー可能としてマークできるようになりました。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;
@@ -297,7 +297,7 @@ _イベントリスナの向上は、[Taylor Otwell](https://github.com/taylorot
         //
     })->onConnection('redis')->onQueue('podcasts')->delay(now()->addSeconds(10)));
 
-匿名のキュー済みリスナの失敗を処理する場合は、 `queueable`リスナを定義するときに`catch`メソッドへクロージャを渡してください。
+P匿名のキューに投入したリスナの失敗を処理したい場合は、`queueable`リスナを定義するときに`catch`メソッドにクロージャを指定できます。
 
     use App\Events\PodcastProcessed;
     use function Illuminate\Events\queueable;

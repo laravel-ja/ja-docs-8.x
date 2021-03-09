@@ -14,9 +14,11 @@
 
 ところで「初期起動処理」とは何を意味しているのでしょうか？　サービスコンテナの結合や、イベントリスナ、フィルター、それにルートなどを**登録する**ことを一般的に意味しています。サービスプロバイダはアプリケーション設定の中心部です。
 
-Laravelに含まれている`config/app.php`ファイルを開けば、`providers`配列が見つかるでしょう。そこにある全サービスプロバイダクラスが、アプリケーションのためにロードされます。ほとんどのプロバイダは、すべてのリクエストで必ずロードされるとは限らず、そのプロバイダにより提供されるサービスが実際に必要なときにのみロードされる「遅延」プロバイダです。
+Laravelに含まれている`config/app.php`ファイルを開くと、`providers`配列を見つけるでしょう。これらはすべて、アプリケーションにロードされるサービスプロバイダクラスです。デフォルトでは、Laravelコアサービスプロバイダのセットがこの配列にリストされています。これらのプロバイダは、メーラー、キュー、キャッシュなどのコアLaravelコンポーネントを初期起動処理します。これらのプロバイダの多くは「遅延」プロバイダです。つまり、すべてのリクエストで読み込まれるわけではなく、提供するサービスが実際に必要な場合にのみ読み込まれます。
 
 この概論ではサービスプロバイダの書き方と、Laravelアプリケーションに登録する方法を学びます。
+
+> {tip} Laravelがリクエストをどのように処理し、内部で動作しているかについて詳しく知りたい場合は、Laravelの[リクエストライフサイクル](/docs/{{version}}/lifecycle)に関するドキュメントを確認してください。
 
 <a name="writing-service-providers"></a>
 ## サービスプロバイダの記述
@@ -38,8 +40,8 @@ Laravelに含まれている`config/app.php`ファイルを開けば、`provider
 
     namespace App\Providers;
 
+    use App\Services\Riak\Connection;
     use Illuminate\Support\ServiceProvider;
-    use Riak\Connection;
 
     class RiakServiceProvider extends ServiceProvider
     {
@@ -56,7 +58,7 @@ Laravelに含まれている`config/app.php`ファイルを開けば、`provider
         }
     }
 
-このサービスプロバイダでは`register`メソッドだけが定義されています。そして、サービスコンテナに`Riak\Connection`の実装を定義しています。サービスコンテナがどのように動作するのかまだ理解できていなければ、ドキュメントで調べてください。
+このサービスプロバイダは`register`メソッドのみを定義し、このメソッドを使用してサービスコンテナー内の`App\Services\Riak\Connection`の実装を定義します。Laravelのサービスコンテナにまだ慣れていない方は、[ドキュメント](/docs/{{version}}/container)で確認してください。
 
 <a name="the-bindings-and-singletons-properties"></a>
 #### `bindings`と`singletons`プロパティ
@@ -105,6 +107,7 @@ Laravelに含まれている`config/app.php`ファイルを開けば、`provider
 
     namespace App\Providers;
 
+    use Illuminate\Support\Facades\View;
     use Illuminate\Support\ServiceProvider;
 
     class ComposerServiceProvider extends ServiceProvider
@@ -116,7 +119,7 @@ Laravelに含まれている`config/app.php`ファイルを開けば、`provider
          */
         public function boot()
         {
-            view()->composer('view', function () {
+            View::composer('view', function () {
                 //
             });
         }
@@ -129,9 +132,15 @@ Laravelに含まれている`config/app.php`ファイルを開けば、`provider
 
     use Illuminate\Contracts\Routing\ResponseFactory;
 
+    /**
+     * Bootstrap any application services.
+     *
+     * @param  \Illuminate\Contracts\Routing\ResponseFactory
+     * @return void
+     */
     public function boot(ResponseFactory $response)
     {
-        $response->macro('caps', function ($value) {
+        $response->macro('serialized', function ($value) {
             //
         });
     }
@@ -162,9 +171,9 @@ Laravelは遅延サービスプロバイダが提示した全サービスのリ�
 
     namespace App\Providers;
 
+    use App\Services\Riak\Connection;
     use Illuminate\Contracts\Support\DeferrableProvider;
     use Illuminate\Support\ServiceProvider;
-    use Riak\Connection;
 
     class RiakServiceProvider extends ServiceProvider implements DeferrableProvider
     {
@@ -181,7 +190,7 @@ Laravelは遅延サービスプロバイダが提示した全サービスのリ�
         }
 
         /**
-         * このプロバイダにより提供されるサービス
+         * このプロバイダにより提供されるサービスの取得
          *
          * @return array
          */

@@ -1,74 +1,78 @@
-# Eloquent：シリアライズ
+# Eloquent: シリアライズ
 
 - [イントロダクション](#introduction)
-- [モデルとコレクションのシリアライズ](#serializing-models-and-collections)
-    - [配列へのシリアライズ](#serializing-to-arrays)
-    - [JSONへのシリアライズ](#serializing-to-json)
-- [JSONに含めない属性](#hiding-attributes-from-json)
-- [JSONへ値を追加](#appending-values-to-json)
-- [日付のシリアライズ](#date-serialization)
+- [モデルとコレクションのシリアル化](#serializing-models-and-collections)
+    - [配列へのシリアル化](#serializing-to-arrays)
+    - [JSONへのシリアル化](#serializing-to-json)
+- [JSONから属性を隠す](#hiding-attributes-from-json)
+- [JSONへ値の追加](#appending-values-to-json)
+- [日付のシリアル化](#date-serialization)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-JSONでAPIを作成する場合にはモデルとリレーションを配列やJSONに変換する必要が良く起きます。そのためEloquentはシリアライズ結果にどの属性を含むかをコントロールしながら、変換を行う便利なメソッドを含んでいます
+Laravelを使用してAPIを構築する場合、モデルとリレーションを配列またはJSONに変換する必要が頻繁にあります。Eloquentには、これらの変換を行うための便利な方法と、モデルのシリアル化された表現に含まれる属性を制御するための便利な方法が含まれています。
+
+> {tip} EloquentモデルとコレクションのJSONシリアル化を処理するさらに堅牢な方法については、[Eloquent APIリソース](/docs/{{version}}/eloquent-resources)のドキュメントを確認してください。
 
 <a name="serializing-models-and-collections"></a>
-## モデルとコレクションのシリアライズ
+## モデルとコレクションのシリアル化
 
 <a name="serializing-to-arrays"></a>
-### 配列へのシリアライズ
+### 配列へのシリアル化
 
-モデルとロード済みの[リレーション](/docs/{{version}}/eloquent-relationships)を配列に変換する場合、`toArray`メソッドを使います。このメソッドは再帰的に動作しますので、全属性と全リレーション（リレーションのリレーションも含む）は配列へ変換されます。
+モデルとそのロードされた[リレーション](/docs/{{version}}/eloquent-relationships)を配列へ変換するには、`toArray`メソッドを使用する必要があります。このメソッドは再帰的であるため、すべての属性とすべてのリレーション(リレーションのリレーションを含む)を配列へ変換します。
 
-    $user = App\Models\User::with('roles')->first();
+    use App\Models\User;
+
+    $user = User::with('roles')->first();
 
     return $user->toArray();
 
-モデルの属性のみを配列へ変換する場合は、`attributesToArray`メソッドを使います。
+`attributesToArray`メソッドを使用して、モデルの属性を配列に変換できますが、そのリレーションは変換できません。
 
-    $user = App\Models\User::first();
+    $user = User::first();
 
     return $user->attributesToArray();
 
-モデルの[コレクション](/docs/{{version}}/eloquent-collections)を配列に変換することもできます。
+コレクションインスタンスで`toArray`メソッドを呼び出すことにより、モデルの[コレクション](/docs/{{version}}/eloquent-collections)全体を配列へ変換することもできます。
 
-    $users = App\Models\User::all();
+    $users = User::all();
 
     return $users->toArray();
 
 <a name="serializing-to-json"></a>
-### JSONへのシリアライズ
+### JSONへのシリアル化
 
-モデルをJSONへ変換するには`toJson`メソッドを使います。`toArray`と同様に`toJson`メソッドは再帰的に動作し、全属性と全リレーションをJSONへ変換します。さらに、[PHPによりサポートされている](https://secure.php.net/manual/ja/function.json-encode.php)JSONエンコーディングオプションも指定できます。
+モデルをJSONに変換するには、`toJson`メソッドを使用する必要があります。`toArray`と同様に、`toJson`メソッドは再帰的であるため、すべての属性とリレーションはJSONに変換されます。[PHPがサポートしている](https://secure.php.net/manual/en/function.json-encode.php)JSONエンコーディングオプションを指定することもできます。
 
-    $user = App\Models\User::find(1);
+    use App\Models\User;
+
+    $user = User::find(1);
 
     return $user->toJson();
 
     return $user->toJson(JSON_PRETTY_PRINT);
 
-もしくはモデルやコレクションが文字列へキャストされる場合、自動的に`toJson`メソッドが呼び出されます。
+もしくは、モデルまたはコレクションを文字列にキャストすると、モデルまたはコレクションの`toJson`メソッドが自動的に呼び出されます。
 
-    $user = App\Models\User::find(1);
+    return (string) User::find(1);
 
-    return (string) $user;
-
-文字列にキャストする場合、モデルやコレクションはJSONに変換されますので、アプリケーションのルートやコントローラから直接Eloquentオブジェクトを返すことができます。
+モデルとコレクションは文字列にキャストされるとJSONに変換されるため、アプリケーションのルートまたはコントローラから直接Eloquentオブジェクトを返すことができます。Laravelはルートまたはコントローラから返されるときに、EloquentモデルコレクションをJSONへ自動的にシリアル化します。
 
     Route::get('users', function () {
-        return App\Models\User::all();
+        return User::all();
     });
 
 <a name="relationships"></a>
 #### リレーション
 
-EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属性として自動的にリレーションがロードされます。また、Eloquentのリレーションメソッドは「キャメルケース」で定義しますが、リレーションのJSON属性は「スネークケース」になります。
+EloquentモデルをJSONに変換すると、ロードずみのリレーションは自動的にJSONオブジェクトの属性として含まれます。また、Eloquentリレーションシップメソッドは「キャメルケース」メソッド名を使用して定義されますが、リレーションシップのJSON属性は「スネークケース」になります。
 
 <a name="hiding-attributes-from-json"></a>
-## JSONに含めない属性
+## JSONから属性を隠す
 
-モデルから変換する配列やJSONに、パスワードのような属性を含めたくない場合があります。それにはモデルの`$hidden`プロパティに定義を追加してください。
+モデルの配列またはJSON表現に含まれるパスワードなどの属性を制限したい場合があります。これには、モデルへ`$hidden`プロパティを追加します。`$hidden`プロパティの配列にリストされている属性は、モデルのシリアル化された表現には含めません。
 
     <?php
 
@@ -79,16 +83,16 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
     class User extends Model
     {
         /**
-         * 配列に含めない属性
+         * 配列に対して非表示にする必要がある属性
          *
          * @var array
          */
         protected $hidden = ['password'];
     }
 
-> {note} リレーションを含めない場合は、メソッド名を指定してください。
+> {tip} リレーションを非表示にするには、リレーションのメソッド名をEloquentモデルの`$hidden`プロパティに追加します。
 
-もしくはモデルを変換後の配列やJSONに含めるべき属性のホワイトリストを定義する、`visible`プロパティを使用してください。モデルが配列やJSONへ変換される場合、その他の属性はすべて、変換結果に含まれません。
+もしくは、`visible`プロパティを使用して、モデルの配列とJSON表現に含める必要のある属性の「許可リスト」を定義することもできます。モデルが配列またはJSONに変換されると、`$visible`配列に存在しないすべての属性が非表示になります。
 
     <?php
 
@@ -99,7 +103,7 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
     class User extends Model
     {
         /**
-         * 配列中に含める属性
+         * 配列に表示する属性
          *
          * @var array
          */
@@ -107,20 +111,20 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
     }
 
 <a name="temporarily-modifying-attribute-visibility"></a>
-#### プロパティ配列出力管理の一時的変更
+#### 属性の可視性を一時的に変更
 
-特定のモデルインスタンスにおいて、通常は配列に含めない属性を含めたい場合は、`makeVisible`メソッドを使います。このメソッドは、メソッドチェーンしやすいようにモデルインスタンスを返します。
+特定のモデルインスタンスで通常は非表示になっている属性を表示したい場合は、`makeVisible`メソッドを使用します。`makeVisible`メソッドはモデルインスタンスを返します:
 
     return $user->makeVisible('attribute')->toArray();
 
-同様に、通常は含める属性を特定のインスタンスで隠したい場合は、`makeHidden`メソッドを使います。
+同様に、通常表示される一部の属性を非表示にする場合は、`makeHidden`メソッドを使用します。
 
     return $user->makeHidden('attribute')->toArray();
 
 <a name="appending-values-to-json"></a>
-## JSONへ値を追加
+## JSONへ値の追加
 
-モデルを配列やJSONへキャストするとき、データベースに対応するカラムがない属性の配列を追加する必要がある場合もときどきあります。これを行うには、最初にその値の[アクセサ](/docs/{{version}}/eloquent-mutators)を定義します。
+モデルを配列またはJSONに変換するときに、データベースに対応するカラムがない属性を追加したい場合もまれにあります。これを行うには、最初に値の[アクセサ](/docs/{{version}}/eloquent-mutators)を定義します。
 
     <?php
 
@@ -131,7 +135,7 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
     class User extends Model
     {
         /**
-         * ユーザーの管理者フラグを取得
+         * ユーザーが管理者であるかどうかを確認
          *
          * @return bool
          */
@@ -141,7 +145,7 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
         }
     }
 
-アクセサができたらモデルの`appends`プロパティへ属性名を追加します。アクセサが「キャメルケース」で定義されていても、属性名は通常通り「スネークケース」でアクセスされることに注目してください。
+アクセサを作成したら、モデルの`appends`プロパティに属性名を追加します。アクセサのPHPメソッドが「キャメルケース」を使用して定義されている場合でも、属性名は通常、「スネークケース」のシリアル化された表現を使用して参照されることに注意してください。
 
     <?php
 
@@ -152,34 +156,34 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
     class User extends Model
     {
         /**
-         * モデルの配列形態に追加するアクセサ
+         * モデルの配列フォームに追加するアクセサ
          *
          * @var array
          */
         protected $appends = ['is_admin'];
     }
 
-`appends`リストに属性を追加すれば、モデルの配列とJSON形式両方へ含まれるようになります。`appends`配列の属性もモデルの`visible`と`hidden`の設定に従い動作します。
+属性を`appends`リストへ追加すると、モデルの配列とJSON表現の両方に含まれます。`appends`配列の属性は、モデルで設定された`visible`および`hidden`設定も尊重します。
 
 <a name="appending-at-run-time"></a>
 #### 実行時の追加
 
-一つのモデルインスタンスに対し、`append`メソッドにより属性を追加するように指示できます。もしくは、指定したモデルに対して、追加するプロパティの配列全体をオーバーライドするために、`setAppends`メソッドを使用します。
+実行時に、`append`メソッドを使用して追加の属性を追加するようにモデルインスタンスに指示できます。または、`setAppends`メソッドを使用して、特定のモデルインスタンスに追加されたプロパティの配列全体をオーバーライドすることもできます。
 
     return $user->append('is_admin')->toArray();
 
     return $user->setAppends(['is_admin'])->toArray();
 
 <a name="date-serialization"></a>
-## 日付のシリアライズ
+## 日付のシリアル化
 
 <a name="customizing-the-default-date-format"></a>
-#### デフォルト日付形式のカスタマイズ
+#### デフォルトの日付形式のカスタマイズ
 
-`serializeDate`メソッドをオーバーライドすることにより、デフォルトの日付位形式をカスタマイズできます。
+`serializeDate`メソッドをオーバーライドすることにより、デフォルトのシリアル化形式をカスタマイズできます。この方法は、データベースに保存するために日付をフォーマットする方法には影響しません。
 
     /**
-     * 配列／日付シリアライズのために日付を準備
+     * 配列/JSONシリアル化の日付の準備
      *
      * @param  \DateTimeInterface  $date
      * @return string
@@ -190,9 +194,9 @@ EloquentモデルがJSONへ変換される場合、JSONオブジェクトへ属�
     }
 
 <a name="customizing-the-date-format-per-attribute"></a>
-#### 属性ごとに日付形式をカスタマイズ
+#### 属性ごとの日付形式のカスタマイズ
 
-[キャスト宣言](/docs/{{version}}/eloquent-mutators#attribute-casting)で日付形式を指定することにより、Eloquent日付属性ごとにシリアライズ形式をカスタマイズできます。
+モデルの[キャスト定義](/docs/{{version}}/eloquent-mutators#attribute-casting)で日付形式を指定することにより、個々のEloquent日付属性のシリアル化形式をカスタマイズできます。
 
     protected $casts = [
         'birthday' => 'date:Y-m-d',

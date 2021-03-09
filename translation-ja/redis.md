@@ -1,28 +1,32 @@
 # Redis
 
 - [イントロダクション](#introduction)
-    - [設定](#configuration)
+- [設定](#configuration)
+    - [クラスタ](#clusters)
     - [Predis](#predis)
-    - [PhpRedis](#phpredis)
+    - [phpredis](#phpredis)
 - [Redisの操作](#interacting-with-redis)
+    - [トランザクション](#transactions)
     - [パイプラインコマンド](#pipelining-commands)
-- [publish／subscribe](#pubsub)
+- [Pub／Sub](#pubsub)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-[Redis](https://redis.io)はオープンソースの進歩的なキー／値保存システムです。キーに[文字列](https://redis.io/topics/data-types#strings)、[ハッシュ](https://redis.io/topics/data-types#hashes)、[リスト](https://redis.io/topics/data-types#lists)、[セット](https://redis.io/topics/data-types#sets)、[ソート済みセット](https://redis.io/topics/data-types#sorted-sets)が使用できるため、データ構造サーバとしてよく名前が上がります。
+[Redis](https://redis.io)は、オープンソースの高度なキー／値保存域です。[文字列](https://redis.io/topics/data-types#strings), [ハッシュ](https://redis.io/topics/data-types#hashes), [リスト](https://redis.io/topics/data-types#lists), [セット](https://redis.io/topics/data-types#sets), and [ソート済みセット](https://redis.io/topics/data-types#sorted-sets).を含めることができるため、データ構造サーバと呼ばれることがあります。
 
-LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github.com/phpredis/phpredis) PHP拡張をインストールすることを推奨します。インストール方法は複雑ですが、Redisをヘビーユースするアプリケーションではより良いパフォーマンスが得られます
+LaravelでRedisを使い始める前に、PECLにより[phpredis](https://github.com/phpredis/phpredis)PHP拡張機能をインストールして使用することを推奨します。この拡張機能は、「ユーザーフレンドリー」なPHPパッケージに比べてインストールは複雑ですが、Redisを多用するアプリケーションのパフォーマンスが向上する可能性があります。[Laravel Sail](/docs/{{version}}/sale)を使用している場合、この拡張機能はアプリケーションのDockerコンテナにはじめからインストールしてあります。
 
-もしくは、Composerで`predis/predis`パッケージをインストールすることもできます。
+phpredis拡張機能をインストールできない場合は、Composerを介して`predis/predis`パッケージをインストールしてください。PredisはすべてPHPで記述されたRedisクライアントであり、追加の拡張機能は必要ありません。
 
-    composer require predis/predis
+```bash
+composer require predis/predis
+```
 
 <a name="configuration"></a>
-### 設定
+## 設定
 
-アプリケーションのRedis設定は`config/database.php`ファイルにあります。このファイルの中に`redis`配列があり、アプリケーションで使用されるRadisサーバの設定を含んでいます。
+`config/database.php`設定ファイルによりアプリケーションのRedis設定を設定します。このファイル内に、アプリケーションで使用するRedisサーバを含む`redis`配列があります。
 
     'redis' => [
 
@@ -44,7 +48,7 @@ LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github
 
     ],
 
-デフォルトのサーバ設定は、開発時には十分でしょう。しかしご自由に自分の環境に合わせてこの配列を変更してください。Redis接続を表すシングルURLを定義していない場合、各Redisサーバの名前、ホスト、ポートの指定が必要です。
+設定ファイルで定義する各Redisサーバは、Redis接続を表す単一のURLを定義しない限り、名前、ホスト、およびポートを指定する必要があります。
 
     'redis' => [
 
@@ -61,9 +65,9 @@ LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github
     ],
 
 <a name="configuring-the-connection-scheme"></a>
-#### 接続スキームの設定
+#### 接続スキームの構成
 
-デフォルトでRedisサーバへの接続に、`tcp`スキームをRedisクライアントは使用します。しかし、Redisサーバ接続設定の`scheme`設定オプションを指定すれば、TLS／SSL暗号化を使用できます。
+RedisクライアントはRedisサーバへ接続するとき、デフォルトで`tcp`スキームを使用します。しかし、Redisサーバの設定配列で`scheme`設定オプションを指定すれば、TLS/SSL暗号化を使用できます。
 
     'redis' => [
 
@@ -79,10 +83,10 @@ LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github
 
     ],
 
-<a name="configuring-clusters"></a>
-#### クラスタ設定
+<a name="clusters"></a>
+### クラスタ
 
-アプリケーションでRedisサーバのクラスタを使用している場合は、Redis設定の`clusters`キーで定義する必要があります。
+アプリケーションがRedisサーバのクラスタを利用する場合は、Redis設定の`clusters`キー内で使用するクラスタを定義してください。この設定キーはデフォルトでは存在しないため、アプリケーションの`config/database.php`設定ファイル内で作成する必要があります。
 
     'redis' => [
 
@@ -101,7 +105,9 @@ LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github
 
     ],
 
-デフォルトでクラスタはノード間のクライアントサイドシェアリングを実行し、ノードをプールし、利用可能な大きいRAMを作成できるようにします。しかしながら、クライアントサイドシェアリングはフェイルオーバーを処理しません。そのため、他のプライマリデータ保存域からのキャッシュデータを使用できるようにするため適しています。ネイティブなRedisクラスタリングを使用したい場合は、Redis設置の`options`キーでこれを指定してください。
+デフォルトでクラスタは、クライアント側のシャーディングをノード間で実行し、ノードをプールして大量の利用可能なRAMを作成できるようにします。ただし、クライアント側のシャーディングはフェイルオーバーを処理しません。したがって、これは主に、別のプライマリデータストアから利用できる一時的にキャッシュされたデータに適しています。
+
+クライアント側のシャーディングの代わりにネイティブなRedisクラスタリングを使用する場合は、アプリケーションの`config/database.php`設定ファイル内で`options.cluster`設定値を`redis`に設定してください。
 
     'redis' => [
 
@@ -120,7 +126,7 @@ LaravelでRedis使用するには、PECLを使用して[PhpRedis](https://github
 <a name="predis"></a>
 ### Predis
 
-Predis拡張を使用するには、`REDIS_CLIENT`環境変数を`phpredis`から`predis`へ変更します。
+アプリケーションがPredisパッケージを介してRedisを操作するようにする場合は、`REDIS_CLIENT`環境変数の値を確実に`predis`へ設定してください。
 
     'redis' => [
 
@@ -129,7 +135,7 @@ Predis拡張を使用するには、`REDIS_CLIENT`環境変数を`phpredis`か�
         // 残りのRedis設定…
     ],
 
-デフォルトの`host`、`port`、`database`、`password`オプションに加え、Predisは各Redisサーバに対する[接続パラメータ](https://github.com/nrk/predis/wiki/Connection-Parameters)を定義する機能をサポートしています。これらの追加設定オプションを使うには、`config/database.php`設定ファイルのRedisサーバ設定へ追加してください。
+デフォルトの`host`、`port`、`database`、`password`サーバ設定オプションに加えて、PredisはRedisサーバごとに追加の[接続パラメータ](https://github.com/nrk/predis/wiki/Connection-Parameters)定義をサポートしますアプリケーションの`config/database.php`設定ファイルのRedisサーバ設定でそれらを追加してください。
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -139,10 +145,15 @@ Predis拡張を使用するには、`REDIS_CLIENT`環境変数を`phpredis`か�
         'read_write_timeout' => 60,
     ],
 
-<a name="phpredis"></a>
-### PhpRedis
+<a name="the-redis-facade-alias"></a>
+#### Redisファサードのエイリアス
 
-PhpRedis拡張は、`config/database.php`の中で`REDIS_CLIENT`環境変数のデフォルトとして設定されています。
+Laravelの`config/app.php`設定ファイルには、フレームワークが登録するすべてのクラスエイリアスを定義する`aliases`配列があります。便宜上、Laravelが提供する[ファサード](/docs/{{version}}/facades)ごとのエイリアスエントリを持っています。ただし、`Redis`エイリアスは、phpredis拡張機能が提供する`Redis`クラス名と競合するため無効になっています。Predisクライアントを使用していて、このエイリアスを有効にしたい場合は、アプリケーションの`config/app.php`設定ファイルでエイリアスをアンコメントしてください。
+
+<a name="phpredis"></a>
+### phpredis
+
+デフォルトでは、Laravelはphpredis拡張機能を使用してRedisと通信します。LaravelがRedisとの通信に使用するクライアントは、`redis.client`設定オプションの値で決まります。これは通常、`REDIS_CLIENT`環境変数の値を反映します。
 
     'redis' => [
 
@@ -151,11 +162,7 @@ PhpRedis拡張は、`config/database.php`の中で`REDIS_CLIENT`環境変数の�
         // 残りのRedis設定…
     ],
 
-`Redis`ファサードエイリアスに加えPhpRedis拡張を使用する予定であれば、Redisクラスとの衝突を避けるために、`RedisManager`のような他の名前にリネームする必要があります。app.php`設定ファイルのエイリアスセクションで行えます。
-
-    'RedisManager' => Illuminate\Support\Facades\Redis::class,
-
-デフォルトの`host`、`port`、`database`、`password`オプションに加え、PhpRedisは`persistent`、`prefix`、`read_timeout`、`retry_interval`、`timeout`、`context`追加オプションをサポートしています。`config/database.php`設定ファイル中のRedisサーバ設定に、これらのオプションを追加してください。
+デフォルトの`host`、`port`、`database`、`password`サーバ設定オプションに加えて、phpredisは次の追加の接続パラメータをサポートしています。`name`、`persistent`、`prefix`、`read_timeout`、`try_interval`、`timeout`、`context`です。`config/database.php`設定ファイルのRedisサーバ設定へ、こうしたオプションを追加指定できます。
 
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -169,15 +176,10 @@ PhpRedis拡張は、`config/database.php`の中で`REDIS_CLIENT`環境変数の�
         ],
     ],
 
-<a name="the-redis-facade"></a>
-#### Redisファサード
-
-Redis PHP拡張自身と名前が衝突するのを避けるため、`app`設定ファイルの`aliases`配列から`Illuminate\Support\Facades\Redis`ファサードエイリアスを削除かリネームする必要があります。一般的には、このエイリアスを完全に取り除き、Redis PHP拡張を使用するときに完全なクラス名を指定することで、ファサードを参照するに留めるべきです。
-
 <a name="interacting-with-redis"></a>
 ## Redisの操作
 
-`Redis`[ファサード](/docs/{{version}}/facades)のバラエティー豊かなメソッドを呼び出し、Redisを操作できます。`Redis`ファサードは動的メソッドをサポートしています。つまりファサードでどんな[Redisコマンド](https://redis.io/commands)でも呼び出すことができ、そのコマンドは直接Redisへ渡されます。以下の例ではRedisの`GET`コマンドを`Redis`ファサードの`get`メソッドで呼び出しています。
+`Redis`[ファサード](/docs/{{version}}/facades)でさまざまなメソッドを呼び出すことで、Redisを操作できます。`Redis`ファサードは動的メソッドをサポートしています。つまり、ファサードで[Redisコマンド](https://redis.io/commands)を呼び出すと、コマンドが直接Redisに渡されます。この例では、`Redis`ファサードで`get`メソッドを呼び出すことにより、Redisの`GET`コマンドを呼び出しています。
 
     <?php
 
@@ -189,44 +191,82 @@ Redis PHP拡張自身と名前が衝突するのを避けるため、`app`設定
     class UserController extends Controller
     {
         /**
-         * 指定ユーザーのプロフィール表示
+         * 指定ユーザーのプロファイル表示
          *
          * @param  int  $id
-         * @return Response
+         * @return \Illuminate\Http\Response
          */
-        public function showProfile($id)
+        public function show($id)
         {
-            $user = Redis::get('user:profile:'.$id);
-
-            return view('user.profile', ['user' => $user]);
+            return view('user.profile', [
+                'user' => Redis::get('user:profile:'.$id)
+            ]);
         }
     }
 
-前記の通り、`Redis`ファサードでどんなRedisコマンドでも呼び出すことができます。Laravelはmagicメソッドを使いコマンドをRedisサーバへ送りますので、Redisコマンドで期待されている引数を渡してください。
+上記のように、`Redis`ファサードで任意のRedisコマンドを呼び出すことができます。Laravelはマジックメソッドを使用してコマンドをRedisサーバへ渡します。Redisコマンドが引数を必要とする場合は、それらをファサードの対応するメソッドへ渡す必要があります。
+
+    use Illuminate\Support\Facades\Redis;
 
     Redis::set('name', 'Taylor');
 
     $values = Redis::lrange('names', 5, 10);
 
-サーバにコマンドを送る別の方法は`command`メソッドを使う方法です。最初の引数にコマンド名、第２引数に値の配列を渡します。
+または、`Redis`ファサードの`command`メソッドを使用してサーバにコマンドを渡すこともできます。このメソッドは、コマンドの名前を最初の引数、値の配列を２番目の引数に取ります。
 
     $values = Redis::command('lrange', ['name', 5, 10]);
 
 <a name="using-multiple-redis-connections"></a>
 #### 複数のRedis接続の使用
 
-Redisインスタンスを`Redis::connection`メソッドの呼び出しで取得できます。
+アプリケーションの`config/database.php`設定ファイルでは、複数のRedis接続／サーバが定義できます。`Redis`ファサードの`connection`メソッドを使用して、特定のRedis接続への接続を取得できます。
+
+    $redis = Redis::connection('connection-name');
+
+デフォルトのRedis接続のインスタンスを取得するには、引数なしで`connection`メソッドを呼び出してください。
 
     $redis = Redis::connection();
 
-これによりデフォルトのRedisサーバのインスタンスが取得できます。さらに、Redis設定で定義した、特定のサーバやクラスタを取得するために、`connection`メソッドへ接続名やクラスタ名を渡すこともできます。
+<a name="transactions"></a>
+### トランザクション
 
-    $redis = Redis::connection('my-connection');
+`Redis`ファサードの`transaction`メソッドは、Redisのネイティブ`MULTI`および`EXEC`コマンドの便利なラッパーを提供します。`transaction`メソッドは、唯一の引数にクロージャを取ります。このクロージャはRedis接続インスタンスを受け取り、このインスタンスで必要なコマンドを発行できます。クロージャ内で発行したすべてのRedisコマンドは、単一のアトミックトランザクションとして実行します。
+
+    use Illuminate\Support\Facades\Redis;
+
+    Redis::transaction(function ($redis) {
+        $redis->incr('user_visits', 1);
+        $redis->incr('total_visits', 1);
+    });
+
+> {note} Redisトランザクションを定義する場合、Redis接続から値を取得できません。トランザクションは単一のアトミック操作として実行し、クロージャ全体がコマンドの実行を完了するまで、操作は実行されないことに注意してください。
+
+#### Luaスクリプト
+
+`eval`メソッドは、単一のアトミック操作で複数のRedisコマンドを実行する別のメソッドです。ただし、`eval`メソッドには、その操作中にRedisキー／値を対話し調べられる利点があります。Redisスクリプトは、[Luaプログラミング言語](https://www.lua.org)で記述します。
+
+`eval`メソッドは最初は少し怖いかもしれませんが、壁を超えるために基本的な例を見てみましょう。`eval`メソッドは引数をいくつか取ります。まず、Luaスクリプトを(文字列として)メソッドへ渡す必要があります。次に、スクリプトが操作するキーの数を(整数として)渡す必要があります。第三に、それらのキーの名前を渡す必要があります。最後に、スクリプト内でアクセスする必要があるその他の追加の引数を渡します。
+
+この例では、カウンターを増分し、その新しい値を検査し、最初のカウンターの値が５より大きい場合は、２番目のカウンターを増分します。最後に、最初のカウンターの値を返します。
+
+    $value = Redis::eval(<<<'LUA'
+        local counter = redis.call("incr", KEYS[1])
+
+        if counter > 5 then
+            redis.call("incr", KEYS[2])
+        end
+
+        return counter
+    LUA, 2, 'first-counter', 'second-counter');
+
+> {note} Redisスクリプトの詳細には、[Redisドキュメント](https://redis.io/commands/eval)を参照してください。
 
 <a name="pipelining-commands"></a>
 ### パイプラインコマンド
 
-サーバに対し多くのコマンドを送る必要がある場合はパイプラインを使うべきでしょう。`pipeline`メソッドは引数をひとつだけ取り、Redisインスタンスを取る「クロージャ」です。このRedisインスタンスは全コマンドをサーバへストリーミングするので、良いパフォーマンスが得られます。
+数十のRedisコマンドを実行する必要が起きることもあるでしょう。毎コマンドごとにRedisサーバへネットワークトリップする代わりに、`pipeline`メソッドを使用できます。`pipeline`メソッドは、Redisインスタンスを受け取るクロージャを１つ引数に取ります。このRedisインスタンスですべてのコマンドを発行すると、サーバへのネットワークトリップを減らすため、すべてのコマンドを一度にRedisサーバへ送信します。コマンドは、発行した順序で実行されます。
+
+    use Illuminate\Support\Facades\Redis;
 
     Redis::pipeline(function ($pipe) {
         for ($i = 0; $i < 1000; $i++) {
@@ -235,11 +275,11 @@ Redisインスタンスを`Redis::connection`メソッドの呼び出しで取�
     });
 
 <a name="pubsub"></a>
-## publish／subscribe
+## Pub／Sub
 
-さらにLaravelは、Redisの`publish`と`subscribe`コマンドの便利なインターフェイスも提供しています。これらのRedisコマンドは、指定した「チャンネル」のメッセージをリッスンできるようにしてくれます。他のアプリケーションからこのチャンネルにメッセージを公開するか、他の言語を使うこともでき、これによりアプリケーション／プロセス間で簡単に通信できます。
+Laravelは、Redisの`publish`および`subscribe`コマンドへの便利なインターフェイスを提供しています。これらのRedisコマンドを使用すると、特定の「チャンネル」でメッセージをリッスンできます。別のアプリケーションから、または別のプログラミング言語を使用してメッセージをチャンネルに公開し、アプリケーションとプロセス間の簡単な通信を可能にすることができます。
 
-最初に`subscribe`メソッドでRedisを経由するチャンネルのリスナを準備します。`subscribe`メソッドは長時間動作するプロセスですので、このメソッドは[Artisanコマンド](/docs/{{version}}/artisan)の中で呼び出します。
+まず、`subscribe`メソッドを使用してチャンネルリスナを設定しましょう。`subscribe`メソッドを呼び出すとプロセスは長時間実行され続けるため、このメソッド呼び出しは[Artisanコマンド](/docs/{{version}}/artisan)内に配置します。
 
     <?php
 
@@ -251,7 +291,7 @@ Redisインスタンスを`Redis::connection`メソッドの呼び出しで取�
     class RedisSubscribe extends Command
     {
         /**
-         * コンソールコマンドの名前と使用法
+         * consoleコマンドの名前と使用方法
          *
          * @var string
          */
@@ -265,7 +305,7 @@ Redisインスタンスを`Redis::connection`メソッドの呼び出しで取�
         protected $description = 'Subscribe to a Redis channel';
 
         /**
-         * コンソールコマンドの実行
+         * consoleコマンドの実行
          *
          * @return mixed
          */
@@ -277,18 +317,22 @@ Redisインスタンスを`Redis::connection`メソッドの呼び出しで取�
         }
     }
 
-これで`publish`メソッドを使いチャンネルへメッセージを公開できます。
+これで、`publish`メソッドを使用してチャンネルへメッセージを発行できます。
 
-    Route::get('publish', function () {
-        // Route logic...
+    use Illuminate\Support\Facades\Redis;
 
-        Redis::publish('test-channel', json_encode(['foo' => 'bar']));
+    Route::get('/publish', function () {
+        // ...
+
+        Redis::publish('test-channel', json_encode([
+            'name' => 'Adam Wathan'
+        ]));
     });
 
 <a name="wildcard-subscriptions"></a>
-#### ワイルドカード購入
+#### ワイルドカードサブスクリプション
 
-`psubscribe`メソッドでワイルドカードチャネルに対し購入できます。全チャンネルの全メッセージを補足するために便利です。`$channel`名は指定するコールバック「クロージャ」の第２引数として渡されます。
+`psubscribe`メソッドを使用すると、ワイルドカードチャンネルをサブスクライブできます。これは、すべてのチャンネルのすべてのメッセージをキャッチするのに役立ちます。チャンネル名は、引数に渡たすクロージャの２番目の引数へ渡されます。
 
     Redis::psubscribe(['*'], function ($message, $channel) {
         echo $message;

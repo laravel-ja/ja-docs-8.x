@@ -75,7 +75,7 @@
 
 **影響の可能性： 低い**
 
-典型的なPHPの動作と整合性をとるため、`Illuminate\Support\Collection`の`offsetExists`メソッドは`array_key_exists`の代わりに`isset`を使用するように変更しました。これにより値が`null`のコレクションアイテムを扱う際の挙動に変化が生じる可能性があります。
+典型的なPHPの動作と整合性をとるため、`Illuminate\Support\Collection`の`offsetExists`メソッドは`array_key_exists`の代わりに`isset`を使用するように変更しました。これにより値が`null`のコレクションアイテムを扱う際の挙動に変化の生じる可能性があります。
 
     $collection = collect([null]);
 
@@ -135,7 +135,7 @@
 
 **影響の可能性： 高い**
 
-Laravelの[モデルファクトリ](/docs/{{version}}/database-testing＃creating-factories)機能は、クラスをサポートするように完全に書き直されており、Laravel7.xスタイルのファクトリとは互換性がありません。ただし、アップグレードプロセスを簡単にするために、新しい`laravel/legacy-factories`パッケージが作成され、Laravel 8.xで既存のファクトリを続けて使用できます。このパッケージはComposerでインストールできます。
+Laravelの[モデルファクトリ](/docs/{{version}}/database-testing#creating-factories)機能は、クラスをサポートするよう完全に書き直されており、Laravel7.xスタイルのファクトリとは互換性がありません。ただし、アップグレードプロセスを簡単にするため、新しい`laravel/legacy-factories`パッケージが作成され、Laravel 8.xで既存のファクトリを続けて使用できます。このパッケージはComposerでインストールできます。
 
     composer require laravel/legacy-factories
 
@@ -175,7 +175,7 @@ Eloquentモデルインスタンスで`increment`または` decrement`メソッ�
 
 **影響の可能性： 状況による**
 
-Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration＃maintenance-mode)機能が改善されています。メンテナンスモードテンプレートの事前レンダリングをサポートし、メンテナンスモード中にエンドユーザーがエラーに遭遇する可能性が少なくなりました。ただし、これをサポートするには、以降を`public/index.php`ファイルに追加しなくてはなりません。これらの行は既存の`LARAVEL_START`定数の定義直下に配置してください。
+Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration#maintenance-mode)機能が改善されています。メンテナンスモードテンプレートの事前レンダリングをサポートし、メンテナンスモード中にエンドユーザーがエラーに遭遇する可能性が少なくなりました。ただし、これをサポートするには、以降を`public/index.php`ファイルに追加しなくてはなりません。これらの行は既存の`LARAVEL_START`定数の定義直下に配置してください。
 
     define('LARAVEL_START', microtime(true));
 
@@ -188,7 +188,7 @@ Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration＃
 
 **影響の可能性： 中程度**
 
-`php artisan down`コマンドの` --message`オプションを削除しました。別の方法として、選択したメッセージで[メンテナンスモードビューの事前レンダリング]（/docs/{{version}}/configuration＃maintenance-mode）の使用を検討してください。
+`php artisan down`コマンドの` --message`オプションを削除しました。別の方法として、選択したメッセージで[メンテナンスモードビューの事前レンダリング]（/docs/{{version}}/configuration#maintenance-mode）の使用を検討してください。
 
 <a name="php-artisan-serve-no-reload-option"></a>
 #### The `php artisan serve --no-reload` Option
@@ -209,7 +209,7 @@ Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration＃
 
 **影響の可能性： 低い**
 
-以前に非推奨にした、`elixir`ヘルパを削除しました。このメソッドをまだ使用しているアプリケーションは、[Laravel Mix](https://github.com/JeffreyWay/laravel-mix)にアップグレードすることをお勧めします
+以前、非推奨にした、`elixir`ヘルパを削除しました。このメソッドをまだ使用しているアプリケーションは、[Laravel Mix](https://github.com/JeffreyWay/laravel-mix)へアップグレードすることをおすすめします。
 
 <a name="mail"></a>
 ### メール
@@ -271,7 +271,7 @@ Laravelの他の機能との整合性を保つため、キュー投入したジ�
 
 **影響の可能性： 状況による**
 
-Laravel8.xの[ジョブのバッチ処理](/docs/{{version}}/queues＃job-batching)機能を使用する場合は、`failed_jobs`データベーステーブルを更新する必要があります。最初に、新しい`uuid`列をテーブルに追加してください。
+Laravel8.xの[ジョブのバッチ処理](/docs/{{version}}/queues#job-batching)機能を使用する場合は、`failed_jobs`データベーステーブルを更新する必要があります。最初に、新しい`uuid`列をテーブルに追加してください。
 
     use Illuminate\Database\Schema\Blueprint;
     use Illuminate\Support\Facades\Schema;

@@ -3,25 +3,31 @@
 - [イントロダクション](#introduction)
 - [設定](#configuration)
 - [基本的な使用法](#basic-usage)
+    - [パスワードのハッシュ](#hashing-passwords)
+    - [パスワードがハッシュと一致するかの確認](#verifying-that-a-password-matches-a-hash)
+    - [パスワードを再ハッシュする必要があるかの判断](#determining-if-a-password-needs-to-be-rehashed)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelの`Hash` [ファサード](/docs/{{version}}/facades)は、ユーザーパスワードを保存するための安全なBcryptおよびArgon2ハッシュを提供します。[Laravel Jetstream](https://jetstream.laravel.com)（[和訳](/jetstream/1.0/ja/introduction.html)）認証スカフォールドを使用している場合、デフォルトでユーザー登録と認証にBcryptが使用されます。
+Laravelの`Hash`[ファサード](/docs/{{version}}/facades)は、ユーザーパスワードを保存するための安全なBcryptおよびArgon2ハッシュを提供します。[Laravelアプリケーションスターターキット](/docs/{{version}}/starter-kits)のいずれかを使用している場合、デフォルトで登録と認証にBcryptが使用されます。
 
-> {tip} Bcryptは「ストレッチ回数」が調整できるのでパスワードのハッシュには良い選択肢です。つまりハードウェアのパワーを上げればハッシュの生成時間を早くすることができます。
+Bcryptは、その「作業係数」が調整可能であるため、パスワードのハッシュに最適です。つまり、ハードウェアの能力が上がると、ハッシュの生成にかかる時間が長くなる可能性があります。パスワードをハッシュする場合は、遅いのが利点です。アルゴリズムがパスワードをハッシュするのに時間がかかるほど、悪意のあるユーザーがアプリケーションに対するブルートフォース攻撃で使用される可能性のあるすべての文字列ハッシュ値の「レインボーテーブル」を生成するのにかかる時間が長くなります。
 
 <a name="configuration"></a>
 ## 設定
 
-アプリケーションのデフォルトハッシュドライバーは、`config/hashing.php`設定ファイルで指定します。現在、[Bcrypt](https://en.wikipedia.org/wiki/Bcrypt)および、[Argon2](https://en.wikipedia.org/wiki/Argon2)（Argon2iとArgon2id）の３ドライバーをサポートしています。
+アプリケーションのデフォルトのハッシュドライバは、アプリケーションの`config/hashing.php`設定ファイルで設定されます。現在サポートしているドライバはいくつかあります:[Bcrypt](https://en.wikipedia.org/wiki/Bcrypt)および[Argon2](https://en.wikipedia.org/wiki/Argon2)(Argon2iおよびArgon2idバリアント)です。
 
-> {note} Argon2iドライバーはPHP7.2.0以上、Argon2idドライバーはPHP7.3.0以上が必要です。
+> {note} Argon2iドライバーはPHP7.2.0以降が必要であり、Argon2idドライバーにはPHP7.3.0以降が必要です。
 
 <a name="basic-usage"></a>
 ## 基本的な使用法
 
-`Hash`ファサードの`make`メソッドを呼び出し、パスワードをハッシュできます。
+<a name="hashing-passwords"></a>
+### パスワードのハッシュ
+
+`Hash`ファサードで`make`メソッドを呼び出すことにより、パスワードをハッシュすることができます。
 
     <?php
 
@@ -31,17 +37,17 @@ Laravelの`Hash` [ファサード](/docs/{{version}}/facades)は、ユーザー�
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Hash;
 
-    class UpdatePasswordController extends Controller
+    class PasswordController extends Controller
     {
         /**
-         * ユーザーパスワードを更新
+         * ユーザーのパスワードを更新
          *
-         * @param  Request  $request
-         * @return Response
+         * @param  \Illuminate\Http\Request  $request
+         * @return \Illuminate\Http\Response
          */
         public function update(Request $request)
         {
-            // 新しいパスワードの長さのバリデーション…
+            // 新しいパスワードの長さをバリデート…
 
             $request->user()->fill([
                 'password' => Hash::make($request->newPassword)
@@ -50,18 +56,18 @@ Laravelの`Hash` [ファサード](/docs/{{version}}/facades)は、ユーザー�
     }
 
 <a name="adjusting-the-bcrypt-work-factor"></a>
-#### BcryptのWork Factorの調整
+#### Bcryptの作業係数の調整
 
-Bcryptアルゴリズムを使用する場合、`make`メソッドで`rounds`オプションを使用することにより、アルゴリズムのwork factorを管理できます。しかし、ほとんどのアプリケーションではデフォルト値で十分でしょう。
+Bcryptアルゴリズムを使用している場合、`make`メソッドを使用すると、`rounds`オプションを使用してアルゴリズムの作業係数を管理できます。ただし、Laravelが管理するデフォルトの作業係数は、ほとんどのアプリケーションで適切でしょう。
 
     $hashed = Hash::make('password', [
         'rounds' => 12,
     ]);
 
 <a name="adjusting-the-argon2-work-factor"></a>
-#### Argon2のWork Factorの調整
+#### Argon2作業係数の調整
 
-Argon2アルゴリズムを使用する場合、`memory`と`time`、`threads`オプションを指定することにより、アルゴリズムのwork factorを管理できます。しかし、ほとんどのアプリケーションではデフォルト値で十分でしょう。
+Argon2アルゴリズムを使用している場合、`make`メソッドを使用すると、`memory`、`time`、`threads`オプションを使用してアルゴリズムの作業要素を管理できます。ただし、Laravelが管理するデフォルト値は、ほとんどのアプリケーションで適切でしょう。
 
     $hashed = Hash::make('password', [
         'memory' => 1024,
@@ -69,21 +75,21 @@ Argon2アルゴリズムを使用する場合、`memory`と`time`、`threads`オ
         'threads' => 2,
     ]);
 
-> {tip} これらのオプションの詳細情報は、[PHP公式ドキュメント](https://secure.php.net/manual/ja/function.password-hash.php)をご覧ください。
+> {tip} これらのオプションの詳細には、[Argonハッシュに関するPHP公式ドキュメント](https://secure.php.net/manual/en/function.password-hash.php)を参照してください。
 
-<a name="verifying-a-password-against-a-hash"></a>
-#### パスワードとハッシュ値の比較
+<a name="verifying-that-a-password-matches-a-hash"></a>
+### パスワードがハッシュと一致するかの確認
 
-`check`メソッドにより指定した平文文字列と指定されたハッシュ値を比較確認できます。
+`Hash`ファサードが提供する`check`メソッドを使用すると、指定するプレーンテキスト文字列が指定するハッシュに対応することを確認できます。
 
     if (Hash::check('plain-text', $hashedPassword)) {
-        // パスワード一致
+        // パスワードが一致
     }
 
-<a name="checking-if-a-password-needs-to-be-rehashed"></a>
-#### パスワードの再ハッシュが必要か確認
+<a name="determining-if-a-password-needs-to-be-rehashed"></a>
+### パスワードを再ハッシュする必要があるかの判断
 
-パスワードがハシュされてからハッシャーのストレッチ回数が変更されているかを調べるには、`needsRehash`メソッドを使います。
+`Hash`ファサードが提供する`needsRehash`メソッドを使用すると、パスワードがハッシュされてから、ハッシャーによって使用される作業要素が変更されたかどうかを判別できます。一部のアプリケーションは、アプリケーションの認証プロセス中にこのチェックを実行することを選択しています。
 
     if (Hash::needsRehash($hashed)) {
         $hashed = Hash::make('plain-text');

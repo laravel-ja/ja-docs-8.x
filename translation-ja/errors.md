@@ -4,6 +4,7 @@
 - [設定](#configuration)
 - [例外ハンドラ](#the-exception-handler)
     - [例外のレポート](#reporting-exceptions)
+    - [タイプによる例外の無視](#ignoring-exceptions-by-type)
     - [例外のレンダー](#rendering-exceptions)
     - [Reportable／Renderable例外](#renderable-exceptions)
 - [HTTP例外](#http-exceptions)
@@ -12,14 +13,14 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-新しいLaravelプロジェクトを開始する時点で、エラーと例外の処理はあらかじめ設定済みです。`App\Exceptions\Handler`クラスはアプリケーションで発生する全例外をログし、ユーザーへ表示するためのクラスです。このドキュメントでは、このクラスの詳細を確認します。
+エラーと例外の処理は、新しいLaravelプロジェクトの開始時に最初から設定されています。`App\Exceptions\Handler`クラスは、アプリケーションが投げるすべての例外がログに記録され、ユーザーへレンダーする場所です。このドキュメント全体を通して、このクラスについて詳しく説明します。
 
 <a name="configuration"></a>
 ## 設定
 
-アプリケーションエラー発生時にユーザーに対し表示する詳細の表示量は、`config/app.php`設定ファイルの`debug`設定オプションで決定します。デフォルト状態でこの設定オプションは、`.env`ファイルで指定される`APP_DEBUG`環境変数の値を反映します。
+`config/app.php`設定ファイルの`debug`オプションは、エラーに関する情報が実際にユーザーに表示される量を決定します。デフォルトでは、このオプションは、`.env`ファイルに保存されている`APP_DEBUG`環境変数の値を尊重するように設定されています。
 
-local環境では`APP_DEBUG`環境変数を`true`に設定すべきでしょう。実働環境ではこの値をいつも`false`にすべきです。実働環境でこの値を`true`にしてしまうと、アプリケーションのエンドユーザーへ、セキュリティリスクになりえる設定情報を表示するリスクを犯すことになります。
+ローカル開発中は、`APP_DEBUG`環境変数を`true`に設定する必要があります。**実稼働環境では、この値は常に`false`である必要があります。本番環境で値が`true`に設定されていると、機密性の高い設定値がアプリケーションのエンドユーザーに公開されるリスクが起きます。**
 
 <a name="the-exception-handler"></a>
 ## 例外ハンドラ
@@ -27,43 +28,43 @@ local環境では`APP_DEBUG`環境変数を`true`に設定すべきでしょう�
 <a name="reporting-exceptions"></a>
 ### 例外のレポート
 
-例外はすべて、`App\Exceptions\Handler`クラスで処理されます。このクラスはカスタム例外レポーターとレンダラのコールバックを登録するための`register`メソッドを持っています。このコンセプトを詳細に確認していきましょう。例外レポーターは例外をログするか、[Flare](https://flareapp.io)や[BugSnag](https://bugsnag.com)、[Sentry](https://github.com/getsentry/sentry-laravel)のような外部サービスへ送信するために使います。デフォルトでは[ログ](/docs/{{version}}/logging)設定に基づき、例外をログします。しかし、お望みであれば自由に例外をログできます。
+すべての例外は、`App\Exceptions\Handler`クラスが処理します。このクラスは、カスタム例外レポートとレンダリングコールバックを登録できる`register`メソッドを持っています。こうした各概念について詳しく説明します。例外レポートは、例外をログに記録したり、[Flare](https://flareapp.io)、[Bugsnag](https://bugsnag.com)、[Sentry](https://github.com/getsentry/sentry-laravel)などの外部サービスへ送信したりするために使用します。デフォルトで例外は[ログ](/docs/{{version}}/logging)設定に基づいてログに記録します。ただし、必要に応じて例外を自由に記録できます。
 
-たとえば異なった例外を別々の方法でレポートする必要がある場合、`reportable`メソッドを使用して、特定のタイプの例外を報告する必要があるときに実行するクロージャを登録できます。Laravelはクロージャのタイプヒントを調べ、クロージャが報告する例外のタイプを推測します。
+たとえば、さまざまなタイプの例外をさまざまな方法で報告する必要がある場合は、`reportable`メソッドを使用して、特定のタイプの例外を報告する必要があるときに実行するクロージャを登録できます。Laravelは、クロージャのタイプヒントを調べることで、クロージャが報告する例外のタイプを推測します。
 
-    use App\Exceptions\CustomException;
+    use App\Exceptions\InvalidOrderException;
 
     /**
-     * アプリケーションの例外処理コールバックの登録
+     * アプリケーションの例外処理コールバックを登録
      *
      * @return void
      */
     public function register()
     {
-        $this->reportable(function (CustomException $e) {
+        $this->reportable(function (InvalidOrderException $e) {
             //
         });
     }
 
-`reportable`メソッドを使用しカスタム例外レポートコールバックを登録する場合でも、Laravelはアプリケーションのデフォルトログ設定を使い例外をログします。デフォルトログスタックへその例外が伝わるのを止めたい場合は、レポートコールバックの定義時に`stop`メソッドを使用するか、コールバックから`false`を返してください。
+`reportable`メソッドを使用してカスタム例外レポートコールバックを登録した場合でも、Laravelはアプリケーションのデフォルトのログ設定を使用して例外をログに記録します。デフォルトのログスタックへ例外の伝播を停止する場合は、レポートコールバックを定義するときに`stop`メソッドを使用するか、コールバックから`false`を返します。
 
-    $this->reportable(function (CustomException $e) {
+    $this->reportable(function (InvalidOrderException $e) {
         //
     })->stop();
 
-    $this->reportable(function (CustomException $e) {
+    $this->reportable(function (InvalidOrderException $e) {
         return false;
     });
 
-> {tip} 指定した例外に対する例外レポートをカスタマイズするには、[reportable例外](/docs/{{version}}/errors#renderable-exceptions)を使用することも一考してください。
+> {tip} 特定の例外の例外レポートをカスタマイズするには、[レポート可能な例外](/docs/{{version}}/errors#renderable-exceptions)の使用も検討できます。
 
 <a name="global-log-context"></a>
 #### グローバルログコンテキスト
 
-Laravelは可能である場合、文脈上のデータとしてすべての例外ログへ、現在のユーザーのIDを自動的に追加します。アプリケーションの`App\Exceptions\Handler`クラスにある、`context`メソッドをオーバーライドすることにより、独自のグローバルコンテキストデータを定義できます。この情報は、アプリケーションにより書き出されるすべての例外ログメッセージに含まれます。
+利用可能な場合、Laravelは現在のユーザーのIDをコンテキストデータとしてすべての例外のログメッセージに自動的に追加します。アプリケーションの`App\Exceptions\Handler`クラスの`context`メソッドをオーバーライドすることで、独自のグローバルコンテキストデータを定義できます。この情報は、アプリケーションによって書き込まれるすべての例外のログメッセージに含まれます。
 
     /**
-     * ログのデフォルトコンテキスト変数の取得
+     * ログ用のデフォルトのコンテキスト変数を取得
      *
      * @return array
      */
@@ -77,12 +78,12 @@ Laravelは可能である場合、文脈上のデータとしてすべての例�
 <a name="the-report-helper"></a>
 #### `report`ヘルパ
 
-例外のレポートは必要だが、現在のリクエストの処理は続行したい場合もあります。`report`ヘルパ関数は、エラーページをレンダリングせずに、例外ハンドラを使用し簡単にレポートできます。
+場合により、例外を報告する必要はあるが、現在のリクエストの処理を続行する必要がある場合もあります。`report`ヘルパ関数を使用すると、エラーページをユーザーに表示せずに、例外ハンドラを介して例外をすばやく報告できます。
 
     public function isValid($value)
     {
         try {
-            // 値の確認…
+            // 値のバリデーション…
         } catch (Throwable $e) {
             report($e);
 
@@ -91,46 +92,48 @@ Laravelは可能である場合、文脈上のデータとしてすべての例�
     }
 
 <a name="ignoring-exceptions-by-type"></a>
-#### タイプによる例外の無視
+### タイプによる例外の無視
 
-例外ハンドラの`$dontReport`プロパティは、ログしない例外のタイプの配列で構成します。たとえば、404エラー例外と同様に、他のタイプの例外もログしたくない場合です。必要に応じてこの配列へ、他の例外を付け加えてください。
+アプリケーションを構築するときに、単に無視するだけで報告したくないタイプの例外もいくつかあるでしょう。アプリケーションの例外ハンドラには、空の配列に初期化されている`$dontReport`プロパティが含まれています。このプロパティに追加したクラスは報告されません。ただし、カスタムレンダリングロジックがある場合もあります。
+
+    use App\Exceptions\InvalidOrderException;
 
     /**
-     * レポートしない例外のリスト
+     * 報告しない例外タイプのリスト
      *
      * @var array
      */
     protected $dontReport = [
-        \Illuminate\Auth\AuthenticationException::class,
-        \Illuminate\Auth\Access\AuthorizationException::class,
-        \Symfony\Component\HttpKernel\Exception\HttpException::class,
-        \Illuminate\Database\Eloquent\ModelNotFoundException::class,
-        \Illuminate\Validation\ValidationException::class,
+        InvalidOrderException::class,
     ];
+
+> {tip} Laravelは、404 HTTP "not found"エラーや無効なCSRFトークンによって生成された419 HTTPレスポンスに起因する例外など、いくつかのタイプのエラーを皆さんのために裏でこっそり無視しています。
 
 <a name="rendering-exceptions"></a>
 ### 例外のレンダー
 
-Laravelの例外ハンドラはデフォルトで例外をHTTPレスポンスに変換します。しかし、自由に特定のタイプの例外をレンダリングするカスタムクロージャを登録することもできます。例外ハンドラの`renderable`メソッドにより実現します。Laravelはクロージャのタイプヒントを調べ、クロージャがレンダーする例外のタイプを推測します。
+デフォルトでは、Laravel例外ハンドラは例外をHTTPレスポンスへ変換します。ただし、特定タイプの例外に対して、カスタムレンダリングクロージャを自由に登録できます。これは、例外ハンドラの`renderable`メソッドを介して実行します。
 
-    use App\Exceptions\CustomException;
+`renderable`メソッドへ渡すクロージャは、`Response`ヘルパを介して生成される`Illuminate\Http\Response`のインスタンスを返す必要があります。Laravelは、クロージャのタイプヒントを調べることで、どのタイプの例外をクロージャがレンダーするのか推測します。
+
+    use App\Exceptions\InvalidOrderException;
 
     /**
-     * アプリケーションの例外処理コールバックの登録
+     * アプリケーションの例外処理コールバックを登録
      *
      * @return void
      */
     public function register()
     {
-        $this->renderable(function (CustomException $e, $request) {
-            return response()->view('errors.custom', [], 500);
+        $this->renderable(function (InvalidOrderException $e, $request) {
+            return response()->view('errors.invalid-order', [], 500);
         });
     }
 
 <a name="renderable-exceptions"></a>
 ### Reportable／Renderable例外
 
-例外ハンドラの中の`report`と`render`メソッドの中で、例外のタイプをチェックする代わりに、自身のカスタム例外で`report`と`render`メソッドを定義できます。これらのメソッドが存在すると、フレームワークにより自動的に呼び出されます。
+例外ハンドラの`register`メソッドで例外を型チェックする代わりに、カスタム例外に直接`report`メソッドと`render`メソッドを定義することもできます。これらのメソッドが存在する場合、フレームワークによって自動的に呼び出されます。
 
     <?php
 
@@ -138,10 +141,10 @@ Laravelの例外ハンドラはデフォルトで例外をHTTPレスポンスに
 
     use Exception;
 
-    class RenderException extends Exception
+    class InvalidOrderException extends Exception
     {
         /**
-         * 例外のレポート
+         * 例外を報告
          *
          * @return void
          */
@@ -151,7 +154,7 @@ Laravelの例外ハンドラはデフォルトで例外をHTTPレスポンスに
         }
 
         /**
-         * 例外をＨＴＴＰレスポンスへレンダー
+         * 例外をHTTPレスポンスへレンダリング
          *
          * @param  \Illuminate\Http\Request  $request
          * @return \Illuminate\Http\Response
@@ -162,36 +165,36 @@ Laravelの例外ハンドラはデフォルトで例外をHTTPレスポンスに
         }
     }
 
-明確な条件と一致する場合のみ実行されるレポートのカスタムロジックが例外に含まれている場合、デフォルトの例外処理の設定を使用し、その例外をレポートするようにLaravelへ指示する必要があるでしょう。そのためには例外の`report`メソッドから`false`を返してください。
+特定の条件が満たされた場合にのみ必要なカスタムレポートロジックが例外に含まれている場合は、デフォルトの例外処理設定を使用して例外をレポートするようにLaravelに指示する必要が起き得ます。これを行うには、例外の`report`メソッドから`false`を返します。
 
     /**
-     * 例外のレポート
+     * 例外を報告
      *
      * @return bool|void
      */
     public function report()
     {
-        // 例外がカスタムレポートする必要があるかを決める
+        // 例外にカスタムレポートが必要かどうかを判定…
 
         return false;
     }
 
-> {tip} `report`メソッドに必要な依存をタイプヒントで指定することで、Laravelの[サービスコンテナ](/docs/{{version}}/container)によりメソッドへ、自動的に依存注入されます。
+> {tip} `report`メソッドで必要な依存関係をタイプヒントすると、Laravelの[サービスコンテナ](/docs/{{version}}/container)がメソッドへ自動的に依存を注入します。
 
 <a name="http-exceptions"></a>
 ## HTTP例外
 
-例外の中にはサーバでのHTTPエラーコードを表しているものがあります。たとえば「ページが見つかりません」エラー(404)や「未認証エラー」(401)、開発者が生成した500エラーなどです。アプリケーションのどこからでもこの種のレスポンスを生成するには、abortヘルパを使用します。
+一部の例外は、サーバからのHTTPエラーコードを表します。たとえば、「ページが見つかりません」エラー(404)、「不正なエラー」(401)、または開発者が500エラーを生成する可能性もあります。アプリケーションのどこからでもこのようなレスポンスを生成したい場合は、`abort`ヘルパを使用できます。
 
     abort(404);
 
 <a name="custom-http-error-pages"></a>
 ### カスタムHTTPエラーページ
 
-さまざまなHTTPステータスコードごとに、Laravelはカスタムエラーページを簡単に返せます。たとえば404 HTTPステータスコードに対してカスタムエラーページを返したければ、`resources/views/errors/404.blade.php`を作成してください。このファイルはアプリケーションで起こされる全404エラーに対し動作します。ビューはこのディレクトリに置かれ、対応するHTTPコードと一致した名前にしなくてはなりません。`abort`ヘルパが生成する`HttpException`インスタンスは、`$exception`変数として渡されます。
+Laravelを使用すると、さまざまなHTTPステータスコードのカスタムエラーページを簡単に表示できます。たとえば、404 HTTPステータスコードのエラーページをカスタマイズする場合は、`resources/views/errors/404.blade.php`を作成します。このファイルは、アプリケーションが生成するすべての404エラーで表示されます。このディレクトリ内のビューには、対応するHTTPステータスコードと一致する名前を付ける必要があります。`abort`関数によって生成された`Symfony\Component\HttpKernel\Exception\HttpException`インスタンスは`$exception`変数としてビューに渡されます。
 
     <h2>{{ $exception->getMessage() }}</h2>
 
-Laravelのエラーページテンプレートは、`vendor:publish` Artisanコマンドでリソース公開できます。テンプレートをリソース公開したら、好みのようにカスタマイズできます。
+`vendor:publish` Artisanコマンドを使用して、Laravelのデフォルトのエラーページテンプレートをリソース公開できます。テンプレートをリソース公開したら、好みに合わせてカスタマイズしてください。
 
     php artisan vendor:publish --tag=laravel-errors

@@ -1,30 +1,34 @@
-# データベース：ペジネーション
+# Database：ペジネーション
 
 - [イントロダクション](#introduction)
-- [基本的な使用法](#basic-usage)
-    - [クエリビルダの結果](#paginating-query-builder-results)
-    - [Eloquentの結果](#paginating-eloquent-results)
-    - [独自ペジネータ作成](#manually-creating-a-paginator)
+- [基本的な使い方](#basic-usage)
+    - [ペジネーションクエリビルダ結果](#paginating-query-builder-results)
+    - [Eloquent結果のペジネーション](#paginating-eloquent-results)
+    - [ペジネータの手動生成](#manually-creating-a-paginator)
+    - [ペジネーションURLのカスタマイズ](#customizing-pagination-urls)
 - [ペジネーション結果の表示](#displaying-pagination-results)
-    - [結果のJSON変換](#converting-results-to-json)
+    - [ペジネーションリンクウィンドウの調整](#adjusting-the-pagination-link-window)
+    - [結果のJSONへの変換](#converting-results-to-json)
 - [ペジネーションビューのカスタマイズ](#customizing-the-pagination-view)
     - [Using Bootstrap](#using-bootstrap)
-- [ペジネータインスタンスメソッド](#paginator-instance-methods)
+- [ペジネターインスタンスのメソッド](#paginator-instance-methods)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-他のフレームワークのペジネーションは苦痛に満ちています。Laravelのペジネータは[クエリビルダ](/docs/{{version}}/queries)と[Eloquent ORM](/docs/{{version}}/eloquent)に統合されており、データベースの結果を簡単、お手軽にペジネーションできます。ペジネータが生成するHTMLは、[Tailwind CSSフレームワーク](https://tailwindcss.com/)コンパチブルです。
+他のフレームワークでは、ペジネーション（ページ付け）は非常に苦労することがあります。Laravelのペジネーションへのアプローチがが簡単であると思っていただけるよう願っています。Laravelのペジネーションは[クエリビルダ](/docs/{{version}}/queryes)および[Eloquent ORM](/docs/{{version}}/eloquent)と統合されており、設定をしなくても便利で使いやすいペジネーションを提供します。
+
+デフォルトでは、ペジネータによって生成されたHTMLは[Tailwind CSSフレームワーク](https://tailwindcss.com/)と互換性があります。ただし、Bootstrapペジネーションのサポートも利用できます。
 
 <a name="basic-usage"></a>
-## 基本的な使用法
+## 基本的な使い方
 
 <a name="paginating-query-builder-results"></a>
-### クエリビルダの結果
+### ペジネーションクエリビルダ結果
 
-アイテムをペジネーションするには多くの方法があります。一番簡単な方法は、[クエリビルダ](/docs/{{version}}/queries)と[Eloquent query](/docs/{{version}}/eloquent)へ`paginate`メソッドを使う方法です。`paginate`メソッドは、ユーザーが表示している現在のページに基づき、正しいアイテム数とオフセットを指定する面倒を見ます。デフォルトではHTTPリクエストの`page`クエリ文字列引数の値により現在ページが決められます。この値はLaravelが自動的に探し、さらにペジネーターが挿入するリンクを自動的に生成します。
+アイテムをペジネーションする方法はいくつかあります。最も簡単な方法は、[クエリビルダ](/docs/{{version}}/querys)または[Eloquentクエリ](/docs/{{version}}/eloquent)で`paginate`メソッドを使用することです。`paginate`メソッドは、ユーザーが表示している現在のページに基づいて、クエリの"limit"と"offset"の設定を自動的に処理します。デフォルトでは、現在のページはHTTPリクエストの`page`クエリ文字列引数の値から検出されます。この値はLaravelによって自動的に検出され、ペジネータが生成するリンクにも自動的に挿入されます。
 
-以下の例では、`paginate`に一つだけ引数を渡しており、「ページごと」に表示したいアイテム数です。この例ではページごとに`15`アイテムを表示するように指定しています。
+この例では、`paginate`メソッドへ渡す引数は、唯一「ページごと」に表示するアイテムの数です。例として、ページごとに「１５」個のアイテムを表示するように指定してみましょう。
 
     <?php
 
@@ -36,113 +40,132 @@
     class UserController extends Controller
     {
         /**
-         * アプリケーションの全ユーザー表示
+         * アプリケーションのすべてのユーザーを表示
          *
-         * @return Response
+         * @return \Illuminate\Http\Response
          */
         public function index()
         {
-            $users = DB::table('users')->paginate(15);
-
-            return view('user.index', ['users' => $users]);
+            return view('user.index', [
+                'users' => DB::table('users')->paginate(15)
+            ]);
         }
     }
 
-> {note} 現在`groupBy`文を使用したペジネーション操作は、Laravelで効率よく実行できません。`groupBy`を使用したペジネーションを使用する必要がある場合はデータベースクエリを実行し、その結果を元にペジネーターを自前で作成してください。
-
 <a name="simple-pagination"></a>
-#### シンプル・ペジネーション
+#### シンプルなペジネーション
 
-「次」と「前」のリンクだけのシンプルなペジネーションビューを表示したい場合は`simplePaginate`メソッドを使用し、より効率的にクエリすべきでしょう。これはビューに正確なページ番号を表示する必要がない、巨大なデータセットを扱う場合に便利です。
+`paginate`メソッドは、データベースからレコードを取得する前に、クエリで一致するレコードの総数をカウントします。これは、ペジネータが合計で何ページ分のレコードがあるかを知るために行います。ただし、アプリケーションのUIに合計ページ数を表示する予定がない場合は、レコード数のクエリは不要です。
+
+したがって、アプリケーションのUIに単純な「次へ」リンクと「前へ」リンクのみを表示する必要がある場合は、`simplePaginate`メソッドを使用して、単一で効率的なクエリが実行できます。
 
     $users = DB::table('users')->simplePaginate(15);
 
 <a name="paginating-eloquent-results"></a>
-### Eloquentの結果
+### Eloquent結果のペジネーション
 
-さらに[Eloquent](/docs/{{version}}/eloquent)モデルもペジネーションできます。例として`User`モデルの`15`アイテムをページ付け表示してみましょう。ご覧の通り、クエリビルダ結果のペジネーションを行う記法はきれいでわかりやすいものです。
+[Eloquent](/docs/{{version}}/eloquent)クエリをページ分割することもできます。この例では、`App\Models\User`モデルをページ分割し、ページごとに１５レコードを表示するプランであることを示します。ご覧のとおり、構文はクエリビルダの結果のペジネーションとほぼ同じです。
 
-    $users = App\Models\User::paginate(15);
+    use App\Models\User;
 
-`where`節のような制約をクエリへ指定した後に、`paginate`を呼び出すこともできます。
+    $users = User::paginate(15);
+
+もちろん、`where`句など、クエリに他の制約を設定した後、`paginate`メソッドを呼び出すこともできます。
 
     $users = User::where('votes', '>', 100)->paginate(15);
 
-Elqouentモデルをページづけするときにも、`simplePaginate`メソッドを使用できます。
+Eloquentモデルをペジネーションするときに`simplePaginate`メソッドを使用することもできます。
 
     $users = User::where('votes', '>', 100)->simplePaginate(15);
 
 <a name="manually-creating-a-paginator"></a>
-### 独自ペジネータ作成
+### ペジネータの手動生成
 
-渡された配列を元にして、ペジネーションインスンタンスを作成したいこともあります。必要に応じて`Illuminate\Pagination\Paginator`か、`Illuminate\Pagination\LengthAwarePaginator`インスタンスを生成することで実現できます。
+場合によっては、ペジネーションインスタンスを手動で作成し、メモリ内にすでにあるアイテムの配列を渡すことができます。必要に応じて、`Illuminate\Pagination\Paginator`または`Illuminate\Pagination\LengthAwarePaginator`インスタンスを生成することでこれが行えます。
 
-`Paginator`クラスは結果にセットされているアイテムの総数を知る必要はありません。そのためクラスは最終ページのインデックスを取得するメソッドを持っていません。`LengthAwarePaginator`は`Paginator`とほとんど同じ引数を取りますが、結果にセットされているアイテム総数も指定する必要のある点が異なっています。
+`Paginator`クラスは、結果セット内のアイテムの総数を知る必要はありません。ただし、そのためクラスには最後のページのインデックスを取得するためのメソッドがありません。`LengthAwarePaginator`は、`Paginator`とほぼ同じ引数を受け入れます。ただし、結果セット内のアイテムの総数をカウントする必要があります。
 
-言い換えれば、`Paginator`はクエリビルダとEloquentに対する`simplePaginate`メソッドに対応し、一方の`LengthAwarePaginator`は`paginate`に対応しています。
+つまり、`Paginator`はクエリビルダの`simplePaginate`メソッドに対応し、`LengthAwarePaginator`は`paginate`メソッドに対応します。
 
-> {note} 自前でペジネーターインスタンスを生成する場合、ペジネーターに渡す結果の配列を自分で"slice"する必要があります。その方法を思いつかなければ、[array_slice](https://secure.php.net/manual/en/function.array-slice.php) PHP関数を調べてください。
+> {note} ペジネーションインスタンスを手動で作成する場合は、ペジネーションに渡す結果の配列を手動で「スライス」する必要があります。これを行う方法がわからない場合は、[array_slice](https://secure.php.net/manual/en/function.array-slice.php)PHP関数を確認してください。
 
-<a name="displaying-pagination-results"></a>
-## ペジネーション結果の表示
+<a name="customizing-pagination-urls"></a>
+### ペジネーションURLのカスタマイズ
 
-`paginate`メソッドを呼び出す場合、`Illuminate\Pagination\LengthAwarePaginator`インスタンスを受け取ります。`simplePaginate`メソッドを呼び出すときは、`Illuminate\Pagination\Paginator`インスタンスを受け取ります。これらのオブジェクトは結果を表すたくさんのメソッドを提供しています。こうしたヘルパメソッドに加え、ペジネーターインスタンスはイテレータでもあり、配列としてループ処理できます。つまり結果を取得したら、その結果とページリンクを[Blade](/docs/{{version}}/blade)を使い表示できます。
+デフォルトでは、ペジネータにが生成するリンクは、現在のリクエストのURIと一致します。ただし、ペジネータの`withPath`メソッドを使用すると、リンクを生成するときにペジネータが使用するURIをカスタマイズできます。たとえば、ペジネータで`http://example.com/admin/users？page=N`のようなリンクを生成したい場合は、`/admin/users`を`withPath`メソッドに渡します。
 
-    <div class="container">
-        @foreach ($users as $user)
-            {{ $user->name }}
-        @endforeach
-    </div>
+    use App\Models\User;
 
-    {{ $users->links() }}
+    Route::get('/users', function () {
+        $users = User::paginate(15);
 
-`links`メソッドは結果の残りのページヘのリンクをレンダーします。それらの各リンクには`page`クエリ文字列変数が含まれています。`links`メソッドが生成するHTMLは[Tailwind CSSフレームワーク](https://tailwindcss.com)と互換性があることを覚えておいてください。
-
-<a name="customizing-the-paginator-uri"></a>
-#### ペジネーターURIのカスタマイズ
-
-`withPath`メソッドにより、ペジネーターがリンクを生成するときに使用するURIをカスタマイズできます。たとえばペジネーターで`http://example.com/custom/url?page=N`のようなリンクを生成したい場合、`withPath`メソッドに`custom/url`を渡してください。
-
-    Route::get('users', function () {
-        $users = App\Models\User::paginate(15);
-
-        $users->withPath('custom/url');
+        $users->withPath('/admin/users');
 
         //
     });
 
-<a name="appending-to-pagination-links"></a>
-#### ペジネーションリンクの追加
+<a name="appending-query-string-values"></a>
+#### クエリ文字列の追加
 
-ペジネーションリンクにクエリ文字列を付け加えたいときは、`appends`メソッドを使います。たとえば`sort=votes`を各ペジネーションリンクに追加する場合には、以下のように`appends`を呼び出します。
+`appends`メソッドを使用して、ペジネーションリンクのクエリ文字列へ追加できます。たとえば、各ペジネーションリンクに`sort=votes`を追加するには、`appends`を以下のように呼び出します。
 
-    {{ $users->appends(['sort' => 'votes'])->links() }}
+    use App\Models\User;
 
-現在のクエリ文字列値をすべてペジネーションリンクへ追加する場合は、`withQueryString`メソッドを使います。
+    Route::get('/users', function () {
+        $users = User::paginate(15);
 
-    {{ $users->withQueryString()->links() }}
+        $users->appends(['sort' => 'votes']);
 
-ペジネーションのURLに「ハッシュフラグメント」を追加したい場合は、`fragment`メソッドが使用できます。たとえば各ペジネーションリンクの最後に`#foo`を追加したい場合は、以下のように`fragment`メソッドを呼び出します。
+        //
+    });
 
-    {{ $users->fragment('foo')->links() }}
+現在のリクエストのすべてのクエリ文字列値をペジネーションリンクに追加する場合は、`withQueryString`メソッドを使用できます。
+
+    $users = User::paginate(15)->withQueryString();
+
+<a name="appending-hash-fragments"></a>
+#### ハッシュフラグメントの追加
+
+paginatorによって生成されたURLに「ハッシュフラグメント」を追加する必要がある場合は、`fragment`メソッドを使用できます。たとえば、各ペジネーションリンクの最後に`#users`を追加するには、次のように`fragment`メソッドを呼び出します。
+
+    $users = User::paginate(15)->fragment('users');
+
+<a name="displaying-pagination-results"></a>
+## ペジネーション結果の表示
+
+`paginate`メソッドを呼び出すと、`Illuminate\Pagination\LengthAwarePaginator`のインスタンスを受け取ります。`simplePaginate`メソッドを呼び出すと、`Illuminate\Pagination\Paginator`のインスタンスを受け取ります。これらのオブジェクトは、結果セットを記述するいくつかのメソッドを提供します。これらのヘルパメソッドに加えて、paginatorインスタンスはイテレーターであり、配列としてループできます。したがって、結果を取得したら、[ブレード](/docs/{{version}}/blade)を使用して結果を表示し、ページリンクをレンダーできます。
+
+```html
+<div class="container">
+    @foreach ($users as $user)
+        {{ $user->name }}
+    @endforeach
+</div>
+
+{{ $users->links() }}
+```
+
+`links`メソッドは、結果セットの残りのページへのリンクをレンダーします。これらの各リンクには、適切な`page`クエリ文字列変数がすでに含まれています。`links`メソッドが生成するHTMLは、[Tailwind CSSフレームワーク](https://tailwindcss.com)と互換性があることを忘れないでください。
 
 <a name="adjusting-the-pagination-link-window"></a>
-#### ペジネーションリンクウィンドウの調整
+### ペジネーションリンクウィンドウの調整
 
-ペジネータのURL「ウィンドウ」の両サイドに、いくつの追加のリンクを表示するかを調整できます。デフォルトでは、メインのペジネータリンクの両サイドに３つのリンクが表示されます。この数を調整するには、`onEachSide`メソッドを使用します。
+ペジネーションがペジネーションリンクを表示すると、現在のページ番号と、現在のページの前後の3ページのリンクが表示されます。必要に応じて、`onEachSide`メソッドを使用して、現在のページの両側に表示される追加のリンクの数を制御できます。
 
     {{ $users->onEachSide(5)->links() }}
 
 <a name="converting-results-to-json"></a>
-### 結果のJSON変換
+### 結果のJSONへの変換
 
-Laravelのペジネーター結果クラスは`Illuminate\Contracts\Support\Jsonable`インターフェイス契約を実装しており、`toJson`メソッドを提示しています。ですからペジネーション結果をJSONにとても簡単に変換できます。またルートやコントローラアクションからペジネーターインスタンスを返せば、JSONへ変換されます。
+Laravelペジネータクラスは`Illuminate\Contracts\Support\Jsonable`インターフェイスコントラクトを実装し、`toJson`メソッドを提供しているため、ペジネーションの結果をJSONに変換するのは非常に簡単です。ルートまたはコントローラアクションから返すことで、ペジネーションインスタンスをJSONに変換することもできます。
 
-    Route::get('users', function () {
-        return App\Models\User::paginate();
+    use App\Models\User;
+
+    Route::get('/users', function () {
+        return User::paginate();
     });
 
-ペジネーターのJSON形式は`total`、`current_page`、`last_page`などのメタ情報を含んでいます。実際の結果オブジェクトはJSON配列の`data`キーにより利用できます。ルートから返されたペジネーターインスタンスにより生成されるJSONの一例を見てください。
+ペジネーターからのJSONは、`total`、`current_page`、`last_page`などのメタ情報を持っています。結果レコードは、JSON配列の`data`キーを介して利用できます。ルートからペジネーションインスタンスを返すことによって作成されたJSONの例を以下で紹介します。
 
     {
        "total": 50,
@@ -158,10 +181,10 @@ Laravelのペジネーター結果クラスは`Illuminate\Contracts\Support\Json
        "to": 15,
        "data":[
             {
-                // 結果のオブジェクト
+                // レコード…
             },
             {
-                // 結果のオブジェクト
+                // レコード…
             }
        ]
     }
@@ -169,64 +192,83 @@ Laravelのペジネーター結果クラスは`Illuminate\Contracts\Support\Json
 <a name="customizing-the-pagination-view"></a>
 ## ペジネーションビューのカスタマイズ
 
-ペジネーションリンクを表示するためのビューは、デフォルトでTailwind CSSフレームワークを用いてレンダーされます。しかし、Tailwindを使っていない場合でも、そうしたリンクをレンダーする独自のビューを自由に定義できます。ペジネータインスタンスの`links`メソッドを呼び出す際に、ビュー名をメソッドの最初の引数として渡してください。
+デフォルトでは、ペジネーションリンクを表示するためにレンダリングされたビューは、[Tailwind CSS](https://tailwindcss.com)フレームワークと互換性があります。ただし、Tailwindを使用しない場合は、これらのリンクをレンダーするために独自のビューを自由に定義できます。paginatorインスタンスで`links`メソッドを呼び出すとき、メソッドの最初の引数としてビュー名を渡すことができます。
 
     {{ $paginator->links('view.name') }}
 
-    // ビューへデータを渡す
+    // ビューに追加データを渡す
     {{ $paginator->links('view.name', ['foo' => 'bar']) }}
 
-しかし、`vendor:publish`コマンドを使用し、`resources/views/vendor`ディレクトリへペジネーションビューを作成し、カスタマイズする方法が一番簡単でしょう。
+ただし、ペジネーションビューをカスタマイズする最も簡単な方法は、`vendor:publish`コマンドを使用して`resources/views/vendor`ディレクトリにエクスポートすることです。
 
     php artisan vendor:publish --tag=laravel-pagination
 
-このコマンドは、`resources/views/vendor/pagination`ディレクトリへビューを設置します。このディレクトリの`tailwind.blade.php`ファイルが、デフォルトのペジネーションビューに当ります。ペジネーションHTMLを変更するには、このファイルを編集してください。
+このコマンドは、ビューをアプリケーションの`resources/views/vendor/pagination`ディレクトリに配置します。このディレクトリ内の`tailwind.blade.php`ファイルが、デフォルトのペジネーションビューに対応しています。このファイルを編集して、ペジネーションHTMLを変更できます。
 
-デフォルトのペジネーションビューとして、他のファイルを指定したい場合は、`AppServiceProvider`の中で、ペジネータの`defaultView`と`defaultSimpleView`メソッドを使用します。
+別のファイルをデフォルトのペジネーションビューとして指定する場合は、`App\Providers\AppServiceProvider`クラスの`boot`メソッド内でペジネーションの`defaultView`メソッドと`defaultSimpleView`メソッドを呼び出すことができます。
+
+    <?php
+
+    namespace App\Providers;
 
     use Illuminate\Pagination\Paginator;
+    use Illuminate\Support\Facades\Blade;
+    use Illuminate\Support\ServiceProvider;
 
-    public function boot()
+    class AppServiceProvider extends ServiceProvider
     {
-        Paginator::defaultView('view-name');
+        /**
+         * 全アプリケーションサービスの初期起動処理
+         *
+         * @return void
+         */
+        public function boot()
+        {
+            Paginator::defaultView('view-name');
 
-        Paginator::defaultSimpleView('view-name');
+            Paginator::defaultSimpleView('view-name');
+        }
     }
 
 <a name="using-bootstrap"></a>
 ### Bootstrapの使用
 
-Laravelは[Bootstrap CSS](https://getbootstrap.com/)を使って構築されたペジネーションビューも用意しています。デフォルトのTailwindビューの代わりに使用するには、`AppServiceProvider`の中でペジネターの`useBootstrap`メソッドを呼び出してください。
+Laravelは、[Bootstrap CSS](https://getbootstrap.com/)を使用して構築したペジネーションビューも用意しています。デフォルトのTailwindビューの代わりにこれらのビューを使用するには、`App\Providers\AppServiceProvider`クラスの`boot`メソッド内でペジネータの`useBootstrap`メソッドを呼び出してください。
 
     use Illuminate\Pagination\Paginator;
 
+    /**
+     * 全アプリケーションサービスの初期起動処理
+     *
+     * @return void
+     */
     public function boot()
     {
         Paginator::useBootstrap();
     }
 
 <a name="paginator-instance-methods"></a>
-## ペジネータインスタンスメソッド
+## ペジネターインスタンスのメソッド
 
-ペジネータインスタンスは以下の追加ペジネーション情報を提供しています。
+各ペジネーションインスタンスは、以下のメソッドで追加のペジネーション情報を提供します。
 
 メソッド  |  説明
 -------  |  -----------
-`$paginator->count()`  |  現在のページのアイテム数取得
-`$paginator->currentPage()`  |  現在のページ数
-`$paginator->firstItem()`  |  現在ページの最初のアイテムが何番目か取得
-`$paginator->getOptions()`  |  ペジネータオプション取得
-`$paginator->getUrlRange($start, $end)`  |  一定範囲のペジネーションURLを取得
-`$paginator->hasPages()`  |  複数ページに分割できるだけのアイテムがあるか判定
-`$paginator->hasMorePages()`  |  データストレージにまだアイテムが存在しているか判定
-`$paginator->items()`  |  現在ページのアイテムを取得
-`$paginator->lastItem()`  |  現在ページの最後のアイテムが何番目か取得
-`$paginator->lastPage()`  |  利用可能な最終ページ数取得（`simplePaginate`では使用できない）
-`$paginator->nextPageUrl()`  |  次ページのURL取得
-`$paginator->onFirstPage()`  |  ペジネータが最初のページを扱っているか判定
-`$paginator->perPage()`  |  ページごとに表示するアイテム数
-`$paginator->previousPageUrl()`  |  前ページのURL取得
-`$paginator->total()`  |  データ領域にある、条件に一致するアイテムの総数（`simplePaginate`では使用できない）
-`$paginator->url($page)`  |  指定したページのURL取得
-`$paginator->getPageName()`  |  ページを保存するために使用するクエリ文字変数を取得
-`$paginator->setPageName($name)`  |  ページを保存するために使用するクエリ文字変数を指定
+`$paginator->count()`  |  現在のページのアイテム数を取得
+`$paginator->currentPage()`  |  現在のページ番号を取得
+`$paginator->firstItem()`  |  結果の最初の項目の結果番号を取得
+`$paginator->getOptions()`  |  ペジネータオプションを取得
+`$paginator->getUrlRange($start, $end)`  |  ペジネーションURLを範囲内で生成
+`$paginator->hasPages()`  |  複数のページに分割するのに十分なアイテムがあるかどうかを判定
+`$paginator->hasMorePages()`  |  データストアにさらにアイテムがあるかどうかを判定
+`$paginator->items()`  |  現在のページのアイテムを取得
+`$paginator->lastItem()`  |  結果の最後のアイテムの結果番号を取得
+`$paginator->lastPage()`  |  最後に利用可能なページのページ番号を取得（`simplePaginate`使用時は使用不可能）
+`$paginator->nextPageUrl()`  |  次のページのURLを取得
+`$paginator->onFirstPage()`  |  ペジネータが最初のページにあるかを判定
+`$paginator->perPage()`  |  １ページ中に表示するアイテムの数
+`$paginator->previousPageUrl()`  |  前のページのURLを取得
+`$paginator->total()`  |  データストア内の一致するアイテムの総数を判定（`simplePaginate`使用時は使用不可能）
+`$paginator->url($page)`  |  指定するページ番号のURLを取得
+`$paginator->getPageName()`  |  ページの保存に使用するクエリ文字列変数を取得
+`$paginator->setPageName($name)`  |  ページの保存に使用するクエリ文字列変数を設定

@@ -1,186 +1,188 @@
-# アセットのコンパイル(Mix)
+# アセットのコンパイル（Mix）
 
 - [イントロダクション](#introduction)
 - [インストールと準備](#installation)
 - [Mixの実行](#running-mix)
 - [スタイルシートの操作](#working-with-stylesheets)
-    - [Less](#less)
-    - [Sass](#sass)
-    - [Stylus](#stylus)
+    - [Tailwind CSS](#tailwindcss)
     - [PostCSS](#postcss)
-    - [平文CSS](#plain-css)
+    - [Sass](#sass)
     - [URL処理](#url-processing)
     - [ソースマップ](#css-source-maps)
 - [JavaScriptの操作](#working-with-scripts)
-    - [ベンダの抽出](#vendor-extraction)
+    - [Vue](#vue)
     - [React](#react)
-    - [バニラJS](#vanilla-js)
-    - [webpackカスタム設定](#custom-webpack-configuration)
-- [ファイル／ディレクトリコピー](#copying-files-and-directories)
-- [バージョン付け／キャッシュ対策](#versioning-and-cache-busting)
-- [Browsersyncリロード](#browsersync-reloading)
+    - [ベンダーの抽出](#vendor-extraction)
+    - [Webpackカスタム設定](#custom-webpack-configuration)
+- [バージョニング／キャッシュの破棄](#versioning-and-cache-busting)
+- [Browsersyncによるリロード](#browsersync-reloading)
 - [環境変数](#environment-variables)
 - [通知](#notifications)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-[Laravel Mix](https://github.com/JeffreyWay/laravel-mix)は多くの一般的なCSSとJavaScriptのプリプロセッサを使用し、Laravelアプリケーションために、構築過程をwebpackでスラスラと定義できるAPIを提供しています。シンプルなメソッドチェーンを使用しているため、アセットパイプラインを流暢に定義できます。例を見てください。
+[Laravel Mix](https://github.com/JeffreyWay/laravel-mix)は、[Laracasts](https://laracasts.com)を作ったJeffrey Wayが開発したパッケージで、[webpack](https://webpack.js.org)を定義するためスラスラと書けるAPIを提供しています。多くの一般的なCSSおよびJavaScriptプリプロセッサを使用してLaravelアプリケーションのビルドステップを定義します。
+
+言い換えると、Mixを使用すると、アプリケーションのCSSファイルとJavaScriptファイルを簡単にコンパイルして圧縮できます。シンプルなメソッドチェーンにより、アセットパイプラインを流暢に定義できます。例をご覧ください。
 
     mix.js('resources/js/app.js', 'public/js')
-        .sass('resources/sass/app.scss', 'public/css');
+        .postCss('resources/css/app.css', 'public/css');
 
-webpackやアセットのコンパイルを始めようとして、混乱と圧倒を感じているならLaravel Mixを気に入ってもらえるでしょう。しかし、アプリケーションの開発時に必要だというわけではありません。どんなアセットパイプラインツールを使用してもかまいませんし、使わなくても良いのです。
+Webpackとアセットのコンパイルを使い始めようとして混乱し圧倒されたことがある方は、Laravel　Mixを気に入ってくれるでしょう。ただし、アプリケーションの開発に必ず使用する必要はありません。お好きなアセットパイプラインツールを使用するも、まったく使用しないのも自由です。
+
+> {tip} Laravelと[Tailwind CSS](https://tailwindcss.com)を使用してアプリケーションの構築を早急に開始する必要がある場合は、[アプリケーションスターターキット](/docs/{{version}}/starter-kits)のいずれかをチェックしてください。
 
 <a name="installation"></a>
 ## インストールと準備
 
 <a name="installing-node"></a>
-#### Nodeのインストール
+#### Installing Node
 
-Mixを始める前、最初にNode.jsとNPMを開発機へ確実にインストールしてください。
+Mixを実行する前に、まずNode.jsとNPMをマシンへ確実にインストールする必要があります。
 
     node -v
     npm -v
 
-Laravel Homesteadならデフォルトのままでも必要なものが全部そろっています。しかし、Vagrantを使っていなくても、[ダウンロードページ](https://nodejs.org/ja/download/)を読めば、NodeとNPMは簡単にインストールできます。
+[Nodeの公式ウェブサイト](https://nodejs.org/en/download/)から簡単なグラフィカルインストーラを使用して、最新バージョンのNodeとNPMを簡単にインストールできます。または、[Laravel Sail](/docs/{{version}}/sale)を使用している場合は、Sailを介してNodeとNPMを呼び出すことができます。
 
-<a name="laravel-mix"></a>
-#### Laravel Mix
+    ./sail node -v
+    ./sail npm -v
 
-残っているステップはLaravel Mixのインストールだけです。新しくLaravelをインストールすると、ルートディレクトリに`package.json`があることに気づくでしょう。PHPの代わりにNodeの依存パッケージが定義されている所が異なりますが、`composer.json`ファイルに似た構成ファイルだと考えてください。以下のコマンドで、依存パッケージをインストールしてください。
+<a name="installing-laravel-mix"></a>
+#### Laravel Mixのインストール
+
+残りの唯一のステップは、Laravel Mixをインストールすることです。Laravelの新規インストールでは、ディレクトリ構造のルートに`package.json`ファイルがあります。デフォルトの`package.json`ファイルには、Laravel Mixの使用を開始するために必要なすべてのものがすでに含まれています。このファイルは、PHPの依存関係ではなくNodeの依存関係を定義することを除けば、`composer.json`ファイルと同じように考えてください。以下を実行して、参照する依存関係をインストールします。
 
     npm install
 
 <a name="running-mix"></a>
 ## Mixの実行
 
-Mixは[webpack](https://webpack.js.org)上の設定レイヤーですから、Laravelに含まれる`package.json`ファイル上のNPMスクリプトの一つをMixの実行で起動してください。
+Mixは[webpack](https://webpack.js.org)の上の設定レイヤーであるため、Mixタスクを実行するには、デフォルトのLaravel　`package.json`ファイルに含まれているNPMスクリプトの１つを実行するだけです。`dev`または`production`スクリプトを実行すると、アプリケーションのすべてのCSSおよびJavaScriptアセットがコンパイルされ、アプリケーションの`public`ディレクトリへ配置されます。
 
-    // 全タスク実行
+    // すべてのMixタスクを実行...
     npm run dev
 
-    // 全タスク実行を実行し、出力を圧縮
-    npm run production
+    // すべてのMixタスクを実行し、出力を圧縮。
+    npm run prod
 
 <a name="watching-assets-for-changes"></a>
-#### アセット変更の監視
+#### アセットの変更を監視
 
-`npm run watch`コマンドはターミナルで実行し続け、関連ファイル全部の変更を監視します。webpackは変更を感知すると、アセットを自動的に再コンパイルします。
+`npm run watch`コマンドはターミナルで実行され続け、関連するすべてのCSSファイルとJavaScriptファイルの変更を監視します。Webpackは、こうしたファイルのいずれか一つの変更を検出すると、アセットを自動的に再コンパイルします。
 
     npm run watch
 
-特定の環境のwebpackでは、ファイル変更時に更新されないことがあります。自分のシステムでこれが起きた場合は、`watch-poll`コマンドを使用してください。
+Webpackは、特定のローカル開発環境でファイルの変更を検出できない場合があります。これがシステムに当てはまる場合は、`watch-poll`コマンドの使用を検討してください。
 
     npm run watch-poll
 
 <a name="working-with-stylesheets"></a>
 ## スタイルシートの操作
 
-`webpack.mix.js`ファイルは全アセットコンパイルのエントリポイントです。webpackの軽い設定ラッパーだと考えてください。Mixタスクはアセットをどのようにコンパイルすべきかを正確に定義するため、チェーンでつなげます。
+アプリケーションの`webpack.mix.js`ファイルは、すべてのアセットをコンパイルするためのエントリポイントです。[webpack](https://webpack.js.org)の軽い設定ラッパーと考えてください。ミックスタスクをチェーン化して、アセットのコンパイル方法を正確に定義できます。
 
-<a name="less"></a>
-### Less
+<a name="tailwindcss"></a>
+### Tailwind CSS
 
-[Less](http://lesscss.org/)をCSSへコンパイルするには`less`メソッドを使用します。一番主要な`app.less`ファイルを`public/css/app.css`としてコンパイルしてみましょう。
+[Tailwind CSS](https://tailwindcss.com)は、HTMLを離れることなく、すばらしいサイトを構築するための最新のユーティリティファーストフレームワークです。Laravel Mixを使用したLaravelプロジェクトでこれを使い始める方法を掘り下げてみましょう。まず、NPMを使用してTailwindをインストールし、Tailwind設定ファイルを生成する必要があります。
 
-    mix.less('resources/less/app.less', 'public/css');
+    npm install
 
-複数のファイルをコンパイルするには、`less`メソッドを複数回呼び出します。
+    npm install -D tailwindcss@npm:@tailwindcss/postcss7-compat @tailwindcss/postcss7-compat postcss@^7
 
-    mix.less('resources/less/app.less', 'public/css')
-        .less('resources/less/admin.less', 'public/css');
+    npx tailwindcss init
 
-コンパイル済みのCSSのファイル名をカスタマイズしたい場合は、`less`の第２引数にファイルのフルパスを指定してください。
+`init`コマンドは`tailwind.config.js`ファイルを生成します。このファイル内で、アプリケーションのすべてのテンプレートとJavaScriptへのパスを設定して、CSSを本番用に最適化するときにTailwindが未使用のスタイルをツリーシェイクできるようにすることができます。
 
-    mix.less('resources/less/app.less', 'public/stylesheets/styles.css');
+```js
+purge: [
+    './storage/framework/views/*.php',
+    './resources/**/*.blade.php',
+    './resources/**/*.js',
+    './resources/**/*.vue',
+],
+```
 
-[裏で動作しているLessプラグインのオプション](https://github.com/webpack-contrib/less-loader#options)をオーバーライドする必要が起きたら、`mix.less()`の第３引数にオブジェクトを渡してください。
+次に、Tailwindの各「レイヤー」をアプリケーションの`resources/css/app.css`ファイルに追加する必要があります。
 
-    mix.less('resources/less/app.less', 'public/css', {
-        strictMath: true
-    });
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
 
-<a name="sass"></a>
-### Sass
+Tailwindのレイヤーを設定したら、アプリケーションの`webpack.mix.js`ファイルを更新して、Tailwindを利用したCSSをコンパイルする準備が整います。
 
-`sass`メソッドは、[Sass](https://sass-lang.com/)をCSSへコンパイルします。次のように使用します。
+```js
+mix.js('resources/js/app.js', 'public/js')
+    .postCss('resources/css/app.css', 'public/css', [
+        require('tailwindcss'),
+    ]);
+```
 
-    mix.sass('resources/sass/app.scss', 'public/css');
+最後に、アプリケーションのプライマリレイアウトテンプレートでスタイルシートを参照する必要があります。多くのアプリケーションは、このテンプレートを`resources/views/layouts/app.blade.php`に保存することを選択します。さらに、レスポンシブビューポートの`meta`タグがまだ存在しない場合は、必ず追加してください。
 
-`less`メソッドと同様に、複数のSassファイルを別々のCSSファイルへコンパイルできますし、結果のCSSの出力ディレクトリをカスタマイズ可能です。
-
-    mix.sass('resources/sass/app.sass', 'public/css')
-        .sass('resources/sass/admin.sass', 'public/css/admin');
-
-さらに、[Node-Sassプラグインオプション](https://github.com/sass/node-sass#options)を第３引数に指定できます。
-
-    mix.sass('resources/sass/app.sass', 'public/css', {
-        precision: 5
-    });
-
-<a name="stylus"></a>
-### Stylus
-
-LessやSassと同様に、`stylus`メソッドにより、[Stylus](http://stylus-lang.com/)をCSSへコンパイルできます。
-
-    mix.stylus('resources/stylus/app.styl', 'public/css');
-
-さらに、[Rupture](https://github.com/jescalan/rupture)のような、追加のStylusプラグインをインストールすることもできます。最初に、NPM（`npm install rupture`）による質問でプラグインをインストールし、それから`mix.stylus()`の中で呼び出してください。
-
-    mix.stylus('resources/stylus/app.styl', 'public/css', {
-        use: [
-            require('rupture')()
-        ]
-    });
+```html
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/css/app.css" rel="stylesheet">
+</head>
+```
 
 <a name="postcss"></a>
 ### PostCSS
 
-強力なCSS加工ツールである[PostCSS](https://postcss.org/)も、Laravel Mixには最初から含まれています。デフォルトでは、自動的に必要なCSS3ベンダープレフィックスを適用する、人気の[Autoprefixer](https://github.com/postcss/autoprefixer)プラグインを利用します。しかし、アプリケーションに適したプラグインを自由に追加できます。最初に、NPMにより希望のプラグインをインストールし、それから`webpack.mix.js`の中から参照してください。
+[PostCSS](https://postcss.org/)は、CSSを変換するための強力なツールであり、Laravel Mixにはじめから含まれています。デフォルトで、Mixは人気のある[Autoprefixer](https://github.com/postcss/autoprefixer)プラグインを利用して、必要なすべてのCSS3ベンダープレフィックスを自動的に適用します。ただし、アプリケーションに適したプラグインを自由に追加できます。
 
-    mix.sass('resources/sass/app.scss', 'public/css')
-        .options({
-            postCss: [
-                require('postcss-css-variables')()
-            ]
-        });
+まず、NPMを介して希望するプラグインをインストールし、Mixの`postCss`メソッドを呼び出すときにプラグインの配列に含めます。`postCss`メソッドは、CSSファイルへのパスを最初の引数に取り、コンパイルしたファイルを配置するディレクトリを２番目の引数に取ります。
 
-<a name="plain-css"></a>
-### 平文CSS
+    mix.postCss('resources/css/app.css', 'public/css', [
+        require('postcss-custom-properties')
+    ]);
 
-平文のCSSスタイルシートを一つのファイルへ結合したい場合は、`styles`メソッドを使ってください。
+または、単純なCSSのコンパイルと圧縮を実現するために、追加のプラグインなしで`postCss`を実行することもできます。
 
-    mix.styles([
-        'public/css/vendor/normalize.css',
-        'public/css/vendor/videojs.css'
-    ], 'public/css/all.css');
+    mix.postCss('resources/css/app.css', 'public/css');
+
+<a name="sass"></a>
+### Sass
+
+`sass`メソッドを使用すると、[Sass](https://sass-lang.com/)をWebブラウザで理解できるCSSにコンパイルできます。`sass`メソッドは、Sassファイルへのパスを最初の引数に取り、コンパイルしたファイルを配置するディレクトリを２番目の引数に取ります。
+
+    mix.sass('resources/sass/app.scss', 'public/css');
+
+複数のSassファイルをそれぞれのCSSファイルにコンパイルし、`sass`メソッドを複数回呼び出すことで、結果のCSSの出力ディレクトリをカスタマイズすることもできます。
+
+    mix.sass('resources/sass/app.sass', 'public/css')
+        .sass('resources/sass/admin.sass', 'public/css/admin');
 
 <a name="url-processing"></a>
 ### URL処理
 
-Laravel Mixはwebpack上に構築されているため、webpackのコンセプトを理解することが重要です。CSSコンパイルのため、webpackはスタイルシート中の`url()`呼び出しをリライトし、最適化します。最初は奇妙に聴こえるかもしれませんが、これは非常に強力な機能の一部です。画像への相対URLを含んだSassをコンパイルするのを想像してください。
+LaravelMixはwebpackの上に構築されているため、いくつかのwebpackの概念を理解することが重要です。CSSコンパイルの場合、webpackはスタイルシート内の`url()`呼び出しを書き直して最適化します。これは最初は奇妙に聞こえるかもしれませんが、信じられないほど強力な機能です。画像への相対URLを含むSassをコンパイルしたいとします。
 
     .example {
         background: url('../images/example.png');
     }
 
-> {note} 絶対パスを`url()`へ指定しても、URL書き換えの対象外になります。たとえば、`url('/images/thing.png')`や、`url('http://example.com/images/thing.png')`は変更されません。
+> {note} `url()`へ指定された絶対パスはURLの書き換えから除外されます。たとえば、`url('/images/thing.png')`または`url('http://example.com/images/thing.png')`は変更されません。
 
-デフォルト動作として、Laravel Mixとwebpackが`example.png`を見つけると、それを`public/images`フォルダへコピーします。それから、生成したスタイルシート中の`url()`を書き換えます。
+デフォルトでは、Laravel Mixとwebpackは`example.png`を見つけ、それを`public/images`フォルダにコピーしてから、生成されたスタイルシート内の`url()`を書き換えます。そのため、コンパイルされたCSSは次のようになります。
 
     .example {
         background: url(/images/example.png?d41d8cd98f00b204e9800998ecf8427e);
     }
 
-この機能は便利ですが、好きなようにフォルダ構造を設定することもできます。その場合、以下のように`url()`リライトを停止してください。
+この機能は便利かもしれませんが、フォルダ構造が既にお好みの方法で構成されているかもしれません。この場合、次のように`url()`の書き換えを無効にすることができます。
 
-    mix.sass('resources/sass/app.scss', 'public/css')
-        .options({
-            processCssUrls: false
-        });
+    mix.sass('resources/sass/app.scss', 'public/css').options({
+        processCssUrls: false
+    });
 
-これを`webpack.mix.js`ファイルへ追加することで、Mixはどんな`url()`に一致することも、publicディレクトリへアセットをコピーすることもしなくなります。言い換えれば、コンパイル済みのCSSは、みなさんがタイプした内容そのままに見えるでしょう。
+この`webpack.mix.js`ファイルの変更により、Mixは`url()`と一致しなくなり、アセットをパブリックディレクトリにコピーしなくなります。つまり、コンパイルされたCSSは、最初に入力した方法と同じようになります。
 
     .example {
         background: url("../images/thing.png");
@@ -189,15 +191,15 @@ Laravel Mixはwebpack上に構築されているため、webpackのコンセプ�
 <a name="css-source-maps"></a>
 ### ソースマップ
 
-デフォルトでは無効になっているため、`webpack.mix.js`ファイルで`mix.sourceMaps()`を呼び出すことで、ソースマップは有効になります。コンパイルコストと実行パフォーマンスコストはかかりますが、これによりコンパイル済みアセットを使用する時に、ブラウザの開発ツール向けの追加デバッグ情報が提供されます。
+デフォルトでは無効になっていますが、ソースマップは`webpack.mix.js`ファイルの`mix.sourceMaps()`メソッドを呼び出すことでアクティブにできます。コンパイル／パフォーマンスのコストが伴いますが、これにより、コンパイルされたアセットを使用するときに、ブラウザの開発者ツールに追加のデバッグ情報が提供されます。
 
     mix.js('resources/js/app.js', 'public/js')
         .sourceMaps();
 
 <a name="style-of-source-mapping"></a>
-#### ソースマップのスタイル
+#### ソースマッピングのスタイル
 
-webpackはさまざまな[ソースマップスタイル](https://webpack.js.org/configuration/devtool/#devtool)を提供しています。Mixはソースマッピングスタイルのデフォルトとして、ブルド時間の早い `eval-source-map`をセットしています。マッピングスタイルを変更したい場合は、 `sourceMaps`メソッドを使用してください。
+Webpackは、さまざまな[ソースマッピングスタイル](https://webpack.js.org/configuration/devtool/#devtool)を提供しています。デフォルトでは、Mixのソースマッピングスタイルは`eval-source-map`に設定されており、これにより再構築時間が短縮されます。マッピングスタイルを変更したい場合は、`sourceMaps`メソッドを使用して変更できます。
 
     let productionSourceMaps = false;
 
@@ -207,75 +209,85 @@ webpackはさまざまな[ソースマップスタイル](https://webpack.js.org
 <a name="working-with-scripts"></a>
 ## JavaScriptの操作
 
-MixはECMAScript 2015のコンパイル、モジュール結合、圧縮やJavaScriptファイルの結合などの操作を手助けする、多くの機能を提供しています。それだけでなく、設定をカスタマイズする必要はまったく無く、すべてがシームレスに動作します。
+Mixは、ECMAScript2015のコンパイル、モジュールのバンドル、圧縮、プレーンなJavaScriptファイルの連結など、JavaScriptファイルの操作に役立ついくつかの機能を提供します。さらに良いことに、これはすべてシームレスに機能し、大量のカスタム設定を必要としません。
 
     mix.js('resources/js/app.js', 'public/js');
 
-このコード一行で、以下の利点を享受できます。
+この１行のコードで、次の利点を活用できます。
 
 <div class="content-list" markdown="1">
-- ES2015記法
+- ES2015文法
 - モジュール
-- `.vue`ファイルのコンパイル
-- 開発環境向けに圧縮
+- 本番環境での圧縮
 </div>
 
+<a name="vue"></a>
+### Vue
+
+Mixは、`js`メソッドを使用するときに、Vue単一ファイルコンポーネントのコンパイルサポートに必要なBabelプラグインを自動的にインストールします。これ以上の設定は必要ありません。
+
+    mix.js('resources/js/app.js', 'public/js');
+
+JavaScriptがコンパイルされたら、アプリケーションから参照できます。
+
+```html
+<head>
+    <!-- ... -->
+
+    <script src="/js/app.js"></script>
+</head>
+```
+
+<a name="react"></a>
+### React
+
+Mixは、Reactのサポートに必要なBabelプラグインを自動的にインストールします。利用開始するには、Mixの`js`メソッドの呼び出しを`react`メソッドの呼び出しに置き換えます。
+
+    mix.react('resources/js/app.jsx', 'public/js');
+
+裏でMixは適切な`babel-preset-react` Babelプラグインをダウンロードして取り込みます。JavaScriptをコンパイルしたら、アプリケーションから参照できます。
+
+```html
+<head>
+    <!-- ... -->
+
+    <script src="/js/app.js"></script>
+</head>
+```
+
 <a name="vendor-extraction"></a>
-### ベンダの抽出
+### ベンダーの抽出
 
-すべてのアプリケーション固有のJavaScriptとベンダーライブラリを結合することにより、発生する可能性がある欠点は、長期間のキャッシュが効きづらくなることです。たとえば、アプリケーションコードの一箇所を更新すれば、変更のないベンダーライブラリーのすべてを再度ダウンロードするように、ブラウザに強要します。
+アプリケーション固有のJavaScriptをすべてReactやVueなどのベンダーライブラリへバンドルすることの潜在的な欠点のひとつは、長期的なキャッシュが困難になることです。たとえば、アプリケーションコードを１回更新すると、変更されていない場合でも、ブラウザはすべてのベンダーライブラリを再ダウンロードする必要があります。
 
-アプリケーションのJavaScriptを頻繁に更新したい場合は、全ベンダーライブラリを専用のファイルへ分ける方法を考慮する必要があります。これにより、アプリケーションコードの変更は、大きな`vendor.js`ファイルのキャッシュへ影響しなくなります。Mixの`extract`メソッドで簡単に実現できます。
+アプリケーションのJavaScriptを頻繁に更新する場合は、すべてのベンダーライブラリを独自のファイルに抽出することを検討する必要があります。この方法により、アプリケーションコードを変更しても、大きな`vendor.js`ファイルのキャッシュには影響しません。Mixの`extract`メソッドはこれを簡単にします:
 
     mix.js('resources/js/app.js', 'public/js')
         .extract(['vue'])
 
-`extract`メソッドは全ライブラリとモジュールの配列を受け取り、`vendor.js`へ別にまとめます。上記のコードを例にすると、Mix配下のファイルを生成します。
+`extract`メソッドは、`vendor.js`ファイルに抽出したいすべてのライブラリまたはモジュールの配列を受け入れます。上記のスニペットを例として使用すると、Mixは次のファイルを生成します。
 
 <div class="content-list" markdown="1">
-- `public/js/manifest.js`: **webpackマニフェストランタイム**
-- `public/js/vendor.js`: **ベンダーライブラリ**
-- `public/js/app.js`: **アプリケーションコード**
+- `public/js/manifest.js`: **Webpackマニフェストランタイム**
+- `public/js/vendor.js`: **皆さんのvendorライブラリー**
+- `public/js/app.js`: **皆さんのアプリケーションコード**
 </div>
 
-JavaScriptエラーを起こさないために、以下のファイルは順番通りにロードしてください。
+JavaScriptエラーを回避するため、以下のファイルを正しい順序でロードしてください。
 
     <script src="/js/manifest.js"></script>
     <script src="/js/vendor.js"></script>
     <script src="/js/app.js"></script>
 
-<a name="react"></a>
-### React
-
-MixはReactをサポートするために、Babelプラグインを自動的にインストールします。使用開始するためには、`mix.js()`の呼び出しを`mix.react()`に置換してください。
-
-    mix.react('resources/js/app.jsx', 'public/js');
-
-実際には、Mixは最適なBabelプラグインとして`babel-preset-react`をダウンロードし、取り込んでいます。
-
-<a name="vanilla-js"></a>
-### バニラJS
-
-スタイルシートを`mix.styles()`により結合するのと同様に、多くのJavaScriptファイルを`scripts()`メソッドで結合し、圧縮できます。
-
-    mix.scripts([
-        'public/js/admin.js',
-        'public/js/dashboard.js'
-    ], 'public/js/all.js');
-
-この選択肢はとくにwebpackによる操作を必要としないレガシープロジェクトに便利です。
-
-> {tip} `mix.scripts()`のちょっとしたバリエーションとして`mix.babel()`があります。このメソッドは`scripts`と同じ使い方です。しかし、結合したファイルはBabelにより編集され、ES2015コードをすべてのブラウザが理解できるバニラJavaScriptへ変換します。
-
 <a name="custom-webpack-configuration"></a>
-### webpackカスタム設定
+### Webpackカスタム設定
 
-Laravel Mixはできるだけ素早く実行できるように、裏で事前に設定済みの`webpack.config.js`ファイルを参照しています。ときどき、このファイルを変更する必要が起きるでしょう。参照する必要がある特別なローダやプラグインがあったり、Sassの代わりにStylusを使うのが好みであるかもしれません。そうした場合、２つの選択肢があります。
+Laravel Mixは裏で事前設定した`webpack.config.js`ファイルを参照して、可能な限り早く起動して実行できるようにします。場合によっては、このファイルを手動で変更する必要があります。たとえば、参照する必要のある特別なローダーまたはプラグインがあるとします。このような場合、２つの選択肢があります。
 
 <a name="merging-custom-configuration"></a>
 #### カスタム設定のマージ
 
-Mixはオーバーライドする短いwebpack設定をマージできるように、便利な`webpackConfig`メソッドを提供しています。これは、`webpack.config.js`ファイルをコピーし、独自バージョンをメンテナンスする必要がないため、やや魅力的な選択しです。`webpackConfig`メソッドは、適用したい[webpack限定設定](https://webpack.js.org/configuration/)を含むオブジェクトを引数に取ります。
+Mixは、短いWebpack設定オーバーライドをマージできる便利な`webpackConfig`メソッドを提供します。これは、`webpack.config.js`ファイルの独自のコピーをコピーして維持する必要がないため、特に魅力的な選択肢です。`webpackConfig`メソッドはオブジェクトを受け入れます。オブジェクトには、適用する[Webpack固有の設定](https://webpack.js.org/configuration/)が含まれている必要があります。
 
     mix.webpackConfig({
         resolve: {
@@ -288,34 +300,23 @@ Mixはオーバーライドする短いwebpack設定をマージできるよう�
 <a name="custom-configuration-files"></a>
 #### カスタム設定ファイル
 
-webpack設定をすべてカスタマイズしたい場合は、`node_modules/laravel-mix/setup/webpack.config.js`をプロジェクトのルートディレクトリへコピーしてください。次に、`package.json`ファイル中の`--config`参照をすべて新しくコピーした設定ファイルに変更します。カスタマイズにこのアプローチを取る場合は、Mixの`webpack.config.js`に対するアップストリームの機能変更を自分でカスタマイズするファイルへマージする必要があります。
-
-<a name="copying-files-and-directories"></a>
-## ファイル／ディレクトリコピー
-
-`copy`メソッドは、ファイルやディレクトリを新しい場所へコピーします。これは`node_modules`ディレクトリ中の特定のアセットを`public`フォルダへ再配置する必要がある場合に便利です。
-
-    mix.copy('node_modules/foo/bar.css', 'public/css/bar.css');
-
-ディレクトリのコピー時は、`copy`メソッドはディレクトリ構造をフラットにします。元の構造を保持したい場合は、`copyDirectory`メソッドを代わりに使用してください。
-
-    mix.copyDirectory('resources/img', 'public/img');
+Webpack設定を完全にカスタマイズする場合は、`node_modules/laravel-mix/setup/webpack.config.js`ファイルをプロジェクトのルートディレクトリにコピーします。次に、`package.json`ファイル内のすべての`--config`参照が新しくコピーした設定ファイルを指すようにします。このアプローチをカスタマイズに採用する場合は、Mixの`webpack.config.js`に対する今後のアップストリーム更新を、カスタマイズしたファイルに手動でマージする必要があります。
 
 <a name="versioning-and-cache-busting"></a>
-## バージョン付け／キャッシュ対策
+## バージョニング／キャッシュの破棄
 
-多くの開発者は古いコードが提供され続けないように、新しいアセットがブラウザにロードされるよう、タイムスタンプやユニークなトークンをコンパイル済みのアセットへサフィックスとして付加しています。Mixでは、`version`メソッドを使用し、これを処理できます。
+多くの開発者は、コンパイルしたアセットにタイムスタンプまたは一意のトークンの接尾辞を付けて、提供してきたコードの古くなったコピーの代わりに、ブラウザに新しいアセットをロードするように強制します。Mixは、`version`メソッドを使用してこれを自動的に処理できます。
 
-`version`メソッドは、キャッシュを簡単に破壊できるようにするため、コンパイル済みファイルのファイル名に一意のハッシュを自動的に付け加えます。
+`version`メソッドは、コンパイルしたすべてのファイルのファイル名に一意のハッシュを追加し、より便利なブラウザキャッシュ破棄を可能にしています。
 
     mix.js('resources/js/app.js', 'public/js')
         .version();
 
-バージョン付されたファイルを生成した後は、適切にバージョン付けされたアセットのURLを生成するため、Laravelのグローバル`mix`関数を[ビュー](/docs/{{version}}/views)の中で使用してください。
+バージョン付きファイルを生成すると、正確なファイル名がわからなくなります。したがって、[views](/docs/{{version}}/views)内でLaravelのグローバルな`mix`関数を使用して、適切にハッシュされたアセットをロードする必要があります。`mix`関数は、ハッシュされたファイルの現在の名前を自動的に判別します。
 
     <script src="{{ mix('/js/app.js') }}"></script>
 
-バージョン付けしたファイルは、通常開発に必要ないため、`npm run production`を実行するときのみ、バージョン付けするように指示したいと思うでしょう。
+通常、バージョン付きファイルは開発では不要であるため、`npm run prod`の実行中にのみ実行するよう、バージョン付け処理に指示できます。
 
     mix.js('resources/js/app.js', 'public/js');
 
@@ -324,46 +325,51 @@ webpack設定をすべてカスタマイズしたい場合は、`node_modules/la
     }
 
 <a name="custom-mix-base-urls"></a>
-#### MixのベースURLのカスタマイズ
+#### カスタムMixベースURL
 
-アプリケーションから独立して、MixがコンパイルしたアセットをCDNへデプロイしている場合は、`mix`関数が生成するベースURLを変更する必要があります。そのためには、`config/app.php`設定ファイルへ`mix_url`設定オプションを追加してください。
+Mixでコンパイルされたアセットをアプリケーションとは別のCDNにデプロイする場合は、`mix`関数にが生成するベースURLを変更する必要があります。これには、アプリケーションの`config/app.php`設定ファイルに`mix_url`設定オプションを追加します。
 
     'mix_url' => env('MIX_ASSET_URL', null)
 
-MixのURLを設定後、`mix`関数はアセットへのURLを生成する場合に、設定したURLを使用します。
+Mix URLを設定すると、以降はアセットへのURLを生成するときに、`mix`関数は設定したURLのプレフィックスを付けます。
 
-    https://cdn.example.com/js/app.js?id=1964becbdd96414518cd
+```bash
+https://cdn.example.com/js/app.js?id=1964becbdd96414518cd
+```
 
 <a name="browsersync-reloading"></a>
-## Browsersyncリロード
+## Browsersyncによるリロード
 
-[BrowserSync](https://browsersync.io/)は自動的にファイルの変更を監視し、手動で再読込しなくても変更をブラウザに反映してくれます。`mix.browserSync()`メソッドを呼び出し、有効にします。
+[BrowserSync](https://browsersync.io/)は、ファイルの変更を自動的に監視し、手動で更新しなくても変更をブラウザに反映できます。`mix.browserSync()`メソッドを呼び出すことにより、これのサポートを有効にすることができます。
 
-    mix.browserSync('my-domain.test');
+```js
+mix.browserSync('laravel.test');
+```
 
-    // もしくは
+[BrowserSyncオプション](https://browsersync.io/docs/options)は、JavaScriptオブジェクトを`browserSync`メソッドに渡すことで指定できます。
 
-    // https://browsersync.io/docs/options
-    mix.browserSync({
-        proxy: 'my-domain.test'
-    });
+```js
+mix.browserSync({
+    proxy: 'laravel.test'
+});
+```
 
-このメソッドには文字列（プロキシ）かオブジェクト（BrowserSync設定）のどちらかを渡します。次に、`npm run watch`コマンドにより、webpackの開発サーバを起動します。これでスクリプトかPHPファイルを変更すると、すぐにページが再読込され、変更が反映されるのを目にするでしょう。
+次に、`npm run watch`コマンドを使用してwebpackの開発サーバを起動します。これで、スクリプトまたはPHPファイルを変更すると、ブラウザがページを即座に更新して、変更を反映するのを目にできるでしょう。
 
 <a name="environment-variables"></a>
 ## 環境変数
 
-`.env`ファイルの中でキーに`MIX_`をプリフィックスとしてつけることで、環境変数をMixへ注入できます。
+`.env`ファイルの環境変数の1つに`MIX_`のプレフィックスを付けることで、環境変数を`webpack.mix.js`スクリプトに挿入できます。
 
     MIX_SENTRY_DSN_PUBLIC=http://example.com
 
-`.env`ファイルで定義すると、`process.env`オブジェクトを通じてアクセスできるようになります。`watch`タスク実行中に、その値が変化した場合は、タスクを再起動する必要があります。
+変数を`.env`ファイルで定義したら、以降は`process.env`オブジェクトを介して変数へアクセスできます。ただし、タスクの実行中に環境変数の値が変更された場合は、タスクを再起動する必要があります。
 
     process.env.MIX_SENTRY_DSN_PUBLIC
 
 <a name="notifications"></a>
 ## 通知
 
-可能な場合、Mixは自動的に各バンドルをＯＳ通知で表示します。これにより、コンパイルが成功したのか、失敗したのか、即座にフィードバックが得られます。しかし、こうした通知を無効にしたい場合もあるでしょう。一例は、実働サーバでMixを起動する場合です。`disableNotifications`メソッドにより、通知を無効にできます。
+利用可能な場合、Mixはコンパイル時にＯＳ通知を自動的に表示し、コンパイルが成功したかを即座にフィードバックします。しかし、これらの通知を無効にしたい状況もあるでしょう。そのような例の１つは、本番サーバでMixをトリガーするときです。通知は、`disableNotifications`メソッドを使用して非アクティブ化できます。
 
     mix.disableNotifications();

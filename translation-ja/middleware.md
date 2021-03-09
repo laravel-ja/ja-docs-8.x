@@ -1,32 +1,30 @@
 # ミドルウェア
 
 - [イントロダクション](#introduction)
-- [ミドルウェア定義](#defining-middleware)
-- [ミドルウェア登録](#registering-middleware)
+- [ミドルウェアの定義](#defining-middleware)
+- [ミドルウェアの登録](#registering-middleware)
     - [グローバルミドルウェア](#global-middleware)
-    - [ルートへの結合](#assigning-middleware-to-routes)
+    - [ルートに対するミドルウェアの指定](#assigning-middleware-to-routes)
     - [ミドルウェアグループ](#middleware-groups)
-    - [ミドルウェアの優先付け](#sorting-middleware)
-- [ミドルウェアパラメーター](#middleware-parameters)
+    - [ミドルウェアの順序](#sorting-middleware)
+- [ミドルウェアのパラメータ](#middleware-parameters)
 - [終了処理ミドルウェア](#terminable-middleware)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-ミドルウェアはアプリケーションへ送信されたHTTPリクエストをフィルタリングする、便利なメカニズムを提供します。たとえば、アプリケーションのユーザーが認証されているかを確認するミドルウェアがLaravelに用意されています。ユーザーが認証されていなければ、このミドルウェアはユーザーをログインページへリダイレクトします。反対にそのユーザーが認証済みであれば、そのリクエストがアプリケーションのその先へ進むことを許可します。
+ミドルウェアは、アプリケーションに入るHTTPリクエストを検査およびフィルタリングするための便利なメカニズムを提供します。たとえば、Laravelには、アプリケーションのユーザーが認証されていることを確認するミドルウェアが含まれています。ユーザーが認証されていない場合、ミドルウェアはユーザーをアプリケーションのログイン画面にリダイレクトします。逆に、ユーザーが認証されている場合、ミドルウェアはリクエストをアプリケーションへ進めることを許可します。
 
-認証の他にも多彩なタスクを実行するミドルウェアを書くことができます。たとえばCORSミドルウェアは、アプリケーションから返されるレスポンス全部に正しいヘッダを追加することに責任を持つでしょう。ログミドルウェアはアプリケーションにやってきたリクエスト全部をログすることに責任を負うでしょう。
-
-認証やCSRF保護などLaravelには多くのミドルウェアが用意されています。これらのミドルウェアは全部、`app/Http/Middleware`ディレクトリに設置されています。
+ミドルウェアを追加して、認証以外にもさまざまなタスクを実行できます。たとえば、ログミドルウェアなら、アプリケーションが受信したすべてのリクエストをログへ記録できるでしょう。Laravelフレームワークには、認証やCSRF保護用のミドルウェアなど、ミドルウェアがいくつか含まれています。これらのミドルウェアはすべて、`app/Http/Middleware`ディレクトリにあります。
 
 <a name="defining-middleware"></a>
-## ミドルウェア定義
+## ミドルウェアの定義
 
-新しいミドルウェアを作成するには、`make:middleware` Artisanコマンドを使います。
+新しいミドルウェアを作成するには、`make:middleware`　Artisanコマンドを使用します。
 
-    php artisan make:middleware CheckAge
+    php artisan make:middleware EnsureTokenIsValid
 
-このコマンドにより、`CheckAge`クラスが、`app/Http/Middleware`ディレクトリ中に生成されます。このミドルウェアで、ageに２００歳以上が指定された場合のみ、アクセスを許してみましょう。そうでなければ、ユーザーを`home`のURIへリダイレクトします。
+このコマンドは、新しい`EnsureTokenIsValid`クラスを`app/Http/Middleware`ディレクトリ内に配置します。例としてこのミドルウェアで、リクエストが供給する`token`入力が、指定値と一致する場合にのみ、ルートへのアクセスを許可します。それ以外の場合は、ユーザーを`home` URIへリダイレクトしましょう。
 
     <?php
 
@@ -34,10 +32,10 @@
 
     use Closure;
 
-    class CheckAge
+    class EnsureTokenIsValid
     {
         /**
-         * 送信されてきたリクエストの処理
+         * 受信リクエストの処理
          *
          * @param  \Illuminate\Http\Request  $request
          * @param  \Closure  $next
@@ -45,7 +43,7 @@
          */
         public function handle($request, Closure $next)
         {
-            if ($request->age <= 200) {
+            if ($request->input('token') !== 'my-secret-token') {
                 return redirect('home');
             }
 
@@ -53,16 +51,18 @@
         }
     }
 
-ご覧の通り、`age`が`200`以下の場合、ミドルウェアはHTTPリダイレクトをクライアントへ返します。そうでなければ、リクエストはパスし、アプリケーションの先へ進めます。ミドルウェアのチェックに合格し、アプリケーションの先へリクエストを通すには、`$request`を渡し`$next`コールバックを呼び出します。
+ご覧のとおり、与えられた`token`がシークレットトークンと一致しない場合、ミドルウェアはHTTPリダイレクトをクライアントに返します。それ以外の場合、リクエストはさらにアプリケーションに渡されます。リクエストをアプリケーションのより深いところに渡す(ミドルウェアが「パス」できるようにする)には、`$request`を使用して`$next`コールバックを呼び出す必要があります。
 
-ミドルウェアを把握する一番良い方法は、HTTPリクエストがアプリケーションに届くまでに通過する、数々の「レイヤー（層）」なのだと考えることです。それぞれのレイヤーは、リクエストを通過させるかどうかテストし、場合により完全に破棄することさえできます。
+ミドルウェアは、HTTPリクエストがアプリケーションに到達する前に通過しなければならない一連の「レイヤー」として考えるのがベストです。各レイヤーはリクエストを検査したり、完全に拒否したりすることができます。
 
-> {tip} すべてのミドルウェアは、[サービスコンテナ](/docs/{{version}}/container)により、依存解決されます。そのため、ミドルウェアのコンストラクタに、必要な依存をタイプヒントで指定できます。
+
+> {tip} すべてのミドルウェアは[サービスコンテナ](/docs/{{version}}/container)を介して依存解決されるため、ミドルウェアのコンストラクター内で必要な依存関係をタイプヒントで指定できます。
 
 <a name="before-after-middleware"></a>
-#### Before／Afterミドルウェア
+<a name="middleware-and-responses"></a>
+#### ミドルウェアとレスポンス
 
-ミドルウェアがリクエストの前、後に実行されるかは、そのミドルウェアの組み方により決まります。次のミドルウェアはアプリケーションによりリクエストが処理される**前**に実行されます。
+もちろん、ミドルウェアはアプリケーションのより深部へリクエストの処理を委ねるその前後にあるタスクを実行できます。たとえば、次のミドルウェアは、リクエストがアプリケーションによって処理される**前に**いくつかのタスクを実行します。
 
     <?php
 
@@ -74,13 +74,13 @@
     {
         public function handle($request, Closure $next)
         {
-            // アクションを実行…
+            // アクションの実行…
 
             return $next($request);
         }
     }
 
-一方、次のミドルウェアはアプリケーションによりリクエストが処理された**後**にタスクを実行します。
+一方、このミドルウェアは、リクエストがアプリケーションによって処理された**後に**そのタスクを実行します。
 
     <?php
 
@@ -94,26 +94,26 @@
         {
             $response = $next($request);
 
-            // アクションを実行…
+            // アクションの実行…
 
             return $response;
         }
     }
 
 <a name="registering-middleware"></a>
-## ミドルウェア登録
+## ミドルウェアの登録
 
 <a name="global-middleware"></a>
 ### グローバルミドルウェア
 
-あるミドルウェアをアプリケーションの全HTTPリクエストで実行したい場合は、`app/Http/Kernel.php`クラスの`$middleware`プロパティへ追加してください。
+アプリケーションへのすべてのHTTPリクエスト中であるミドルウェアを実行する場合は、`app/Http/Kernel.php`クラスの`$middleware`プロパティにそのミドルウェアクラスをリストします。
 
 <a name="assigning-middleware-to-routes"></a>
-### ミドルウェアをルートへ登録
+### ルートに対するミドルウェアの指定
 
-特定のルートのみに対しミドルウェアを指定したい場合は、先ず`app/Http/Kernel.php`ファイルでミドルウェアの短縮キーを登録します。デフォルト状態でこのクラスは、Laravelに含まれているミドルウェアのエントリーを`$routeMiddleware`プロパティに持っています。ミドルウェアを追加する方法は、選んだキー名と一緒にリストへ付け加えます。
+ミドルウェアを特定のルートに指定したい場合は、最初にアプリケーションの`app/Http/Kernel.php`ファイルでミドルウェアにキーを割り当てる必要があります。デフォルトでは、このクラスの`$routeMiddleware`プロパティには、Laravelに含まれているミドルウェアのエントリが含まれています。このリストへ独自のミドルウェアを追加して、選択したキーを割り当てることができます。
 
-    // App\Http\Kernelクラスの中
+    // App\Http\Kernelクラス内…
 
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
@@ -127,51 +127,51 @@
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
 
-HTTPカーネルへミドルウェアを定義し終えたら、ルートに対しミドルウェアを指定する、`middleware`メソッドを使ってください。
+ミドルウェアがHTTPカーネルで定義されたら、`middleware`メソッドを使用してミドルウェアをルートに割り当てることができます。
 
-    Route::get('admin/profile', function () {
+    Route::get('/profile', function () {
         //
     })->middleware('auth');
 
-ルートに複数のミドルウェアを定義することもできます。
+ミドルウェア名の配列を`middleware`メソッドに渡すことにより、ルートに複数のミドルウェアを割り当てることができます。
 
     Route::get('/', function () {
         //
-    })->middleware('first', 'second');
+    })->middleware(['first', 'second']);
 
-ミドルウェアを指定する時に、完全なクラス名を指定することもできます。
+ミドルウェアを割り当てるときに、完全修飾クラス名を渡すこともできます。
 
-    use App\Http\Middleware\CheckAge;
+    use App\Http\Middleware\EnsureTokenIsValid;
 
-    Route::get('admin/profile', function () {
+    Route::get('/profile', function () {
         //
-    })->middleware(CheckAge::class);
+    })->middleware(EnsureTokenIsValid::class);
 
-ルートグループに対してミドルウェアを指定する場合、そのグループ内の個別のルートに対して適用を除外する必要も起きるでしょう。`withoutMiddleware`メソッドを使用してください。
+ミドルウェアをルートのグループに割り当てる場合、あるミドルウェアをグループ内の個々のルートに適用しないようにする必要が起きることもあります。これは、`withoutMiddleware`メソッドを使用して実行できます。
 
-    use App\Http\Middleware\CheckAge;
+    use App\Http\Middleware\EnsureTokenIsValid;
 
-    Route::middleware([CheckAge::class])->group(function () {
+    Route::middleware([EnsureTokenIsValid::class])->group(function () {
         Route::get('/', function () {
             //
         });
 
-        Route::get('admin/profile', function () {
+        Route::get('/profile', function () {
             //
-        })->withoutMiddleware([CheckAge::class]);
+        })->withoutMiddleware([EnsureTokenIsValid::class]);
     });
 
-`withoutMiddleware`メソッドはルートミドルウエアからのみ削除でき、[グローバルミドルウェア](#global-middleware)には適用されません。
+`withoutMiddleware`メソッドはルートミドルウェアのみを削除でき、[グローバルミドルウェア](#global-middleware)には適用されません。
 
 <a name="middleware-groups"></a>
 ### ミドルウェアグループ
 
-多くのミドルウェアを一つのキーによりまとめ、ルートへ簡単に指定できるようにしたくなることもあります。HTTPカーネルの`$middlewareGroups`プロパティにより可能です。
+複数のミドルウェアを１つのキーにグループ化して、ルートへの割り当てを容易にしたい場合もあるでしょう。これは、HTTPカーネルの`$middlewareGroups`プロパティを使用して実現可能です。
 
-WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含んだ、`web`と`api`ミドルウェアグループをLaravelは最初から用意しています。
+最初からLaravelは、一般的にWebおよびAPIルートへ適用する可能性のあるミドルウェアを含んだ`web`および`api`ミドルウェアグループを用意しています。これらのミドルウェアグループは、アプリケーションの`App\Providers\RouteServiceProvider`サービスプロバイダによって、対応する`web`および`api`ルートファイル内のルートに自動的に適用されることに注意してください。
 
     /**
-     * アプリケーションのミドルウェアグループ
+     * アプリケーションのルートミドルウェアグループ
      *
      * @var array
      */
@@ -192,35 +192,32 @@ WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含
         ],
     ];
 
-ミドルウェアグループは、個別のミドルウェアと同じ記法を使い、ルートやコントローラへ結合します。再度説明しますと、ミドルウェアグループは一度に多くのミドルウエアを簡単に、より便利に割り付けるための方法です。
+ミドルウェアグループは、個々のミドルウェアと同じ構文を使用して、ルートとコントローラアクションに割り当てることができます。繰り返しますが、ミドルウェアグループを使用すると、より便利に一度に多くのミドルウェアをルートに割り当てられます。
 
     Route::get('/', function () {
         //
     })->middleware('web');
 
-    Route::group(['middleware' => ['web']], function () {
+    Route::middleware(['web'])->group(function () {
         //
     });
 
-    Route::middleware(['web', 'subscribed'])->group(function () {
-        //
-    });
-
-> {tip} `RouteServiceProvider`により、`routes/web.php`ファイルでは、`web`ミドルウェアグループが自動的に適用されます。
+> {tip} 最初から、`web`および`api`ミドルウェアグループは、`App\Providers\RouteServiceProvider`によってアプリケーションの対応する`routes/web.php`および`routes/api.php`ファイルへ自動的に適用されます。
 
 <a name="sorting-middleware"></a>
-### ミドルウェアの優先付け
+### ミドルウェアの順序
 
-まれに、特定の順番でミドルウェアを実行する必要が起き得ますが、ルートへミドルウェアを指定する時に順番をコントロールできません。このような場合、`app/Http/Kernel.php`ファイルの`$middlewarePriority`プロパティを使用し、ミドルウェアの優先度を指定できます。
+まれに、ミドルウェアを特定の順序で実行する必要があるでしょうが、ルートに割り当てられたときにはミドルウェアの順序を制御できません。この場合、`app/Http/Kernel.php`ファイルの`$middlewarePriority`プロパティを使用してミドルウェアの優先度を指定できます。このプロパティは、デフォルトではHTTPカーネルに存在していません。存在しない場合は、以下のデフォルト定義をコピーしてください。
 
     /**
-     * ミドルウェアの優先順リスト
+     * ミドルウェアの優先順位でソートされたリスト
      *
-     * グローバルではないミドルウェアを常に指定順に強要する
+     * これにより、非グローバルミドルウェアは常に指定する順序で実行されます。
      *
      * @var array
      */
     protected $middlewarePriority = [
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
@@ -231,11 +228,11 @@ WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含
     ];
 
 <a name="middleware-parameters"></a>
-## ミドルウェアパラメータ
+## ミドルウェアのパラメータ
 
-ミドルウェアは追加のカスタムパラメーターを受け取ることができます。たとえば指定されたアクションを実行する前に、与えられた「役割(role)」を持った認証ユーザーであるかをアプリケーションで確認する必要がある場合、役割名を追加の引数として受け取る`CheckRole`を作成できます。
+ミドルウェアは追加のパラメータを受け取ることもできます。たとえば、アプリケーションが特定のアクションを実行する前に、認証済みユーザーが特定の「役割り（role）」を持っていることを確認する必要がある場合、追加の引数として役割名を受け取る`EnsureUserHasRole`ミドルウェアを作成できます。
 
-追加のミドルウェアパラメーターは、ミドルウェアの`$next`引数の後に渡されます。
+追加のミドルウェアパラメータは、`$next`引数の後にミドルウェアに渡されます。
 
     <?php
 
@@ -243,10 +240,10 @@ WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含
 
     use Closure;
 
-    class CheckRole
+    class EnsureUserHasRole
     {
         /**
-         * リクエストフィルターを実行
+         * 受信リクエストの処理
          *
          * @param  \Illuminate\Http\Request  $request
          * @param  \Closure  $next
@@ -256,7 +253,7 @@ WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含
         public function handle($request, Closure $next, $role)
         {
             if (! $request->user()->hasRole($role)) {
-                // リダイレクト処理…
+                // リダイレクト…
             }
 
             return $next($request);
@@ -264,16 +261,16 @@ WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含
 
     }
 
-ミドルウェアパラメーターはルート定義時に指定され、ミドルウェア名とパラメーターを`:`で区切ります。複数のパラメーターはカンマで区切ります。
+ミドルウェアのパラメータはルート定義時に、ミドルウェア名とパラメータを「:」で区切って指定します。複数のパラメーターはコンマで区切る必要があります。
 
-    Route::put('post/{id}', function ($id) {
+    Route::put('/post/{id}', function ($id) {
         //
     })->middleware('role:editor');
 
 <a name="terminable-middleware"></a>
 ## 終了処理ミドルウェア
 
-ミドルウェアは場合により、HTTPレスポンスを送った後に、何か作業する必要が起きます。ミドルウェアに`terminate`メソッドを定義しWebサーバがFastCGIを使用している場合、レスポンスがブラウザへ送られた後に自動的に呼び出されます。
+HTTPレスポンスがブラウザに送信された後、ミドルウェアが何らかの作業を行う必要がある場合があります。ミドルウェアで`terminate`メソッドを定義し、WebサーバがFastCGIを使用している場合、レスポンスがブラウザに送信された後、`terminate`メソッドが自動的に呼び出されます。
 
     <?php
 
@@ -281,24 +278,38 @@ WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含
 
     use Closure;
 
-    class StartSession
+    class TerminatingMiddleware
     {
+        /**
+         * 受信リクエストの処理
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @param  \Closure  $next
+         * @return mixed
+         */
         public function handle($request, Closure $next)
         {
             return $next($request);
         }
 
+        /**
+         * レスポンスがブラウザに送信された後にタスクを処理
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @param  \Illuminate\Http\Response  $response
+         * @return void
+         */
         public function terminate($request, $response)
         {
-            // セッションデーターの保存…
+            // …
         }
     }
 
-`terminate`メソッドはリクエストとレスポンスの両方を受け取ります。終了処理可能なミドルウェアを定義したら、`app/Http/Kernel.php`ファイルでルートのリスト、もしくはグローバルミドルウェアのリストへ追加してください。
+`terminate`メソッドは、リクエストとレスポンスの両方を受信する必要があります。終了処理ミドルウェアを定義したら、それを`app/Http/Kernel.php`ファイルのルートまたはグローバルミドルウェアのリストに追加する必要があります。
 
-ミドルウェアの`terminate`メソッド呼び出し時に、Laravelは[サービスコンテナ](/docs/{{version}}/container)から真新しいミドルウェアのインスタンスを依存解決します。`handle`と`terminate`メソッドの呼び出しで同一のミドルウェアインスタンスを使用したい場合は、コンテナの`singleton`メソッドを使用し、ミドルウェアを登録してください。通常、`AppServiceProvider.php`の`register`メソッドの中で登録します。
+ミドルウェアで`terminate`メソッドを呼び出すと、Laravelは[サービスコンテナ](/docs/{{version}}/container)からミドルウェアの新しいインスタンスを依存解決します。`handle`メソッドと`terminate`メソッドが呼び出されたときに同じミドルウェアインスタンスを使用する場合は、コンテナの`singleton`メソッドを使用してミドルウェアをコンテナに登録します。通常、これは`AppServiceProvider`の`register`メソッドで実行する必要があります。
 
-    use App\Http\Middleware\TerminableMiddleware;
+    use App\Http\Middleware\TerminatingMiddleware;
 
     /**
      * 全アプリケーションサービスの登録
@@ -307,5 +318,5 @@ WebのUIとAPIルートへ適用できる、一般的なミドルウェアを含
      */
     public function register()
     {
-        $this->app->singleton(TerminableMiddleware::class);
+        $this->app->singleton(TerminatingMiddleware::class);
     }

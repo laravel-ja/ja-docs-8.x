@@ -2,9 +2,9 @@
 
 - [イントロダクション](#introduction)
 - [インストレーション](#installation)
+    - [ローカルのみへインストール](#local-only-installation)
     - [設定](#configuration)
     - [データの刈り込み](#data-pruning)
-    - [マイグレーションのカスタマイズ](#migration-customization)
     - [ダッシュボードの認可](#dashboard-authorization)
 - [Telescopeのアップグレード](#upgrading-telescope)
 - [フィルタリング](#filtering)
@@ -34,31 +34,40 @@
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravel TelescopeはLaravelフレームワークのエレガントなデバッグアシスタントです。Telescopeはアプリケーションへ送信されたリクエスト、例外、ログエンティティ、データクエリ、キュージョブ、メール、通知、キャッシュ操作、スケジュールされたタスク、さまざまなダンプなどを提示します。TelescopeはLaravelローカル開発環境における、素晴らしいコンパニオンです。
+Telescope（テレスコープ：望遠鏡）は、ローカルLaravel開発環境の素晴らしい道連れになります。Telescopeは、アプリケーションが受信するリクエスト、例外、ログエントリ、データベースクエリ、キュー投入したジョブ、メール、通知、キャッシュ操作、スケジュール済みタスク、変数ダンプなどに関する眼力を与えてくれます。
 
 <img src="/img/telescope.png" width="100%">
 
 <a name="installation"></a>
 ## インストレーション
 
-LaravelプロジェクトへTelescopeをインストールするには、Composerを使用します。
+Composerパッケージマネージャーで、TelescopeをLaravelプロジェクトへインストールできます。
 
     composer require laravel/telescope
 
-Telescopeをインストールしたら、`telescope:install` Artisanコマンドを使用し、アセットをリソース公開してください。Telescopeのインストールが終わったら、`migrate`コマンドも実行する必要があります。
+Telescopeをインストールしたら、`telescope:install`　Artisanコマンドを使用してアセットをリソース公開します。Telescopeをインストールした後は、Telescopeのデータを格納するために必要なテーブルを作成するために、`migrate`コマンドも実行する必要があります。
 
     php artisan telescope:install
 
     php artisan migrate
 
-<a name="installing-only-in-specific-environments"></a>
-### 特定の環境でのみのインストレーション
+<a name="migration-customization"></a>
+#### マイグレーションのカスタマイズ
 
-Telescopeをローカル環境でのみ使用する場合は、`--dev`フラグを付けてインストールします。
+Telescopeのデフォルトのマイグレーションを使用しない場合は、アプリケーションの`App\Providers\AppServiceProvider`クラスの`register`メソッドで`Telescope::ignoreMigrations`メソッドを呼び出す必要があります。`php artisan vendor:publish --tag=telescope-migrations`のコマンドで、デフォルトのマイグレーションをエクスポートできます。
+
+<a name="local-only-installation"></a>
+### ローカルのみへインストール
+
+ローカル開発を支援するためにのみTelescopeの使用を計画している場合は、`--dev`フラグを使用してTelescopeをインストールしてください。
 
     composer require laravel/telescope --dev
 
-`telescope:install`実行後、`app`設定ファイルから`TelescopeServiceProvider`サービスプロバイダの登録を削除する必要があります。`app`設定ファイルで登録する代わりに、このサービスプロバイダを`AppServiceProvider`の`register`メソッドで登録してください。
+    php artisan telescope:install
+
+    php artisan migrate
+
+`telescope:install`を実行した後に、アプリケーションの`config/app.php`設定ファイルから`TelescopeServiceProvider`サービスプロバイダの登録を削除する必要があります。代わりに、Telescopeのサービスプロバイダを`App\Providers\AppServiceProvider`クラスの`register`メソッドへ手動で登録します。プロバイダを登録する前に、現在の環境が`local`であることを確認してください。
 
     /**
      * 全アプリケーションサービスの登録
@@ -73,7 +82,7 @@ Telescopeをローカル環境でのみ使用する場合は、`--dev`フラグ�
         }
     }
 
-また、`composer.json`へ以下の内容を追加することにより、Telescopeが[自動検出](/docs/{{version}}/packages#package-discovery)されるのを防げます。
+最後に、`composer.json`ファイルに以下を追加して、Telescopeパッケージが[自動検出](/docs/{{version}}/packages#package-discovery)されないようにする必要もあります。
 
     "extra": {
         "laravel": {
@@ -83,15 +92,10 @@ Telescopeをローカル環境でのみ使用する場合は、`--dev`フラグ�
         }
     },
 
-<a name="migration-customization"></a>
-### マイグレーションのカスタマイズ
-
-Telescopeのデフォルトマイグレーションに従わない場合、`AppServiceProvider`の`register`メソッドの中で、`Telescope::ignoreMigrations`メソッドを呼び出す必要があります。`php artisan vendor:publish --tag=telescope-migrations`コマンドを使い、デフォルトマイグレーションをエクスポートすることもできます。
-
 <a name="configuration"></a>
 ### 設定
 
-Telescopeのアセットをリソース公開すると、主となる設定ファイルが`config/telescope.php`へ設置されます。この設定ファイルでワッチャーのオプションや、説明をコメントで記述している各種の設定オプションを調整できます。そのため、このファイルを全部読んでください。
+Telescopeのアセットをリソース公開すると、そのプライマリ設定ファイルは`config/telescope.php`へ配置されます。この設定ファイルを使用すると、[ワッチャーオプション](#available-watchers)を設定できます。各設定オプションにはその目的が説明されているため、このファイルを徹底的に調べてください。
 
 望むのであれば、`enabled`設定オプションを使用し、Telescopeのデータ収集全体を無効にできます。
 
@@ -100,18 +104,18 @@ Telescopeのアセットをリソース公開すると、主となる設定フ�
 <a name="data-pruning"></a>
 ### データの刈り込み
 
-データを刈り込まないと、`telescope_entries`テーブルへとても早くレコードが集積してしまいます。これを軽減するために、`telescope:prune` Artisanコマンドを毎日実行するように、スケジュールすべきでしょう。
+データの刈り込みを行わないと、`telescope_entries`テーブルにレコードがあっという間に溜まります。これを軽減するに、`telescope:prune` Artisanコマンドを[スケジュール](/docs/{{version}}/scheduleing)して毎日実行する必要があります。
 
     $schedule->command('telescope:prune')->daily();
 
-デフォルトでは、24時間を過ぎているすべてのエンティティが削除されます。Telescopeデータをどの期間保持するかを指定するために、コマンド呼び出し時に`hours`オプションが使えます。
+デフォルトでは、２４時間を過ぎているすべてのエンティティが削除されます。Telescopeデータをどの期間保持するかを指定するために、コマンド呼び出し時に`hours`オプションが使えます。
 
     $schedule->command('telescope:prune --hours=48')->daily();
 
 <a name="dashboard-authorization"></a>
 ### ダッシュボードの認可
 
-Telescopeはデフォルトで、ダッシュボードを`/telescope`で表示します。デフォルトでは`local`環境からのみ、このダッシュボードへアクセスできます。`app/Providers/TelescopeServiceProvider.php`ファイルの中に、`gate`メソッドが存在しています。この認可ゲートで、Telescopeの**local以外**でのアクセスをコントロールできます。Telescopeに対するアクセスを宣言する必要に応じ、このゲートを自由に変更してください。
+Telescopeダッシュボードには、`/telescope`ルートでアクセスできます。デフォルトでは、このダッシュボードにアクセスできるのは`local`環境のみです。`app/Providers/TelescopeServiceProvider.php`ファイル内に、[承認ゲート](/docs/{{version}}/authentication#gates)の定義があります。この認証ゲートは、**非ローカル**環境でのTelescopeへのアクセスを制御します。Telescopeの設置へのアクセスを制限するために、必要に応じてこのゲートを自由に変更できます。
 
     /**
      * Telescopeゲートの登録
@@ -156,7 +160,10 @@ Telescopeはデフォルトで、ダッシュボードを`/telescope`で表示�
 <a name="filtering-entries"></a>
 ### エンティティ
 
-`TelescopeServiceProvider`の中で登録されている`filter`コールバックにより、Telescopeが保存するデータをフィルタリングできます。デフォルトでは、このコールバックは`local`環境、例外、失敗したジョブ、スケジュール済みタスク、他の全環境においてモニター対象とタグ付けされたデータを記録します。
+Telescopeが記録したデータは、`App\Providers\TelescopeServiceProvider`クラスで定義されている`filter`クロージャを介してフィルタリングできます。デフォルトでは、このクロージャは、`local`環境のすべてのデータと、例外、失敗したジョブ、スケジュール済みタスク、および他のすべての環境の監視対象のデータをタグ付きで記録します。
+
+    use Laravel\Telescope\IncomingEntry;
+    use Laravel\Telescope\Telescope;
 
     /**
      * 全アプリケーションサービスの登録
@@ -182,9 +189,10 @@ Telescopeはデフォルトで、ダッシュボードを`/telescope`で表示�
 <a name="filtering-batches"></a>
 ### バッチ
 
-`fileter`コールバックで個別のエンティティのデータをフィルタリングできますが、指定したリクエストやコンソールコマンドの全データをフィルタリングするコールバックを`filterBatch`メソッドにより登録できます。コールバックが`true`を返すと、Telescopeによりすべてのエンティティが保存されます。
+`filter`クロージャは個々のエントリのデータをフィルタリングしますが、`filterBatch`メソッドを使用して、特定のリクエストまたはコンソールコマンドのすべてのデータをフィルタリングするクロージャを登録できます。クロージャが`true`を返す場合、すべてのエントリはTelescopeによって記録されます。
 
     use Illuminate\Support\Collection;
+    use Laravel\Telescope\Telescope;
 
     /**
      * 全アプリケーションサービスの登録
@@ -212,8 +220,9 @@ Telescopeはデフォルトで、ダッシュボードを`/telescope`で表示�
 <a name="tagging"></a>
 ## タグ付け
 
-Telescopeでは「タグ」により検索を登録できます。タグはEloquentモデルクラス名や認証済みユーザーのIDが多いでしょうが、Telescopeは自動的にエントリーを登録します。まれに、独自のカスタムタグエントリーを追加する必要も起きるでしょう。その場合は、`Telescope::tag`メソッドを使用してください。`tag`メソッドはタグの配列を返すコールバックを引数に取ります。コールバックから返されたタグは、Telescopeが自動的にエントリーに追加したタグとマージされます。`tag`メソッドは、`TelescopeServiceProvider`の中で呼び出してください。
+Telescopeでは、「タグ」でエントリを検索できます。多くの場合、タグは、Telescopeがエントリに自動的に追加するEloquentモデルクラス名または認証済みユーザーIDです。場合によっては、独自のカスタムタグをエントリに添付することもできます。これを実現するために、`Telescope::tag`メソッドが使用できます。`tag`メソッドはクロージャを引数に取り、タグの配列を返す必要があります。クロージャが返すタグは、Telescopeがエントリに自動的に添付するタグとマージされます。通常、`App\Providers\TelescopeServiceProvider`クラスの`register`メソッド内で`tag`メソッドを呼び出す必要があります。
 
+    use Laravel\Telescope\IncomingEntry;
     use Laravel\Telescope\Telescope;
 
     /**
@@ -226,18 +235,16 @@ Telescopeでは「タグ」により検索を登録できます。タグはEloqu
         $this->hideSensitiveRequestDetails();
 
         Telescope::tag(function (IncomingEntry $entry) {
-            if ($entry->type === 'request') {
-                return ['status:'.$entry->content['response_status']];
-            }
-
-            return [];
+            return $entry->type === 'request'
+                        ? ['status:'.$entry->content['response_status']]
+                        : [];
         });
      }
 
 <a name="available-watchers"></a>
 ## 利用可能なワッチャー
 
-Telescopeのワッチャーは、リクエストやコマンドが実行されると、アプリケーションデータを収集します。`config/telescope.php`設定ファイルで、ワッチャーのリストを有効にすることにより、カスタマイズできます。
+Telescopeの「ワッチャー」は、リクエストまたはコンソールコマンドが実行されると、アプリケーションデータを収集します。`config/telescope.php`設定ファイル内で有効にしたいワッチャーのリストをカスタマイズできます。
 
     'watchers' => [
         Watchers\CacheWatcher::class => true,
@@ -245,7 +252,7 @@ Telescopeのワッチャーは、リクエストやコマンドが実行され�
         ...
     ],
 
-いくつかのワッチャーには、追加のカスタマイズオプションが用意されています。
+いくつかのワッチャーには、追加のカスタマイズオプションを用意しています。
 
     'watchers' => [
         Watchers\QueryWatcher::class => [
@@ -258,7 +265,7 @@ Telescopeのワッチャーは、リクエストやコマンドが実行され�
 <a name="batch-watcher"></a>
 ### Batchワッチャー
 
-batchワッチャーは、ジョブや接続の情報を含む、キュー投入されたバッチの情報を記録します。
+Batchワッチャーは、ジョブや接続情報など、キュー投入した[バッチ](/docs/{{version}}/queues#job-batching)に関する情報を記録します。
 
 <a name="cache-watcher"></a>
 ### Cacheワッチャー
@@ -268,7 +275,7 @@ Cacheワッチャーは、キャッシュキーのヒット、不一致、削除
 <a name="command-watcher"></a>
 ### Commandワッチャー
 
-Commandワッチャーは、Artisanコマンドが実行されたときの引数、オプション、終了コード、出力コードを記録します。このワッチャーの対象から特定のコマンドを外したい場合は、`config/telescope.php`ファイルの`ignore`オプションの中で、除外するコマンドを指定してください。
+Commandワッチャーは、Artisanコマンドが実行されるたびに、引数、オプション、終了コード、および出力を記録します。ワッチャーによる記録から特定のコマンドを除外したい場合は、`config/telescope.php`ファイル内の`ignore`オプションでコマンドを指定できます。
 
     'watchers' => [
         Watchers\CommandWatcher::class => [
@@ -281,22 +288,22 @@ Commandワッチャーは、Artisanコマンドが実行されたときの引数
 <a name="dump-watcher"></a>
 ### Dumpワッチャー
 
-Dumpワッチャーは、Telescope中の変数のダンプを記録し、表示します。Laravelを使ってるなら、グローバル`dump`関数を使用し変数をダンプできます。記録される時点でDumpワッチャータブは、ブラウザで開かれていなければなりません。開かれてなければ、ワッチャーはダンプを無視します。
+Dumpワッチャーは、変数ダンプをTelescopeに記録して表示します。Laravelを使用すると、変数をグローバルな`dump`関数を使用してダンプできます。ダンプを記録するには、ブラウザで[Dumpワッチャー]タブを開いている必要があります。開いていない場合、ワッチャーはダンプを無視します。
 
 <a name="event-watcher"></a>
 ### Eventワッチャー
 
-Eventワッチャーは、アプリケーションで発行されたすべてのイベントのペイロード（本体）、リスナ、ブロードキャストデータを記録します。Eventワッチャーは、Laravelフレームワーク内部のイベントを無視します。
+Eventワッチャーは、アプリケーションがディスパッチした[イベント](/docs/{{version}}/events)のペイロード、リスナ、およびブロードキャストデータを記録します。Laravelフレームワークの内部イベントをEventワッチャーは無視します。
 
 <a name="exception-watcher"></a>
 ### Exceptionワッチャー
 
-Exceptionワッチャーはアプリケーションで投げられた、reportableな全例外のデータとスタックトレースを記録します。
+Exceptionワッチャーは、アプリケーション投げた報告可能（reportable）な例外のデータとスタックトレースを記録します。
 
 <a name="gate-watcher"></a>
 ### Gateワッチャー
 
-Gateワッチャーは、アプリケーションのゲートとポリシーチェックによる、データと結果を記録します。特定のアビリティをこのワッチャーで記録されないようにしたい場合は、`config/telescope.php`ファイルの`ignore_abilities`オプションで指定してください。
+Gateワッチャーは、アプリケーションによる[ゲートとポリシー](/docs/{{version}}/authentication)チェックのデータと結果を記録します。ワッチャーによる記録から特定のアビリティを除外したい場合は、`config/telescope.php`ファイルの`ignore_abilities`オプションで指定できます。
 
     'watchers' => [
         Watchers\GateWatcher::class => [
@@ -309,22 +316,22 @@ Gateワッチャーは、アプリケーションのゲートとポリシーチ�
 <a name="job-watcher"></a>
 ### Jobワッチャー
 
-Jobワッチャーは、アプリケーションでディスパッチされた全ジョブのデータと状態を記録します。
+Jobワッチャーは、アプリケーションがディスパッチした[ジョブ](/docs/{{version}}/queues)のデータとステータスを記録します。
 
 <a name="log-watcher"></a>
 ### Logワッチャー
 
-Logワッチャーは、アプリケーションにより書き出されたすべてのログデータを記録します。
+Logワッチャーは、アプリケーションが書き混んだ[ログデータ](/docs/{{version}}/logging)を記録します。
 
 <a name="mail-watcher"></a>
 ### Mailワッチャー
 
-Mailワッチャーにより、メールのプレビューに加え、関連するデータをブラウザで確認できます。さらに、`.eml`ファイルとしてメールをダウンロードできます。
+Mailワッチャーを使用すると、アプリケーションから送信した[メール](/docs/{{version}}/mail)のブラウザ内プレビューと関連するデータを表示できます。メールを `.eml`ファイルとしてダウンロードすることもできます。
 
 <a name="model-watcher"></a>
 ### Modelワッチャー
 
-Modelワッチャーは、Eloquentの`created`、`updated`、`restored`、`deleted`イベントがディスパッチされた時点のモデルの変更を記録します。このワッチャーの`events`オプションにより、どのモデルイベントを記録するかを指定できます。
+Modelワッチャーは、Eloquent[モデルイベント](/docs/{{version}}/eloquent#events)がディスパッチされるたびにモデルの変更を記録します。ワッチャーの`events`オプションを使用して、記録するモデルイベントを指定できます。
 
     'watchers' => [
         Watchers\ModelWatcher::class => [
@@ -334,15 +341,26 @@ Modelワッチャーは、Eloquentの`created`、`updated`、`restored`、`delet
         ...
     ],
 
+特定のリクエスト中にハイドレートされたモデルの数を記録する場合は、`hydrations`オプションを有効にします。
+
+    'watchers' => [
+        Watchers\ModelWatcher::class => [
+            'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
+            'events' => ['eloquent.created*', 'eloquent.updated*'],
+            'hydrations' => true,
+        ],
+        ...
+    ],
+
 <a name="notification-watcher"></a>
 ### Notificationワッチャー
 
-Notificationワッチャーは、アプリケーションにより送信された全通知を記録します。通知がメールを送信し、Mailワッチャーが有効になっていれば、Mailワッチャー画面によりプレビューも利用できます。
+Notificationワッチャーは、アプリケーションから送信されたすべての[通知](/docs/{{version}}/notifications)を記録します。通知によって電子メールがトリガーされ、メールワッチャーが有効になっている場合、その電子メールはワッチャー画面でプレビューすることもできます。
 
 <a name="query-watcher"></a>
 ### Queryワッチャー
 
-Queryワッチャーは、アプリケーションにより実行された全クエリのSQL文とバインド、実行時間を記録します。このワッチャーは、100msよりも遅いクエリを`slow`としてタグ付けします。ワッチャーの`slow`オプションにより、このスロークエリの判定時間をカスタマイズできます。
+Queryワッチャーは、アプリケーションが実行するすべてのクエリの素のSQL、バインディング、および実行時間を記録します。ワッチャーは、100ミリ秒より遅いクエリへ`slow`というタグを付けます。ウォッチャーの`slow`オプションを使用して、低速クエリのしきい値をカスタマイズできます。
 
     'watchers' => [
         Watchers\QueryWatcher::class => [
@@ -355,12 +373,12 @@ Queryワッチャーは、アプリケーションにより実行された全ク
 <a name="redis-watcher"></a>
 ### Redisワッチャー
 
-Redisワッチャーはアプリケーションで実行された全Redisコマンドを記録します。Redisをキャッシュで利用する場合、キャッシュコマンドもRedisワッチャーにより記録されます。
+Redisワッチャーは、アプリケーションが実行したすべての[Redis](/docs/{{version}}/redis)コマンドを記録します。キャッシュにRedisを使用している場合、キャッシュコマンドもRedisワッチャーは記録します。
 
 <a name="request-watcher"></a>
 ### Requestワッチャー
 
-Requestワッチャーはアプリケーションにより処理された全リクエスト、ヘッダ、セッション、レスポンスデータを記録します。`size_limit`オプションによりKB単位でレスポンデータを制限できます。
+Requestワッチャーは、アプリケーションが処理してリクエストに関連したリクエスト、ヘッダ、セッション、およびレスポンスデータを記録します。`size_limit`(キロバイト単位)オプションを使用して、記録するレスポンスデータを制限できます。
 
     'watchers' => [
         Watchers\RequestWatcher::class => [
@@ -373,17 +391,17 @@ Requestワッチャーはアプリケーションにより処理された全リ�
 <a name="schedule-watcher"></a>
 ### Scheduleワッチャー
 
-Scheduleワッチャーは、アプリケーションで実行された全スケジュール済みタスクのコマンドと出力を記録します。
+Scheduleワッチャーは、アプリケーションが実行した[スケジュール済みタスク](/docs/{{version}}/Scheduling)のコマンドと出力を記録します。
 
 <a name="view-watcher"></a>
 ### Viewワッチャー
 
-Viewワッチャーはビュー名、パス、データ、ビューをレンダリングしたときの「コンポーサ」を記録します。
+Viewワッチャーは、ビューのレンダリング時に使用する[ビュー](/docs/{{version}}/views)の名前、パス、データ、および「コンポーザ」を記録します。
 
 <a name="displaying-user-avatars"></a>
 ## ユーザーアバターの表示
 
-Telescopeダッシュボードは与えられたエントリーが保存されている時、ログインしているユーザーのアバターを表示します。TelescopeはデフォルトでGravatar Webサービスを使用してアバターを取得します。しかし、`TelescopeSeerviceProvider`でコールバックを登録すれば、アバターのURLをカスタマイズできます。コールバックにはユーザーのIDとメールアドレスが渡されますので、ユーザーのアバターイメージのURLを返す必用があります。
+Telescopeダッシュボードでは、特定のエントリが保存されたときに認証されていたユーザーのユーザーアバターが表示されます。デフォルトでTelescopeはGravatarWebサービスを使用してアバターを取得します。ただし、`App\Providers\TelescopeServiceProvider`クラスにコールバックを登録することで、アバターのURLをカスタマイズもできます。コールバックはユーザーのIDとメールアドレスを受け取り、ユーザーのアバター画像のURLを返す必要があります。
 
     use App\Models\User;
     use Laravel\Telescope\Telescope;
@@ -395,6 +413,8 @@ Telescopeダッシュボードは与えられたエントリーが保存され�
      */
     public function register()
     {
+        // ...
+
         Telescope::avatar(function ($id, $email) {
             return '/avatars/'.User::find($id)->avatar_path;
         });

@@ -1,46 +1,34 @@
-# データベースのテスト
+# データベーステスト
 
 - [イントロダクション](#introduction)
-- [各テスト後のデータベースリセット](#resetting-the-database-after-each-test)
-- [ファクトリの生成](#creating-factories)
-- [ファクトリの記述](#writing-factories)
-    - [ファクトリステート](#factory-states)
-    - [ファクトリコールバック](#factory-callbacks)
-- [ファクトリの使用](#using-factories)
-    - [モデルの生成](#creating-models)
-    - [モデルの保存](#persisting-models)
-    - [順序](#sequences)
-- [ファクトリのリレーション](#factory-relationships)
-    - [定義中のリレーション](#relationships-within-definition)
+    - [各テスト後のデータベースリセット](#resetting-the-database-after-each-test)
+- [モデルファクトリの定義](#defining-model-factories)
+    - [コンセプトの概要](#concept-overview)
+    - [ファクトリの生成](#generating-factories)
+    - [ファクトリの状態](#factory-states)
+    - [ファクトリのコールバック](#factory-callbacks)
+- [ファクトリを使用するモデル生成](#creating-models-using-factories)
+    - [モデルのインスタンス化](#instantiating-models)
+    - [モデルの永続化](#persisting-models)
+    - [連続データ](#sequences)
+- [リレーションのファクトリ](#factory-relationships)
     - [Has Manyリレーション](#has-many-relationships)
     - [Belongs Toリレーション](#belongs-to-relationships)
     - [Many To Manyリレーション](#many-to-many-relationships)
     - [ポリモーフィックリレーション](#polymorphic-relationships)
-- [シーダの使用](#using-seeds)
-- [使用可能なアサーション](#available-assertions)
+    - [ファクトリ内でのリレーション定義](#defining-relationships-within-factories)
+- [シーダの実行](#running-seeders)
+- [利用可能なアサート](#available-assertions)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-Laravelでは、データベースを駆動するアプリケーションのテストを簡単にできる、便利で数多くのツールを用意しています。その一つは、指定した抽出条件に一致するデータがデータベース中に存在するかをアサートする、`assertDatabaseHas`ヘルパです。たとえば、`users`テーブルの中に`email`フィールドが`sally@example.com`の値のレコードが存在するかを確認したいとしましょう。次のようにテストできます。
-
-    public function testDatabase()
-    {
-        // アプリケーションを呼び出す…
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'sally@example.com',
-        ]);
-    }
-
-データベースにデータが存在しないことをアサートする、`assertDatabaseMissing`ヘルパを使うこともできます。
-
-`assertDatabaseHas`メソッドやその他のヘルパは、皆さんが便利に使ってもらうため用意しています。PHPUnitの組み込みアサートメソッドは、機能テストで自由に使用できます。
+データベース駆動型アプリケーションのテストを容易にするため、Laravelはさまざまな便利なツールとアサートを提供しています。それに加えて、Laravelモデルのファクトリ（テスト用インスタンスの生成)とシーダ（初期データ設定)により、アプリケーションのEloquentモデルとリレーションを使用し、テストデータベースレコードを簡単に作成できます。これらの強力な機能のすべてについて、以降のドキュメントで説明します。
 
 <a name="resetting-the-database-after-each-test"></a>
-## 各テスト後のデータベースリセット
+### 各テスト後のデータベースリセット
 
-前のテストがその後のテストデータに影響しないように、各テストの後にデータベースをリセットできると便利です。インメモリデータベースを使っていても、トラディショナルなデータベースを使用していても、`RefreshDatabase`トレイトにより、マイグレーションに最適なアプローチが取れます。テストクラスにてこのトレイトを使えば、すべてが処理されます。
+先へ進む前に、以前のテストデータが後続のテストに干渉しないように、各テストの後にデータベースをリセットする方法について説明しましょう。Laravelに含まれている`Illuminate\Foundation\Testing\RefreshDatabase`トレイトがこれを処理します。テストクラスでトレイトを使用するだけです。
 
     <?php
 
@@ -55,7 +43,7 @@ Laravelでは、データベースを駆動するアプリケーションのテ�
         use RefreshDatabase;
 
         /**
-         * 基本的な機能テストの例
+         * 基本的な機能テスト例
          *
          * @return void
          */
@@ -63,29 +51,19 @@ Laravelでは、データベースを駆動するアプリケーションのテ�
         {
             $response = $this->get('/');
 
-            // …
+            // ...
         }
     }
 
-<a name="creating-factories"></a>
-## ファクトリの生成
+<a name="defining-model-factories"></a>
+## モデルファクトリの定義
 
-テスト時は実行前にデータベースへいくつかのレコードを挿入する必要があります。こうしたテストデータを制作する時に各カラムの値を自分で指定する代わりに、Laravelではモデルファクトリを使用し、各[Eloquentモデル](/docs/{{version}}/eloquent)のデフォルト属性セットを定義できます。
+<a name="concept-overview"></a>
+### コンセプトの概要
 
-ファクトリを生成するには、`make:factory` [Artisanコマンド](/docs/{{version}}/artisan)を使用します。
+まず、Eloquentモデルファクトリについて説明しましょう。テストするときは、テストを実行する前に、データベースにいくらかのレコードを挿入する必要があります。このテストデータを作成するときに各カラムの値を自分でいちいち指定する代わりに、Laravelではモデルファクトリを使用し、各[Eloquentモデル](/docs/{{version}}/eloquent)のデフォルト属性を定義できます。
 
-    php artisan make:factory PostFactory
-
-新しいファクトリは、`database/factories`ディレクトリに設置されます。
-
-`--model`オプションにより、ファクトリが生成するモデルの名前を指定できます。このオプションは、生成するファクトリファイルへ指定モデル名を事前に設定します。
-
-    php artisan make:factory PostFactory --model=Post
-
-<a name="writing-factories"></a>
-## ファクトリの記述
-
-To get started, take a look at the `database/factories/UserFactory.php` file in your application. Out of the box, this file contains the following factory definition:開始前にアプリケーション中の`database/factories/UserFactory.php`ファイルをご覧ください。始めから、このファイルは以下のファクトリ定義を含んでいます。
+ファクトリの作成方法の例を確認するには、アプリケーションの`database/factorys/UserFactory.php`ファイルを見てください。このファクトリはすべての新しいLaravelアプリケーションに含まれており、以下のファクトリ定義が含まれています。
 
     namespace Database\Factories;
 
@@ -96,7 +74,7 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
     class UserFactory extends Factory
     {
         /**
-         * ファクトリに対応するモデルの名前
+         * ファクトリの対応するモデル名
          *
          * @var string
          */
@@ -119,19 +97,34 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
         }
     }
 
-ご覧のとおり、もっとも基本的な形式のファクトリはLaravelの基本ファクトリクラスを拡張し、`model`プロパティと`definition`メソッドを定義するクラスです。`definition`メソッドは、ファクトリを使用してモデルを作成するときに適用する必要がある属性値のデフォルトのセットを返します。
+ご覧のとおり、一番基本的な形式では、ファクトリはLaravelの基本ファクトリクラスを拡張し、`model`プロパティと`definition`メソッドを定義するクラスです。`definition`メソッドは、ファクトリを使用してモデルを作成するときに適用する必要がある属性値のデフォルトセットを返します。
 
-`faker`プロパティにより、ファクトリは[Faker](https://github.com/FakerPHP/Faker) PHPライブラリにアクセスできます。これによりテスト用のさまざまな種類のランダムデータを簡単に生成できます。
+ファクトリは`faker`プロパティを介して、[Faker](https://github.com/FakerPHP/Faker) PHPライブラリにアクセスできます。これにより、テスト用のさまざまな種類のランダムデータを簡単に生成できます。
 
-> {tip} Fakerのローケルは、`config/app.php`設定ファイルの`faker_locale`オプションで指定できます。
+> {tip} `config/app.php`設定ファイルに`faker_locale`オプションを追加することで、アプリケーションのFakerロケールを設定できます。
+
+<a name="generating-factories"></a>
+### ファクトリの生成
+
+ファクトリを作成するには、`make:factory` [Artisanコマンド](/docs/{{version}}/artisan)を実行します。
+
+    php artisan make:factory PostFactory
+
+新しいファクトリクラスは、`database/factories`ディレクトリに配置されます。
+
+`--model`オプションは、ファクトリにより作成するモデルの名前を指定するために使用します。このオプションは、生成するファクトリファイルへ指定するモデルを事前に挿入します。
+
+    php artisan make:factory PostFactory --model=Post
 
 <a name="factory-states"></a>
-### ファクトリステート
+### ファクトリの状態
 
-ステート操作メソッドにより、モデルファクトリのどんな組み合わせに対しても適用できる、個別の調整を定義できます。たとえば、`User`モデルは、デフォルト属性値の一つを変更する、`suspended`状態を持つとしましょう。`state`メソッドを使い、状態遷移を定義します。ステートメソッドには好きな名前が付けられます。典型的なPHPメソッドにすぎません。指定する状態操作コールバックは、ファクトリに対し定義した属性そのままの配列を引数に取り、変更する属性の配列を返します。
+状態操作メソッドを使用すると、モデルファクトリへ任意の組み合わせで適用できる個別の変更を定義できます。たとえば、`Database\Factories\UserFactory`ファクトリに、デフォルトの属性値の１つを変更する`suspended`状態メソッドが含まれているとしましょう。
+
+状態変換メソッドは通常、Laravelの基本ファクトリクラスが提供する`state`メソッドを呼び出します。`state`メソッドは、このファクトリ用に定義する素の属性の配列を受け取るクロージャを受け入れ、変更する属性の配列を返す必要があります。
 
     /**
-     * そのユーザーが資格保留(suspended)されていることを表す
+     * ユーザーが一時停止されていることを示す
      *
      * @return \Illuminate\Database\Eloquent\Factories\Factory
      */
@@ -145,9 +138,9 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
     }
 
 <a name="factory-callbacks"></a>
-### ファクトリコールバック
+### ファクトリのコールバック
 
-ファクトリコールバックは`afterMaking`と`afterCreating`メソッドを使用し登録し、モデルを作成、もしくは生成した後の追加タスクを実行できるようにします。これらのコールバックは、ファクトリクラスの`configure`メソッドを定義し登録します。このメソッドはファクトリがインスタンス化される時にLaravelが自動的に呼び出します。
+ファクトリコールバックは、`afterMaking`メソッドと`afterCreating`メソッドを使用して登録し、モデルの作成または作成後に追加のタスクを実行できるようにします。ファクトリクラスで`configure`メソッドを定義して、これらのコールバックを登録する必要があります。ファクトリがインスタンス化されるときにLaravelが自動的にこのメソッドを呼び出します。
 
     namespace Database\Factories;
 
@@ -158,7 +151,7 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
     class UserFactory extends Factory
     {
         /**
-         * ファクトリに対応するモデルの名前
+         * ファクトリの対応するモデル名
          *
          * @var string
          */
@@ -178,107 +171,99 @@ To get started, take a look at the `database/factories/UserFactory.php` file in 
             });
         }
 
-        // …
+        // ...
     }
 
-<a name="using-factories"></a>
-## ファクトリの使用
+<a name="creating-models-using-factories"></a>
+## ファクトリを使用するモデル生成
 
-<a name="creating-models"></a>
-### モデルの生成
+<a name="instantiating-models"></a>
+### モデルのインスタンス化
 
-ファクトリを定義できたら、モデルのファクトリインスタンスをインスタンス化するため、Eloquentモデル上の`Illuminate\Database\Eloquent\Factories\HasFactory`トレイトが提供している静的`factory`メソッドを使います。
-
-    namespace App\Models;
-
-    use Illuminate\Database\Eloquent\Factories\HasFactory;
-    use Illuminate\Database\Eloquent\Model;
-
-    class User extends Model
-    {
-        use HasFactory;
-    }
-
-モデルの生成例をいくつか見てみましょう。データベースへ保存せずにモデルを生成する`make`メソッドを使ってみましょう。
+ファクトリを定義したら、そのモデルのファクトリインスタンスをインスタンス化するために、`Illuminate\Database\Eloquent\Factories\HasFactory`トレイトにより、モデルが提供する静的な`factory`メソッドを使用できます。モデル作成のいくつかの例を見てみましょう。まず、`make`メソッドを使用して、データベースへ永続化せずにモデルを作成します。
 
     use App\Models\User;
 
-    public function testDatabase()
+    public function test_models_can_be_instantiated()
     {
         $user = User::factory()->make();
 
-        // モデルをテストで使用…
+        // テストでモデルを使用する
     }
 
-You may create a collection of many models using the `count` method:
+`count`メソッドを使用して多くのモデルのコレクションを作成できます。
 
-    // Create three App\Models\User instances...
     $users = User::factory()->count(3)->make();
 
-`HasFactory`トレイトの`factory`メソッドはモデルに対し正しいファクトリなのかを判定するために便利に使えます。具体的には、このメソッドは`Database\Factories`名前空間の中のモデル名と一致するクラス名を持ち、最後に`Factory`が付くファクトリを探します。この命名規則を特定のアプリケーションまたはファクトリで適用しない場合は、ファクトリを直接使用してモデルインスタンスを作成できます。ファクトリクラスを使用して新しいファクトリインスタンスを作成するには、ファクトリで静的な`new`メソッドを呼び出す必要があります
-
-    /**
-     * Create a new factory instance for the model.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    protected static function newFactory()
-    {
-        return \Database\Factories\Administration\FlightFactory::new();
-    }
-
 <a name="applying-states"></a>
-#### ステートの適用
+#### 状態の適用
 
-こうしたモデルに対して[ステート](#factory-states)を適用することもできます。複数の状態遷移を適用したい場合は、シンプルにステートメソッドを直接呼び出します。
+[状態](#factory-states)のいずれかをモデルに適用することもできます。モデルへ複数の状態変換を適用する場合は、状態変換メソッドを直接呼び出すだけです。
 
     $users = User::factory()->count(5)->suspended()->make();
 
 <a name="overriding-attributes"></a>
 #### 属性のオーバーライド
 
-モデルのデフォルト値をオーバーライドしたい場合は、`make`メソッドに配列で値を渡してください。指定した値のみ置き換わり、残りの値はファクトリで指定したデフォルト値のまま残ります。
+モデルのデフォルト値の一部をオーバーライドしたい場合は、値の配列を`make`メソッドに渡してください。指定された属性のみが置き換えられ、残りの属性はファクトリで指定したデフォルト値へ設定したままになります。
 
     $user = User::factory()->make([
         'name' => 'Abigail Otwell',
     ]);
 
-もしくは、インラインで状態遷移させるために、ファクトリインスタンスで直接`state`メソッドを呼び出します。
+もしくは、`state`メソッドをファクトリインスタンスで直接呼び出して、インライン状態変更を実行することもできます。
 
     $user = User::factory()->state([
         'name' => 'Abigail Otwell',
     ])->make();
 
-> {tip} ファクトリを用いモデルを生成する場合は、[複数代入の保護](/docs/{{version}}/eloquent#mass-assignment)を自動的に無効にします。
+> {tip} [複数代入保護](/docs/{{version}}/eloquent#mass-assignment)は、ファクトリを使用してのモデル作成時、自動的に無効になります。
+
+<a name="connecting-factories-and-models"></a>
+#### ファクトリとモデルの接続
+
+`HasFactory`トレイトの`factory`メソッドは、規約を使用してモデルの適切なファクトリを決定します。具体的にこのメソッドは、モデル名と一致するクラス名を持ち、接尾辞が「Factory」である、`Database\Factories`名前空間内のファクトリを検索します。この規約を特定のアプリケーションまたはファクトリに適用しない場合は、モデルの`newFactory`メソッドを上書きして、モデルの対応するファクトリのインスタンスを直接返すことができます。
+
+    use Database\Factories\Administration\FlightFactory;
+
+    /**
+     * モデルの新しいファクトリインスタンスの作成
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return FlightFactory::new();
+    }
 
 <a name="persisting-models"></a>
-### モデルの保存
+### モデルの永続化
 
-`create`メソッドはモデルインスタンスを生成するだけでなく、Eloquentの`save`メソッドを使用しデータベースへ保存します。
+`create`メソッドはモデルインスタンスをインスタンス化し、Eloquentの`save`メソッドを使用してデータベースへ永続化します。
 
     use App\Models\User;
 
-    public function testDatabase()
+    public function test_models_can_be_persisted()
     {
-        // 一つのApp\Models\Userインスタンスを作成
+        // App\Models\Userインスタンスを一つ作成
         $user = User::factory()->create();
 
-        // App\Models\Userインスタンスを３つ生成
+        // App\Models\Userインスタンスを３つ作成
         $users = User::factory()->count(3)->create();
 
-        // モデルをテストで使用…
+        // テストでモデルを使用する…
     }
 
-`create`メソッドに配列で値を渡すことで、モデルの属性をオーバーライドできます。
+属性の配列を`create`メソッドに渡すことで、ファクトリのデフォルトのモデル属性をオーバーライドできます。
 
     $user = User::factory()->create([
         'name' => 'Abigail',
     ]);
 
 <a name="sequences"></a>
-### 順序
+### 連続データ
 
-作成する各モデルごとに、指定するモデル属性の値を交互に指定したい場合もあります。それには状態遷移を`Sequence`インスタンスとして定義します。たとえば、`User`モデルの`admin`カラムの値をユーザーを生成するごとに`Y`と`N`の交互で切り替えたいとします。
+モデルを生成するごとに、特定のモデル属性の値を変更したい場合があります。これは、状態変換を連続データとして定義することで実現できます。たとえば、作成されたユーザーごとに、`admin`カラムの値を`Y`と`N`の間で交互に変更したいとしましょう。
 
     use App\Models\User;
     use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -291,15 +276,205 @@ You may create a collection of many models using the `count` method:
                     ))
                     ->create();
 
-この例では、`admin`値が`Y`の５ユーザーと`N`の５ユーザーが生成されます。
+この例では、`admin`値が`Y`のユーザーが５人作成され、`admin`値が`N`のユーザーが５人作成されます。
 
 <a name="factory-relationships"></a>
-## ファクトリのリレーション
+## リレーションのファクトリ
 
-<a name="relationships-within-definition"></a>
-### 定義中のリレーション
+<a name="has-many-relationships"></a>
+### Has Manyリレーション
 
-ファクトリ定義の中でモデルへのリレーションを付加できます。例として`Post`作成時に新しい`User`インスタンスを作成したいとしましょう。以下のようになります。
+次に、Laravelの流暢（fluent）なファクトリメソッドを使用して、Eloquentモデルのリレーションを構築する方法を見ていきましょう。まず、アプリケーションに`App\Models\User`モデルと`App\Models\Post`モデルがあると想定します。また、`User`モデルが`Post`との`hasMany`リレーションを定義していると想定しましょう。 Laravelのファクトリが提供する`has`メソッドを使用して、３つの投稿を持つユーザーを作成できます。`has`メソッドはファクトリインスタンスを引数に取ります。
+
+    use App\Models\Post;
+    use App\Models\User;
+
+    $user = User::factory()
+                ->has(Post::factory()->count(3))
+                ->create();
+
+規約により、`Post`モデルを`has`メソッドに渡す場合、Laravelは`User`モデルにリレーションを定義する`posts`メソッドが存在していると想定します。必要に応じ、操作するリレーション名を明示的に指定できます。
+
+    $user = User::factory()
+                ->has(Post::factory()->count(3), 'posts')
+                ->create();
+
+もちろん、関連モデルで状態を操作することもできます。さらに、状態変更で親モデルへのアクセスが必要な場合は、クロージャベースの状態変換が渡せます。
+
+    $user = User::factory()
+                ->has(
+                    Post::factory()
+                            ->count(3)
+                            ->state(function (array $attributes, User $user) {
+                                return ['user_type' => $user->type];
+                            })
+                )
+                ->create();
+
+<a name="has-many-relationships-using-magic-methods"></a>
+#### マジックメソッドの使用
+
+使いやすいように、Laravelのマジックファクトリリレーションメソッドを使用してリレーションを構築できます。たとえば、以下の例では、規約を使用して、`User`モデルの`posts`リレーションメソッドを介して作成する必要がある関連モデルを決定します。
+
+    $user = User::factory()
+                ->hasPosts(3)
+                ->create();
+
+マジックメソッドを使用してファクトリリレーションを作成する場合、属性の配列を渡して、関連モデルをオーバーライドできます。
+
+    $user = User::factory()
+                ->hasPosts(3, [
+                    'published' => false,
+                ])
+                ->create();
+
+状態の変更で親モデルへのアクセスが必要な場合は、クロージャベースの状態変換を提供できます。
+
+    $user = User::factory()
+                ->hasPosts(3, function (array $attributes, User $user) {
+                    return ['user_type' => $user->type];
+                })
+                ->create();
+
+<a name="belongs-to-relationships"></a>
+### Belongs Toリレーション
+
+ファクトリを使用して"has many"リレーションを構築する方法を検討したので、逆の関係を調べてみましょう。`for`メソッドを使用して、ファクトリが作成したモデルの属する親モデルを定義できます。たとえば、１人のユーザーに属する３つの`App\Models\Post`モデルインスタンスを作成できます。
+
+    use App\Models\Post;
+    use App\Models\User;
+
+    $posts = Post::factory()
+                ->count(3)
+                ->for(User::factory()->state([
+                    'name' => 'Jessica Archer',
+                ]))
+                ->create();
+
+作成するモデルに関連付ける必要のある親モデルインスタンスがすでにある場合は、モデルインスタンスを`for`メソッドに渡すことができます。
+
+    $user = User::factory()->create();
+
+    $posts = Post::factory()
+                ->count(3)
+                ->for($user)
+                ->create();
+
+<a name="belongs-to-relationships-using-magic-methods"></a>
+#### マジックメソッドの使用
+
+便利なように、Laravelのマジックファクトリリレーションシップメソッドを使用して、"belongs to"リレーションシップを定義できます。たとえば、以下の例では、３つの投稿が`Post`モデルの`user`リレーションに属する必要があることを規約を使用して決定しています。
+
+    $posts = Post::factory()
+                ->count(3)
+                ->forUser([
+                    'name' => 'Jessica Archer',
+                ])
+                ->create();
+
+<a name="many-to-many-relationships"></a>
+### Many To Manyリレーション
+
+[has manyリレーション](#has-many-relationships)と同様に、"many to many"リレーションは、`has`メソッドを使用して作成できます。
+
+    use App\Models\Role;
+    use App\Models\User;
+
+    $user = User::factory()
+                ->has(Role::factory()->count(3))
+                ->create();
+
+<a name="pivot-table-attributes"></a>
+#### ピボットテーブルの属性
+
+モデルをリンクするピボット／中間テーブルへ設定する属性を定義する必要がある場合は、`hasAttached`メソッドを使用します。このメソッドは、ピボットテーブルの属性名と値の配列を２番目の引数に取ります。
+
+    use App\Models\Role;
+    use App\Models\User;
+
+    $user = User::factory()
+                ->hasAttached(
+                    Role::factory()->count(3),
+                    ['active' => true]
+                )
+                ->create();
+
+状態変更で関連モデルへのアクセスが必要な場合は、クロージャベースの状態変換を指定できます。
+
+    $user = User::factory()
+                ->hasAttached(
+                    Role::factory()
+                        ->count(3)
+                        ->state(function (array $attributes, User $user) {
+                            return ['name' => $user->name.' Role'];
+                        }),
+                    ['active' => true]
+                )
+                ->create();
+
+作成しているモデルへアタッチしたいモデルインスタンスがすでにある場合は、モデルインスタンスを`hasAttached`メソッドへ渡せます。この例では、同じ３つの役割が３人のユーザーすべてに関連付けられます。
+
+    $roles = Role::factory()->count(3)->create();
+
+    $user = User::factory()
+                ->count(3)
+                ->hasAttached($roles, ['active' => true])
+                ->create();
+
+<a name="many-to-many-relationships-using-magic-methods"></a>
+#### マジックメソッドの使用
+
+利便性のため、Laravelのマジックファクトリリレーションメソッドを使用して、多対多のリレーションを定義できます。たとえば、次の例では、関連するモデルを`User`モデルの`roles`リレーションメソッドを介して作成する必要があることを規約を使用して決定します。
+
+    $user = User::factory()
+                ->hasRoles(1, [
+                    'name' => 'Editor'
+                ])
+                ->create();
+
+<a name="polymorphic-relationships"></a>
+### ポリモーフィックリレーション
+
+[ポリモーフィックな関係](/docs/{{version}}/eloquent-relationships#polymorphic-relationships)もファクトリを使用して作成できます。ポリモーフィックな"morph many"リレーションは、通常の"has many"リレーションと同じ方法で作成します。たとえば、 `App\Models\Post`モデルが`App\Models\Comment`モデルと`morphMany`関係を持っている場合は以下のようになります。
+
+    use App\Models\Post;
+
+    $post = Post::factory()->hasComments(3)->create();
+
+<a name="morph-to-relationships"></a>
+#### Morph Toリレーション
+
+マジックメソッドを使用して`morphTo`関係を作成することはできません。代わりに、`for`メソッドを直接使用し、関係の名前を明示的に指定する必要があります。たとえば、`Comment`モデルに`morphTo`関係を定義する `commentable`メソッドがあると想像してください。この状況で`for`メソッドを直接使用し、１つの投稿に属する３つのコメントを作成できます。
+
+    $comments = Comment::factory()->count(3)->for(
+        Post::factory(), 'commentable'
+    )->create();
+
+<a name="polymorphic-many-to-many-relationships"></a>
+#### ポリモーフィック多対多リレーション
+
+ポリモーフィック「多対多」（`morphToMany`／` morphedByMany`）リレーションは、ポリモーフィックではない「多対多」リレーションと同じように作成できます。
+
+    use App\Models\Tag;
+    use App\Models\Video;
+
+    $videos = Video::factory()
+                ->hasAttached(
+                    Tag::factory()->count(3),
+                    ['public' => true]
+                )
+                ->create();
+
+もちろん、`has`マジックメソッドを使用して、ポリモーフィックな「多対多」リレーションを作成することもできます。
+
+    $videos = Video::factory()
+                ->hasTags(3, ['public' => true])
+                ->create();
+
+<a name="defining-relationships-within-factories"></a>
+### ファクトリ内でのリレーション定義
+
+モデルファクトリ内でリレーションを定義するには、リレーションの外部キーへ新しいファクトリインスタンスを割り当てます。これは通常、`belongsTo`や`morphTo`リレーションなどの「逆」関係で行います。たとえば、投稿を作成時に新しいユーザーを作成する場合は、次のようにします。
 
     use App\Models\User;
 
@@ -317,7 +492,7 @@ You may create a collection of many models using the `count` method:
         ];
     }
 
-リレーションのカラムが、それを定義するファクトリに依存している場合、評価済みの属性配列を引数に取るコールバックを指定できます。
+リレーションのカラムがそれを定義するファクトリに依存している場合は、属性にクロージャを割り当てることができます。クロージャは、ファクトリの評価済み属性配列を受け取ります。
 
     /**
      * モデルのデフォルト状態の定義
@@ -336,182 +511,10 @@ You may create a collection of many models using the `count` method:
         ];
     }
 
-<a name="has-many-relationships"></a>
-### Has Manyリレーション
+<a name="running-seeders"></a>
+## シーダの実行
 
-次に、Laravelの読み書きしやすいファクトリメソッドを使用して、Eloquentモデルリレーションの構築を説明します。まず、アプリケーションに`User`と`Post`モデルがあると仮定しましょう。その`User`モデルは`Post`に対して`hasMany`リレーションを定義しているとも仮定しましょう。ファクトリが提供する`has`メソッドを使い、３ポストを持つユーザーを１件作ってみます。`has`メソッドはファクトリインスタンスを引数に取ります。
-
-    use App\Models\Post;
-    use App\Models\User;
-
-    $user = User::factory()
-                ->has(Post::factory()->count(3))
-                ->create();
-
-規約により、`Post`モデルを`has`メソッドに渡すとき、Laravelは`User`モデルがリレーションを定義する`posts`メソッドを持っていると想定します。必要に応じ、操作したいリレーションの名前を明示的に指定できます。
-
-    $user = User::factory()
-                ->has(Post::factory()->count(3), 'posts')
-                ->create();
-
-もちろん、関連するモデルに対し状態操作することもできます。加えて、状態の変更に親モデルへのアクセスが必要であるなら、クロージャベースで状態遷移を渡すこともできます。
-
-    $user = User::factory()
-                ->has(
-                    Post::factory()
-                            ->count(3)
-                            ->state(function (array $attributes, User $user) {
-                                return ['user_type' => $user->type];
-                            })
-                )
-                ->create();
-
-<a name="has-many-relationships-using-magic-methods"></a>
-#### マジックメソッドの使用
-
-リレーションシップを定義するため便利なように、ファクトリのマジックリレーションメソッドを使用できます。たとえば以下の例では、関連するモデルが`User`モデル上の`posts`リレーションメソッドを介して作成されるべきであることを決定するように記法を使用します。
-
-    $user = User::factory()
-                ->hasPosts(3)
-                ->create();
-
-ファクトリリレーションを作成するためにマジックメソッドを使用する場合は、関連モデルをオーバーライドするために属性の配列を渡せます。
-
-    $user = User::factory()
-                ->hasPosts(3, [
-                    'published' => false,
-                ])
-                ->create();
-
-状態の変更で親モデルにアクセスする必要があるなら、クロージャベースの状態遷移を渡せます。
-
-    $user = User::factory()
-                ->hasPosts(3, function (array $attributes, User $user) {
-                    return ['user_type' => $user->type];
-                })
-                ->create();
-
-<a name="belongs-to-relationships"></a>
-### Belongs Toリレーション
-
-今度はファクトリを使用した"has many"リレーションをどのように構築するか説明します。`for`メソッドは、ファクトリで作成されたモデルが属するモデルを定義するために使われます。たとえば、1人のユーザーに属する３つの`Post`モデルインスタンスを作成できます。
-
-    use App\Models\Post;
-    use App\Models\User;
-
-    $posts = Post::factory()
-                ->count(3)
-                ->for(User::factory()->state([
-                    'name' => 'Jessica Archer',
-                ]))
-                ->create();
-
-<a name="belongs-to-relationships-using-magic-methods"></a>
-#### マジックメソッドの使用
-
-"belongs to"リレーションを定義するのに便利なように、ファクトリのマジックリレーションメソッドを使用できます。たとえば次の例は記法を使用し、３つのポストが`Post`モデルの`user`リレーションに属することを決定します
-
-    $posts = Post::factory()
-                ->count(3)
-                ->forUser([
-                    'name' => 'Jessica Archer',
-                ])
-                ->create();
-
-<a name="many-to-many-relationships"></a>
-### Many To Manyリレーション
-
-[has manyリレーション](#has-many-relationships)と同様に、"many to many"リレーションは`has`メソッドを使用して作成できます。
-
-    use App\Models\Role;
-    use App\Models\User;
-
-    $users = User::factory()
-                ->has(Role::factory()->count(3))
-                ->create();
-
-<a name="pivot-table-attributes"></a>
-#### 中間テーブルの属性
-
-モデルにリンクするピボット／中間テーブルへセットする属性を定義する必要がある場合は、`hasAttached`メソッドを使用します。このメソッドは第２引数としてピボットテーブルの属性名と値の配列を引数に取ります。
-
-    use App\Models\Role;
-    use App\Models\User;
-
-    $users = User::factory()
-                ->hasAttached(
-                    Role::factory()->count(3),
-                    ['active' => true]
-                )
-                ->create();
-
-状態変化で関連モデルへアクセスする必要があれば、クロージャベースの状態遷移を指定できます。
-
-    $users = User::factory()
-                ->hasAttached(
-                    Role::factory()
-                        ->count(3)
-                        ->state(function (array $attributes, User $user) {
-                            return ['name' => $user->name.' Role'];
-                        }),
-                    ['active' => true]
-                )
-                ->create();
-
-<a name="many-to-many-relationships-using-magic-methods"></a>
-#### マジックメソッドの使用
-
-ファクトリのマジックリレーションメソッドを使用して、多対多のリレーションを便利に定義できます。たとえば次の例では、関連するモデルが`User`モデル上の`roles`リレーションメソッドを介して作成されるべきだと決めるため記法を使用しています。
-
-    $users = User::factory()
-                ->hasRoles(1, [
-                    'name' => 'Editor'
-                ])
-                ->create();
-
-<a name="polymorphic-relationships"></a>
-### ポリモーフィックリレーション
-
-[ポリモーフィックリレーション](/docs/{{version}}/eloquent-relationships#polymorphic-relationships)もファクトリを使って作成できます。ポリモーフィックな"morph many"リレーションは、典型的な "has many"リレーションと同じ方法で作成します。たとえば、`Post`モデルが`Comment`モデルと`morphMany`リレーションを持つとします。
-
-    use App\Models\Post;
-
-    $post = Post::factory()->hasComments(3)->create();
-
-<a name="morph-to-relationships"></a>
-#### Morph Toリレーション
-
-マジックメソッドは`morphTo`リレーションを作成するために使用できません。代わりに`for`メソッドを直接使用し、リレーション名を明白に指定する必要があります。たとえば、`Comment`モデルが`morphTo`リレーションを定義する`commentable`メソッドを持っていると想像してください。この状況で、`for`メソッドを直接使用し１つのポストに所属する３コメントを作成してみましょう。
-
-    $comments = Comment::factory()->count(3)->for(
-        Post::factory(), 'commentable'
-    )->create();
-
-<a name="polymorphic-many-to-many-relationships"></a>
-#### Polymorphic Many To Manyリレーション
-
-ポリモーフィック"many to many"リレーションは、ポリモーフィックではない"many to many"と同様に作成できます。
-
-    use App\Models\Tag;
-    use App\Models\Video;
-
-    $videos = Video::factory()
-                ->hasAttached(
-                    Tag::factory()->count(3),
-                    ['public' => true]
-                )
-                ->create();
-
-もちろん、マジック`has`メソッドも、ポリモーフィック"many to many"リレーションを作成するために使用できます。
-
-    $videos = Video::factory()
-                ->hasTags(3, ['public' => true])
-                ->create();
-
-<a name="using-seeds"></a>
-## シーダの使用
-
-機能テストでデータベースへ初期値を設定するために、[データベースシーダ](/docs/{{version}}/seeding)を使いたい場合は、`seed`メソッドを使用してください。デフォルトで`seed`メソッドは、他のシーダを全部実行する`DatabaseSeeder`を返します。もしくは、`seed`メソッドへ特定のシーダクラス名を渡してください。
+機能テスト中に[データベースシーダ（初期値設定）](/docs/{{version}}/seeding)を使用してデータベースへデータを入力する場合は、`seed`メソッドを呼び出してください。`seed`メソッドはデフォルトで、`DatabaseSeeder`を実行します。これにより、他のすべてのシーダが実行されます。または、特定のシーダクラス名を`seed`メソッドに渡します。
 
     <?php
 
@@ -527,23 +530,23 @@ You may create a collection of many models using the `count` method:
         use RefreshDatabase;
 
         /**
-         * 新オーダー生成のテスト
+         * 新しい注文の作成をテスト
          *
          * @return void
          */
-        public function testCreatingANewOrder()
+        public function test_orders_can_be_created()
         {
             // DatabaseSeederを実行
             $this->seed();
 
-            // シーダを１つ実行
+            // 特定のシーダを実行
             $this->seed(OrderStatusSeeder::class);
 
-            // …
+            // ...
         }
     }
 
-もしくは`RefreshDatabase`へ、各テストの直前でデータベースを自動的に初期値設定するよう指示することも可能です。テストクラスへ`$seed`プロパティを定義します。
+または、各テストの前にデータベースのシーダを自動的に実行するよう、`RefreshDatabase`トレイトへ指示することもできます。これはテストクラスで`$seed`プロパティを定義することで行います。
 
     <?php
 
@@ -555,7 +558,7 @@ You may create a collection of many models using the `count` method:
     class ExampleTest extends TestCase
     {
         /**
-         * 各テストの前に、データベースへ初期値設定するかどうかを表す
+         * 各テストの前にデータベースをシードする必要があるかどうかを示す
          *
          * @var bool
          */
@@ -565,27 +568,48 @@ You may create a collection of many models using the `count` method:
     }
 
 <a name="available-assertions"></a>
-## 使用可能なアサーション
+## 利用可能なアサート
 
-Laravelは、多くのデータベースアサーションを[PHPUnit](https://phpunit.de/)機能テスト向けに提供しています。
+Laravelは、[PHPUnit](https://phpunit.de/)機能テスト用にいくつかのデータベースアサートを提供しています。以下にこのようなアサートについて説明します。
 
-メソッド  | 説明
-------------- | ---------------------------------------------------------------------------
-`$this->assertDatabaseCount($table, int $count);`  |  データベースのテーブルが、エンティティを指定量含むことをアサート
-`$this->assertDatabaseHas($table, array $data);`  |  指定したデータが、テーブルに存在することをアサート
-`$this->assertDatabaseMissing($table, array $data);`  |  指定したデータが、テーブルに含まれないことをアサート
-`$this->assertDeleted($table, array $data);`  |  指定したレコードが削除されていることをアサート
-`$this->assertSoftDeleted($table, array $data);`  |  指定したレコードがソフトデリートされていることをアサート
+<a name="assert-database-count"></a>
+#### assertDatabaseCount
 
-レコードの削除・ソフト削除のアサートに便利なよう、`assertDeleted`と`assertSoftDeleted`ヘルパへはモデルが渡せるようになっています。その場合、モデルの主キーを利用します。
+データベース内のテーブルに指定した数のレコードが含まれていることをアサートします。
 
-たとえば、モデルファクトリをテストで使用する場合に、アプリケーションでデータベースからそのレコードが確実に削除されているかをテストするために、これらのヘルパへモデルを渡せます。
+    $this->assertDatabaseCount('users', 5);
 
-    public function testDatabase()
-    {
-        $user = User::factory()->create();
+<a name="assert-database-has"></a>
+#### assertDatabaseHas
 
-        // アプリケーションを呼び出す…
+データベース内のテーブルに、指定したキー／値クエリの制約に一致するレコードが含まれていることをアサートします。
 
-        $this->assertDeleted($user);
-    }
+    $this->assertDatabaseHas('users', [
+        'email' => 'sally@example.com',
+    ]);
+
+<a name="assert-database-missing"></a>
+#### assertDatabaseMissing
+
+データベース内のテーブルに、指定したキー／値クエリの制約に一致するレコードが含まれていないことをアサートします。
+
+    $this->assertDatabaseMissing('users', [
+        'email' => 'sally@example.com',
+    ]);
+
+<a name="assert-deleted"></a>
+#### assertDeleted
+
+`assertDeleted`は、指定したEloquentモデルがデータベースから削除されたことをアサートします。
+
+    use App\Models\User;
+
+    $user = User::find(1);
+
+    $user->delete();
+
+    $this->assertDeleted($user);
+
+`assertSoftDeleted`メソッドは、指定したEloquentモデルが「ソフト削除」されたことをアサートします。
+
+    $this->assertSoftDeleted($user);

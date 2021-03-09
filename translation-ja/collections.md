@@ -18,8 +18,7 @@
 
     $collection = collect(['taylor', 'abigail', null])->map(function ($name) {
         return strtoupper($name);
-    })
-    ->reject(function ($name) {
+    })->reject(function ($name) {
         return empty($name);
     });
 
@@ -37,7 +36,7 @@
 <a name="extending-collections"></a>
 ### コレクションの拡張
 
-実行時に`Collection`クラスメソッドを追加できるように、コレクションは「マクロ使用可能」です。例として、`Collection`クラスへ`toUpper`メソッドを追加してみましょう。
+コレクションは「マクロ化可能」であり、実行時に`Collection`クラスへメソッドを追加できます。`Illuminate\Support\Collection`クラスの`macro`メソッドは、マクロが呼び出されたときに実行するクロージャを引数に取ります。マクロクロージャは、コレクションクラスの実際のメソッドであるかのように、`$this`を介してコレクションの他のメソッドにアクセスできます。たとえば、次のコードは、`toUpper`メソッドを`Collection`クラスに追加しています。
 
     use Illuminate\Support\Collection;
     use Illuminate\Support\Str;
@@ -54,12 +53,31 @@
 
     // ['FIRST', 'SECOND']
 
-通常、[サービスプロバイダ](/docs/{{version}}/providers)の中で、コレクションマクロを定義します。
+通常、コレクションマクロは[サービスプロバイダ](/docs/{{version}}/provider)の`boot`メソッドで宣言する必要があります。
+
+<a name="macro-arguments"></a>
+#### マクロ引数
+
+必要に応じて、追加の引数を取るマクロを定義できます。
+
+    use Illuminate\Support\Collection;
+    use Illuminate\Support\Facades\Lang;
+    use Illuminate\Support\Str;
+
+    Collection::macro('toLocale', function ($locale) {
+        return $this->map(function ($value) use ($locale) {
+            return Lang::get($value, $locale);
+        });
+    });
+
+    $collection = collect(['first', 'second']);
+
+    $translated = $collection->toLocale('es');
 
 <a name="available-methods"></a>
 ## 利用可能なメソッド
 
-このドキュメントの残りで、`Collection`クラスで使用できる各メソッドを解説します。これらのメソッドは、すべて裏の配列をスラスラと操作するためにチェーンで繋げられることを覚えておきましょう。また、ほとんどのメソッドは新しい`Collection`インスタンスを返しますので、必要であればコレクションのオリジナルコピーを利用できるように変更しません。
+コレクションドキュメントの残りの大部分は、`Collection`クラスで使用できる各メソッドについて説明します。これらのメソッドはすべて、基になる配列をスムースに操作するためチェーン化できることを忘れないでください。さらに、ほとんどすべてのメソッドが新しい`Collection`インスタンスを返すため、必要に応じて元のコレクションを保持できます。
 
 <style>
     #collection-method-list > p {
@@ -235,7 +253,12 @@
 
 `avg`メソッドは、指定したキーの[平均値](https://ja.wikipedia.org/wiki/%E5%B9%B3%E5%9D%87)を返します。
 
-    $average = collect([['foo' => 10], ['foo' => 10], ['foo' => 20], ['foo' => 40]])->avg('foo');
+    $average = collect([
+        ['foo' => 10],
+        ['foo' => 10],
+        ['foo' => 20],
+        ['foo' => 40]
+    ])->avg('foo');
 
     // 20
 
@@ -256,7 +279,7 @@
 
     // [[1, 2, 3, 4], [5, 6, 7]]
 
-このメソッドはとくに[Bootstrap](https://getbootstrap.com/docs/4.1/layout/grid)のようなグリッドシステムを[ビュー](/docs/{{version}}/views)で操作する場合に便利です。[Eloquent](/docs/{{version}}/eloquent)モデルのコレクションがあり、グリッドで表示しようとしているところを想像してください。
+このメソッドは、[Bootstrap](https://getbootstrap.com/docs/4.1/layout/grid/)などのグリッドシステムを操作するときに[ビュー](/docs/{{version}}/views)で特に役立ちます。たとえば、グリッドに表示する[Eloquent](/docs/{{version}}/eloquent)モデルのコレクションがあるとします。
 
     @foreach ($products->chunk(3) as $chunk)
         <div class="row">
@@ -269,12 +292,12 @@
 <a name="method-chunkwhile"></a>
 #### `chunkWhile()` {#collection-method}
 
-`chunkWhile`メソッドはコレクションを指定したコールバックの評価に基づいた複数の小さなコレクションへ分割します。
+`chunkWhile`メソッドは、指定したコールバックの評価に基づいて、コレクションを複数のより小さなコレクションへ分割します。クロージャに渡された`$chunk`変数は、前の要素を検査するために使用できます。
 
     $collection = collect(str_split('AABBCCCD'));
 
-    $chunks = $collection->chunkWhile(function ($current, $key, $chunk) {
-        return $current === $chunk->last();
+    $chunks = $collection->chunkWhile(function ($value, $key, $chunk) {
+        return $value === $chunk->last();
     });
 
     $chunks->all();
@@ -286,7 +309,11 @@
 
 `collapse`メソッドは、配列のコレクションをフラットな一次コレクションに展開します。
 
-    $collection = collect([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    $collection = collect([
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+    ]);
 
     $collapsed = $collection->collapse();
 
@@ -343,7 +370,7 @@
 <a name="method-concat"></a>
 #### `concat()` {#collection-method}
 
-`concat`メソッドは、指定した「配列」やコレクションの値を元のコレクションの最後に追加します。
+`concat`メソッドは、指定した`array`またはコレクションの値を別のコレクションの最後に追加します。
 
     $collection = collect(['John Doe']);
 
@@ -356,7 +383,17 @@
 <a name="method-contains"></a>
 #### `contains()` {#collection-method}
 
-`contains`メソッドは指定したアイテムがコレクションに含まれているかどうかを判定します。
+`contains`にクロージャを渡して、指定テストが真になる要素がコレクションに存在するかどうかを判断することもできます。
+
+    $collection = collect([1, 2, 3, 4, 5]);
+
+    $collection->contains(function ($value, $key) {
+        return $value > 5;
+    });
+
+    // false
+
+または、文字列を`contains`メソッドに渡して、コレクションに指定アイテム値が含まれているかどうかを判断することもできます。
 
     $collection = collect(['name' => 'Desk', 'price' => 100]);
 
@@ -376,16 +413,6 @@
     ]);
 
     $collection->contains('product', 'Bookcase');
-
-    // false
-
-最後に、`contains`メソッドにはコールバックを渡すこともでき、独自のテストを行えます。
-
-    $collection = collect([1, 2, 3, 4, 5]);
-
-    $collection->contains(function ($value, $key) {
-        return $value > 5;
-    });
 
     // false
 
@@ -412,7 +439,7 @@
 <a name="method-countBy"></a>
 #### `countBy()` {#collection-method}
 
-`countBy`メソッドはコレクションに出現する値をカウントします。デフォルトでこのメソッドは、出現するすべての要素をカウントします。
+`countBy`メソッドは、コレクション内の値の出現をカウントします。このメソッドはデフォルトで、コレクション内の要素の特定の「タイプ」をカウントできるよう、すべての要素の出現をカウントします。
 
     $collection = collect([1, 2, 2, 2, 3]);
 
@@ -422,7 +449,7 @@
 
     // [1 => 1, 2 => 3, 3 => 1]
 
-`countBy`へコールバックを渡した場合は、カスタム値の全アイテムをカウントします。
+`countBy`メソッドにクロージャを渡して、すべてのアイテムをカスタム値でカウントします。
 
     $collection = collect(['alice@gmail.com', 'bob@yahoo.com', 'carlos@gmail.com']);
 
@@ -605,16 +632,16 @@
 <a name="method-each"></a>
 #### `each()` {#collection-method}
 
-`each`メソッドはコレクションのアイテムを繰り返しで処理し、コールバックに各アイテムを渡します。
+`each`メソッドはコレクション内のアイテムを反復処理し、各アイテムをクロージャに渡します。
 
     $collection->each(function ($item, $key) {
         //
     });
 
-アイテム全体への繰り返しを停止したい場合は、`false`をコールバックから返してください。
+アイテムの反復を停止したい場合は、クロージャから`false`を返してください。
 
     $collection->each(function ($item, $key) {
-        if (/* 条件 */) {
+        if (/* condition */) {
             return false;
         }
     });
@@ -647,7 +674,7 @@
 
     // false
 
-コレクションが空の場合、`every`はtrueを返します。
+コレクションが空の場合、`every`メソッドはtrueを返します。
 
     $collection = collect([]);
 
@@ -732,7 +759,7 @@
 
     // ['name' => 'Linda', 'age' => 14]
 
-比較演算子を指定し、`firstWhere`メソッドを呼び出すこともできます。
+比較演算子を使用して `firstWhere`メソッドを呼び出すこともできます。
 
     $collection->firstWhere('age', '>=', 18);
 
@@ -747,7 +774,7 @@
 <a name="method-flatmap"></a>
 #### `flatMap()` {#collection-method}
 
-`flatMap`メソッドはそれぞれの値をコールバックへ渡しながら、コレクション全体を繰り返し処理します。コールバックでは自由にアイテムの値を変更し、それを返します。その値へ更新した新しいコレクションを作成します。配列は一次元になります。
+`flatMap`メソッドはコレクションを反復処理し、各値を指定したクロージャに渡します。クロージャはアイテムを自由に変更して返却できるため、変更されたアイテムの新しいコレクションを形成します。それから、一次配列へフラット化します。
 
     $collection = collect([
         ['name' => 'Sally'],
@@ -768,7 +795,12 @@
 
 `flatten`メソッドは多次元コレクションを一次元化します。
 
-    $collection = collect(['name' => 'taylor', 'languages' => ['php', 'javascript']]);
+    $collection = collect([
+        'name' => 'taylor',
+        'languages' => [
+            'php', 'javascript'
+        ]
+    ]);
 
     $flattened = $collection->flatten();
 
@@ -776,14 +808,20 @@
 
     // ['taylor', 'php', 'javascript'];
 
-このメソッドでは、いくつ配列の次元を減らすかを引数で指定できます。
+必要に応じて、`flatten`メソッドに「depth」引数を渡すことができます。
 
     $collection = collect([
         'Apple' => [
-            ['name' => 'iPhone 6S', 'brand' => 'Apple'],
+            [
+                'name' => 'iPhone 6S',
+                'brand' => 'Apple'
+            ],
         ],
         'Samsung' => [
-            ['name' => 'Galaxy S7', 'brand' => 'Samsung'],
+            [
+                'name' => 'Galaxy S7',
+                'brand' => 'Samsung'
+            ],
         ],
     ]);
 
@@ -798,7 +836,7 @@
         ]
     */
 
-上記の例で、`flatten`を次元の指定なしで呼び出すと、ネスト配列をフラットにしますので、結果は`['iPhone 6S', 'Apple', 'Galaxy S7', 'Samsung']`になります。次元を指定すると、配列のネストをそのレベルに制約し、減らします。
+この例では、深さを指定せずに`flatten`を呼び出すと、ネストした配列もフラットにし、`['iPhone6S'、'Apple'、'GalaxyS7'、'Samsung']`になります。深さを指定すると、ネストした配列をフラット化するレベルの数を指定できます。
 
 <a name="method-flip"></a>
 #### `flip()` {#collection-method}
@@ -856,17 +894,17 @@
 
     $collection = collect(['name' => 'taylor', 'framework' => 'laravel']);
 
-    $value = $collection->get('foo', 'default-value');
+    $value = $collection->get('age', 34);
 
-    // default-value
+    // 34
 
-デフォルト値にコールバックを渡すこともできます。指定したキーが存在していなかった場合、コールバックの結果が返されます。
+メソッドのデフォルト値としてコールバックを渡すこともできます。指定したキーが存在しない場合、コールバックの結果が返されます。
 
     $collection->get('email', function () {
-        return 'default-value';
+        return 'taylor@example.com';
     });
 
-    // default-value
+    // taylor@example.com
 
 <a name="method-groupby"></a>
 #### `groupBy()` {#collection-method}
@@ -924,12 +962,9 @@
         40 => ['user' => 4, 'skill' => 2, 'roles' => ['Role_2']],
     ]);
 
-    $result = $data->groupBy([
-        'skill',
-        function ($item) {
-            return $item['roles'];
-        },
-    ], $preserveKeys = true);
+    $result = $data->groupBy(['skill', function ($item) {
+        return $item['roles'];
+    }], $preserveKeys = true);
 
     /*
     [
@@ -978,7 +1013,7 @@
 <a name="method-implode"></a>
 #### `implode()` {#collection-method}
 
-`implode`メソッドはコレクションのアイテムを結合します。引数はコレクションのアイテムのタイプにより異なります。 コレクションに配列化オブジェクトが含まれている場合は、接続したい属性のキーと値の間にはさみたい「糊」の役割の文字列を指定します。
+`implode`メソッドはコレクション内のアイテムを結合します。その引数は、コレクション内のアイテムのタイプによって異なります。コレクションに配列またはオブジェクトが含まれている場合は、結合する属性のキーと、値の間に配置する「接着」文字列を渡す必要があります。
 
     $collection = collect([
         ['account_id' => 1, 'product' => 'Desk'],
@@ -989,7 +1024,7 @@
 
     // Desk, Chair
 
-コレクションが文字列か数値を含んでいるだけなら、メソッドには「糊」の文字列を渡すだけで済みます。
+コレクションに単純な文字列または数値が含まれている場合は、メソッドへの唯一の引数として「接着」文字列を渡す必要があります。
 
     collect([1, 2, 3, 4, 5])->implode('-');
 
@@ -1013,7 +1048,7 @@
 <a name="method-intersectbykeys"></a>
 #### `intersectByKeys()` {#collection-method}
 
-`intersectByKeys`メソッドは、指定した配列かコレクションに含まれないキーの要素をオリジナルコレクションから削除します。
+`intersectByKeys`メソッドは、指定した配列またはコレクションに存在しないキーとそれに対応する値を元のコレクションから削除します。
 
     $collection = collect([
         'serial' => 'UX301', 'type' => 'screen', 'year' => 2009,
@@ -1048,7 +1083,7 @@
 <a name="method-join"></a>
 #### `join()` {#collection-method}
 
-`join`メソッドは、コレクションの値を文字列で結合します。
+`join`メソッドは、コレクションの値を文字列で結合します。このメソッドの２番目の引数を使用して、最後の要素を文字列に追加する方法を指定することもできます。
 
     collect(['a', 'b', 'c'])->join(', '); // 'a, b, c'
     collect(['a', 'b', 'c'])->join(', ', ', and '); // 'a, b, and c'
@@ -1182,7 +1217,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-mapspread"></a>
 #### `mapSpread()` {#collection-method}
 
-`mapSpread`メソッドは指定したコールバックへ、コレクションのネストしたアイテム値をそれぞれ渡し、繰り返し処理します。値を変更した新しいコレクションを形成するために、コールバックで好きなようにアイテムを変更し、値を返してください。
+`mapSpread`メソッドはコレクションのアイテムを反復処理し、ネストした各アイテム値を指定されたクロージャに渡します。クロージャはアイテムを自由に変更して返すことができるため、変更したアイテムの新しいコレクションを生成します。
 
     $collection = collect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
@@ -1199,7 +1234,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-maptogroups"></a>
 #### `mapToGroups()` {#collection-method}
 
-`mapToGroups`メソッドは、指定したコールバックにより、コレクションアイテムを分類します。コールバックはキー／値ペアを一つ含む連想配列を返す必要があります。
+`mapToGroups`メソッドは、指定クロージャによってコレクションのアイテムをグループ化します。クロージャはキー／値のペアを一つ含む連想配列を返してください。これにより、値をグループ化した新しいコレクションを生成します。
 
     $collection = collect([
         [
@@ -1269,7 +1304,10 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
 `max`メソッドは、指定したキーの最大値を返します。
 
-    $max = collect([['foo' => 10], ['foo' => 20]])->max('foo');
+    $max = collect([
+        ['foo' => 10],
+        ['foo' => 20]
+    ])->max('foo');
 
     // 20
 
@@ -1282,7 +1320,12 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
 `median`メソッドは、指定したキーの[中央値](https://ja.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%80%A4)を返します。
 
-    $median = collect([['foo' => 10], ['foo' => 10], ['foo' => 20], ['foo' => 40]])->median('foo');
+    $median = collect([
+        ['foo' => 10],
+        ['foo' => 10],
+        ['foo' => 20],
+        ['foo' => 40]
+    ])->median('foo');
 
     // 15
 
@@ -1320,7 +1363,11 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
     $collection = collect(['product_id' => 1, 'price' => 100]);
 
-    $merged = $collection->mergeRecursive(['product_id' => 2, 'price' => 200, 'discount' => false]);
+    $merged = $collection->mergeRecursive([
+        'product_id' => 2,
+        'price' => 200,
+        'discount' => false
+    ]);
 
     $merged->all();
 
@@ -1344,7 +1391,12 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
 `mode`メソッドは、指定したキーの[最頻値](https://ja.wikipedia.org/wiki/%E6%9C%80%E9%A0%BB%E5%80%A4)を返します。
 
-    $mode = collect([['foo' => 10], ['foo' => 10], ['foo' => 20], ['foo' => 40]])->mode('foo');
+    $mode = collect([
+        ['foo' => 10],
+        ['foo' => 10],
+        ['foo' => 20],
+        ['foo' => 40]
+    ])->mode('foo');
 
     // [10]
 
@@ -1363,7 +1415,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
     // ['a', 'e']
 
-オプションとして第２引数にオフセットを渡せます。
+オプションで、２番目の引数として開始オフセットを指定できます。
 
     $collection->nth(4, 1);
 
@@ -1374,7 +1426,12 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
 `only`メソッドは、コレクション中の指定したアイテムのみを返します。
 
-    $collection = collect(['product_id' => 1, 'name' => 'Desk', 'price' => 100, 'discount' => false]);
+    $collection = collect([
+        'product_id' => 1,
+        'name' => 'Desk',
+        'price' => 100,
+        'discount' => false
+    ]);
 
     $filtered = $collection->only(['product_id', 'name']);
 
@@ -1429,7 +1486,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-pipe"></a>
 #### `pipe()` {#collection-method}
 
-`pipe`メソッドはコレクションを指定したコールバックに渡し、結果を返します。
+`pipe`メソッドは、コレクションを指定したクロージャに渡し、実行されたクロージャの結果を返します。
 
     $collection = collect([1, 2, 3]);
 
@@ -1555,7 +1612,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
     // [0, 1, 2, 3, 4, 5]
 
-また、第２引数に追加するアイテムのキーを指定できます。
+２番目の引数で、先頭に追加するアイテムのキーを指定することもできます。
 
     $collection = collect(['one' => 1, 'two' => 2]);
 
@@ -1617,7 +1674,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
     // 4 - (ランダムに取得)
 
-オプションとして、`random`にいくつのアイテムをランダムに取得するかを整数値で渡せます。受け取りたい数のアイテム数を明確に指定した場合、その数のコレクションのアイテムがいつも返されます。
+整数を`random`に渡して、ランダムに取得するアイテムの数を指定できます。受け取りたいアイテムの数を明示的に渡すと、アイテムのコレクションが常に返されます。
 
     $random = $collection->random(3);
 
@@ -1625,7 +1682,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
     // [2, 4, 5] - (ランダムに取得)
 
-要求されたアイテム数がコレクションに足りない場合、このメソッドは`InvalidArgumentException`を投げます。
+コレクションインスタンスのアイテム数が要求より少ない場合、`random`メソッドは`InvalidArgumentException`を投げます。
 
 <a name="method-reduce"></a>
 #### `reduce()` {#collection-method}
@@ -1651,7 +1708,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-reject"></a>
 #### `reject()` {#collection-method}
 
-`reject`メソッドは指定したコールバックを使用し、コレクションをフィルタリングします。コールバックはコレクションの結果からアイテムを取り除く場合に`true`を返します。
+`reject`メソッドは、指定したクロージャを使用してコレクションをフィルタリングします。結果のコレクションからアイテムを削除する必要がある場合、クロージャで`true`を返してください。
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -1668,7 +1725,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-replace"></a>
 #### `replace()` {#collection-method}
 
-`replace`メソッドは、`merge`メソッドと似た振る舞いを行います。文字列キーに一致したアイテムをオーバーライドするのは同じですが、`replace`メソッドは数値キーに一致するコレクション中のアイテムもオーバーライドします。
+`replace`メソッドは、`merge`メソッドと似た振る舞いを行います。文字列キーを持っているアイテムをオーバーライドするのは同じですが、`replace`メソッドは数値キーに一致するコレクション中のアイテムもオーバーライドします。
 
     $collection = collect(['Taylor', 'Abigail', 'James']);
 
@@ -1683,9 +1740,20 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
 このメソッドは`replace`と似た動作をしますが、配列を再帰的に下り、次元の低い値も同様に置換します。
 
-    $collection = collect(['Taylor', 'Abigail', ['James', 'Victoria', 'Finn']]);
+    $collection = collect([
+        'Taylor',
+        'Abigail',
+        [
+            'James',
+            'Victoria',
+            'Finn'
+        ]
+    ]);
 
-    $replaced = $collection->replaceRecursive(['Charlie', 2 => [1 => 'King']]);
+    $replaced = $collection->replaceRecursive([
+        'Charlie',
+        2 => [1 => 'King']
+    ]);
 
     $replaced->all();
 
@@ -1715,7 +1783,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-search"></a>
 #### `search()` {#collection-method}
 
-`search`メソッドは指定した値でコレクションをサーチし、見つけたキーを返します。アイテムが見つからない場合は`false`を返します。
+`search`メソッドは、コレクションを検索し、指定値が見つかった場合はそのキーを返します。アイテムが見つからない場合、`false`を返します。
 
     $collection = collect([2, 4, 6, 8]);
 
@@ -1725,13 +1793,13 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
 検索は「緩い」比較で行われます。つまり、整数値を持つ文字列は、同じ値の整数に等しいと判断されます。「厳格」な比較を行いたい場合は`true`をメソッドの第２引数に渡します。
 
-    $collection->search('4', true);
+    collect([2, 4, 6, 8])->search('4', $strict = true);
 
     // false
 
-別の方法としてサーチのコールバックを渡し、テストをパスした最初のアイテムを取得することもできます。
+または、独自のクロージャを提供して、指定するテストに合格した最初のアイテムを検索することもできます。
 
-    $collection->search(function ($item, $key) {
+    collect([2, 4, 6, 8])->search(function ($item, $key) {
         return $item > 5;
     });
 
@@ -1768,7 +1836,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-skip"></a>
 #### `skip()` {#collection-method}
 
-`skip`メソッドは、指定した数のアイテムを飛ばした新しいコレクションを返します。
+`skip`メソッドは、コレクションの先頭から指定した数の要素を削除した新しいコレクションを返します。
 
     $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
@@ -1781,7 +1849,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-skipuntil"></a>
 #### `skipUntil()` {#collection-method}
 
-`skipUntil`メソッドは指定コールバックが`true`を返すまでアイテムをスキップし、それからコレクションの残りのアイテムを返します。
+`skipUntil`メソッドは、指定したコールバックが`true`を返すまでコレクションからアイテムをスキップし、コレクション内の残りのアイテムを新しいコレクションインスタンスとして返します。
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -1808,7 +1876,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-skipwhile"></a>
 #### `skipWhile()` {#collection-method}
 
-`skipWhile`メソッドは指定コールバックが`true`を返す間アイテムをスキップし、それからコレクション残りのアイテムを返します。
+`skipWhile`メソッドは、指定したコールバックが`true`を返す間、コレクションからアイテムをスキップし、コレクション内の残りのアイテムを新しいコレクションとして返します。
 
     $collection = collect([1, 2, 3, 4]);
 
@@ -1863,7 +1931,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
 
     // [1, 2, 3, 4, 5]
 
-より高度なソートを行いたい場合は`sort`にコールバックを渡し、自分のアルゴリズムを実行できます。コレクションの`sort`メソッドが裏で呼び出している[`uasort`](http://php.net/manual/en/function.uasort.php#refsect1-function.usort-parameters)のPHPドキュメントを参照してください。
+より高度なソートを行いたい場合は`sort`にコールバックを渡し、自分のアルゴリズムを実行できます。コレクションの`sort`メソッドが使用している[`uasort`](http://php.net/manual/en/function.uasort.php#refsect1-function.usort-parameters)のPHPドキュメントを参照してください。
 
 > {tip} ネストした配列やオブジェクトのコレクションのソートは、[`sortBy`](#method-sortby)と[`sortByDesc`](#method-sortbydesc)メソッドを参照してください。
 
@@ -1890,7 +1958,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
         ]
     */
 
-このメソッドは第２引数に、[ソートフラグ](https://www.php.net/manual/en/function.sort.php)を受け取ります。
+`sort`メソッドは第２引数に、[ソートフラグ](https://www.php.net/manual/en/function.sort.php)を受け取ります。
 
     $collection = collect([
         ['title' => 'Item 1'],
@@ -1910,7 +1978,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
         ]
     */
 
-もしくは、コレクションの値をどのようにソートするかを決める独自のコールバックを渡します。
+または、独自のクロージャを渡して、コレクションの値を並べ替える方法を決定することもできます。
 
     $collection = collect([
         ['name' => 'Desk', 'colors' => ['Black', 'Mahogany']],
@@ -1932,6 +2000,56 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
         ]
     */
 
+コレクションを複数の属性で並べ替える場合は、並べ替え操作の配列を `sortBy`メソッドに渡すことができます。各並べ替え操作は、並べ替える属性と目的の並べ替えの方向で構成される配列です。
+
+    $collection = collect([
+        ['name' => 'Taylor Otwell', 'age' => 34],
+        ['name' => 'Abigail Otwell', 'age' => 30],
+        ['name' => 'Taylor Otwell', 'age' => 36],
+        ['name' => 'Abigail Otwell', 'age' => 32],
+    ]);
+
+    $sorted = $collection->sortBy([
+        ['name', 'asc'],
+        ['age', 'desc'],
+    ]);
+
+    $sorted->values()->all();
+
+    /*
+        [
+            ['name' => 'Abigail Otwell', 'age' => 32],
+            ['name' => 'Abigail Otwell', 'age' => 30],
+            ['name' => 'Taylor Otwell', 'age' => 36],
+            ['name' => 'Taylor Otwell', 'age' => 34],
+        ]
+    */
+
+コレクションを複数の属性で並べ替える場合、各並べ替え操作を定義するクロージャを指定することもできます。
+
+    $collection = collect([
+        ['name' => 'Taylor Otwell', 'age' => 34],
+        ['name' => 'Abigail Otwell', 'age' => 30],
+        ['name' => 'Taylor Otwell', 'age' => 36],
+        ['name' => 'Abigail Otwell', 'age' => 32],
+    ]);
+
+    $sorted = $collection->sortBy([
+        fn ($a, $b) => $a['name'] <=> $b['name'],
+        fn ($a, $b) => $b['age'] <=> $a['age'],
+    ]);
+
+    $sorted->values()->all();
+
+    /*
+        [
+            ['name' => 'Abigail Otwell', 'age' => 32],
+            ['name' => 'Abigail Otwell', 'age' => 30],
+            ['name' => 'Taylor Otwell', 'age' => 36],
+            ['name' => 'Taylor Otwell', 'age' => 34],
+        ]
+    */
+
 <a name="method-sortbydesc"></a>
 #### `sortByDesc()` {#collection-method}
 
@@ -1950,7 +2068,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
 
     // [5, 4, 3, 2, 1]
 
-`sort`と異なり、コールバックを引数として`sortDesc`渡せません。コールバックを使用する場合は、[`sort`](#method-sort)を使用し、比較を逆にしてください。
+`sort`とは異なり、`sortDesc`にクロージャを渡すことはできません。代わりに、[`sort`](#method-sort)メソッドを使用して、比較を逆にする必要があります。
 
 <a name="method-sortkeys"></a>
 #### `sortKeys()` {#collection-method}
@@ -1997,7 +2115,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
 
     // [1, 2]
 
-結果の塊の大きさを限定するために、第２引数を指定できます。
+結果のコレクションの大きさを限定するために、第２引数を指定できます。
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -2071,7 +2189,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
 
     // 1272
 
-さらに、コレクションのどの項目を合計するのかを決めるためにコールバックを渡すこともできます。
+さらに、コレクションのどの項目を合計するのかを決めるためにクロージャを渡すこともできます。
 
     $collection = collect([
         ['name' => 'Chair', 'colors' => ['Black']],
@@ -2155,7 +2273,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
 <a name="method-tap"></a>
 #### `tap()` {#collection-method}
 
-`tap`メソッドは、指定されたコールバックへコレクションを渡します。コレクション自身に影響を与えることなく、その時点のコレクション内容を利用するために使用します。
+`tap`メソッドは、指定されたコールバックへコレクションを渡します。コレクション自身に影響を与えることなく、その時点のコレクション内容を利用するために使用します。その後、`tap`メソッドはそのコレクションを返します。
 
     collect([2, 4, 3, 1, 5])
         ->sort()
@@ -2169,7 +2287,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
 <a name="method-times"></a>
 #### `times()` {#collection-method}
 
-静的`times`メソッドは指定回数コールバックを呼び出すことで、新しいコレクションを生成します。
+静的`times`メソッドは指定回数クロージャを呼び出すことで、新しいコレクションを生成します。
 
     $collection = Collection::times(10, function ($number) {
         return $number * 9;
@@ -2178,22 +2296,6 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
     $collection->all();
 
     // [9, 18, 27, 36, 45, 54, 63, 72, 81, 90]
-
-このメソッドはファクトリと組み合わせ、[Eloquent](/docs/{{version}}/eloquent)モデルを生成する場合に便利です。
-
-    $categories = Collection::times(3, function ($number) {
-        return Category::factory()->create(['name' => "Category No. $number"]);
-    });
-
-    $categories->all();
-
-    /*
-        [
-            ['id' => 1, 'name' => 'Category No. 1'],
-            ['id' => 2, 'name' => 'Category No. 2'],
-            ['id' => 3, 'name' => 'Category No. 3'],
-        ]
-    */
 
 <a name="method-toarray"></a>
 #### `toArray()` {#collection-method}
@@ -2210,7 +2312,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
         ]
     */
 
-> {note} `toArray`は、ネストした`Arrayable`インスタンスのオブジェクトすべてを配列へ変換します。裏の配列をそのまま取得したい場合は、代わりに[`all`](#method-all)メソッドを使用してください。
+> {note} `toArray`は、ネストした`Arrayable`インスタンスのオブジェクトすべてを配列へ変換します。コレクションの裏の素の配列をそのまま取得したい場合は、代わりに[`all`](#method-all)メソッドを使用してください。
 
 <a name="method-tojson"></a>
 #### `toJson()` {#collection-method}
@@ -2287,7 +2389,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
         ]
     */
 
-アイテムが一意であるかを決めるコールバックを渡すこともできます。
+独自のクロージャを`unique`メソッドに渡して、アイテムの一意性を決定する値を指定することもできます。
 
     $unique = $collection->unique(function ($item) {
         return $item['brand'].$item['type'];
@@ -2408,39 +2510,40 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 
 `whenEmpty`メソッドは、コレクションが空の場合に、指定したコールバックを実行します。
 
-    $collection = collect(['michael', 'tom']);
+    $collection = collect(['Michael', 'Tom']);
 
     $collection->whenEmpty(function ($collection) {
-        return $collection->push('adam');
+        return $collection->push('Adam');
     });
 
     $collection->all();
 
-    // ['michael', 'tom']
+    // ['Michael', 'Tom']
 
 
     $collection = collect();
 
     $collection->whenEmpty(function ($collection) {
-        return $collection->push('adam');
+        return $collection->push('Adam');
     });
 
     $collection->all();
 
-    // ['adam']
+    // ['Adam']
 
+`whenEmpty`メソッドの２番目のクロージャは、コレクションが空でないときに実行されます。
 
-    $collection = collect(['michael', 'tom']);
+    $collection = collect(['Michael', 'Tom']);
 
     $collection->whenEmpty(function ($collection) {
-        return $collection->push('adam');
+        return $collection->push('Adam');
     }, function ($collection) {
-        return $collection->push('taylor');
+        return $collection->push('Taylor');
     });
 
     $collection->all();
 
-    // ['michael', 'tom', 'taylor']
+    // ['Michael', 'Tom', 'Taylor']
 
 `whenEmpty`の逆の動作は、[`whenNotEmpty`](#method-whennotempty)メソッドです。
 
@@ -2470,6 +2573,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 
     // []
 
+`whenNotEmpty`メソッドに渡される２番目のクロージャは、コレクションが空のときに実行されます。
 
     $collection = collect();
 
@@ -2537,7 +2641,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherebetween"></a>
 #### `whereBetween()` {#collection-method}
 
-`whereBetween`メソッドは、指定した範囲でコレクションをフィルタリングします。
+`whereBetween`メソッドは、指定したアイテム値が、指定範囲内にあるかどうかを判断することにより、コレクションをフィルタリングします。
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -2562,7 +2666,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherein"></a>
 #### `whereIn()` {#collection-method}
 
-`whereIn`メソッドは指定された配列に含まれる値／キーにより、コレクションをフィルタリングします。
+`whereIn`メソッドは、指定配列中のアイテム値を持たない要素をコレクションから削除します。
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -2612,7 +2716,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherenotbetween"></a>
 #### `whereNotBetween()` {#collection-method}
 
-`whereNotBetween`メソッドは、指定された範囲でコレクションをフィルタリングします。
+`whereNotBetween`メソッドは、指定アイテム値が指定範囲外にあるかどうかを判断することにより、コレクションをフィルタリングします。
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -2636,7 +2740,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherenotin"></a>
 #### `whereNotIn()` {#collection-method}
 
-`whereNotIn`メソッドは、指定した配列中のキー／値を含まないコレクションをフィルタリングします。
+`whereNotIn`メソッドは、指定配列に含まれていないアイテム値を持つ要素をコレクションから削除します。
 
     $collection = collect([
         ['product' => 'Desk', 'price' => 200],
@@ -2666,7 +2770,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherenotnull"></a>
 #### `whereNotNull()` {#collection-method}
 
-`whereNotNull`メソッドは、指定したキーがNULL値ではないアイテムを抜き出します。
+`whereNotNull`メソッドは、指定したキーがNULL値のアイテムをコレクションから削除します。
 
     $collection = collect([
         ['name' => 'Desk'],
@@ -2688,7 +2792,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherenull"></a>
 #### `whereNull()` {#collection-method}
 
-`whereNull`メソッドは、指定したキーがNULL値のアイテムを抜き出します
+`whereNull`メソッドは、指定したキーがNULL値のアイテムをコレクションから抜き出します。
 
     $collection = collect([
         ['name' => 'Desk'],
@@ -2711,6 +2815,8 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 #### `wrap()` {#collection-method}
 
 staticの`wrap`メソッドは適用可能であれば、指定値をコレクションでラップします。
+
+    use Illuminate\Support\Collection;
 
     $collection = Collection::wrap('John Doe');
 
@@ -2750,11 +2856,13 @@ staticの`wrap`メソッドは適用可能であれば、指定値をコレク�
 
 各higher order messageへは、コレクションインスタンスの動的プロパティとしてアクセスできます。例として、コレクション中の各オブジェクトメソッドを呼び出す、`each` higher order messageを使用してみましょう。
 
+    use App\Models\User;
+
     $users = User::where('votes', '>', 500)->get();
 
     $users->each->markAsVip();
 
-同様に、ユーザーのコレクションに対し、「投票(votes)」の合計数を求めるために、`sum` higher order messageを使用できます。
+同様に、ユーザーのコレクションに対し、「投票（votes）」の合計数を求めるために、`sum` higher order messageを使用できます。
 
     $users = User::where('group', 'Development')->get();
 
@@ -2789,13 +2897,17 @@ staticの`wrap`メソッドは適用可能であれば、指定値をコレク�
 
 もしくは、10,000個のEloquentモデルを繰り返し処理する必要があると想像してください。今までのLaravelコレクションでは、一度に10,000個のEloquentモデルすべてをメモリーにロードする必要がありました。
 
-    $users = App\Models\User::all()->filter(function ($user) {
+    use App\Models\User;
+
+    $users = User::all()->filter(function ($user) {
         return $user->id > 500;
     });
 
 しかし、クエリビルダの`cursor`メソッドは、`LazyCollection`インスタンスを返します。これによりデータベースに対し１つのクエリを実行するだけでなく、一度に１つのEloquentモデルをメモリにロードするだけで済みます。この例では、各ユーザーを個別に繰り返し処理するまで`filter`コールバックは実行されず、大幅にメモリ使用量を減らせます。
 
-    $users = App\Models\User::cursor()->filter(function ($user) {
+    use App\Models\User;
+
+    $users = User::cursor()->filter(function ($user) {
         return $user->id > 500;
     });
 
@@ -2943,17 +3055,48 @@ staticの`wrap`メソッドは適用可能であれば、指定値をコレク�
 
 `Enumerable`契約で定義しているメソッドに加え、`LazyCollection`クラス契約は以下のメソッドを含んでいます。
 
+<a name="method-takeUntilTimeout"></a>
+#### `takeUntilTimeout()` {#collection-method}
+
+`takeUntilTimeout`メソッドは、指定された時間まで値を列挙する新しいレイジーコレクションを返します。その後、コレクションは列挙を停止します。
+
+    $lazyCollection = LazyCollection::times(INF)
+        ->takeUntilTimeout(now()->addMinute());
+
+    $lazyCollection->each(function ($number) {
+        dump($number);
+
+        sleep(1);
+    });
+
+    // 1
+    // 2
+    // ...
+    // 58
+    // 59
+
+このメソッドの使用法を理解するために、カーソルを使用してデータベースから請求書を送信するアプリケーションを想像してみてください。15分ごとに実行され、最大14分間のみ請求書を処理する[スケジュール済みタスク](/docs/{{version}}/Scheduling)を定義できます。
+
+    use App\Models\Invoice;
+    use Illuminate\Support\Carbon;
+
+    Invoice::pending()->cursor()
+        ->takeUntilTimeout(
+            Carbon::createFromTimestamp(LARAVEL_START)->add(14, 'minutes')
+        )
+        ->each(fn ($invoice) => $invoice->submit());
+
 <a name="method-tapEach"></a>
 #### `tapEach()` {#collection-method}
 
 `each`メソッドはコレクション中の各アイテムに対し、指定したコールバックを即時に呼び出しますが、`tapEach`メソッドはリストから一つずつアイテムを抜き出し、指定したコールバックを呼び出します。
 
+    // これまでに何もダンプされていない
     $lazyCollection = LazyCollection::times(INF)->tapEach(function ($value) {
         dump($value);
     });
 
-    // 何もダンプされない
-
+    // ３アイテムがダンプ
     $array = $lazyCollection->take(3)->all();
 
     // 1
@@ -2963,16 +3106,15 @@ staticの`wrap`メソッドは適用可能であれば、指定値をコレク�
 <a name="method-remember"></a>
 #### `remember()` {#collection-method}
 
-`remember`メソッドは扱った値を覚え、それらを再度扱う場合でも再取得しない新しいレイジーコレクションを返します。
-
-    $users = User::cursor()->remember();
+`remember`メソッドは、すでに列挙されている値を記憶し、後続のコレクション列挙でそれらを再度取得しない新しいレイジーコレクションを返します。
 
     // まだ、クエリは実行されない
+    $users = User::cursor()->remember();
 
+    // クエリは実行された
+    // 最初の５人のユーザーがデータベースからハイドレイト
     $users->take(5)->all();
 
-    // クエリが実行され、最初の５つのユーザーがデータベースよりハイドレートされる
-
+    // 最初の５人のユーザーはコレクションのキャッシュから取得
+    // 残りはデータベースからハイドレイト
     $users->take(20)->all();
-
-    // 最初の５ユーザーはコレクションキャッシュから、残りはデータベースからハイドレートされる

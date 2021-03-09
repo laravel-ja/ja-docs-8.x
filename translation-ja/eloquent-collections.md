@@ -1,41 +1,43 @@
-# Eloquent：コレクション
+# Eloquent:コレクション
 
 - [イントロダクション](#introduction)
-- [使用できるメソッド](#available-methods)
+- [利用可能なメソッド](#available-methods)
 - [カスタムコレクション](#custom-collections)
 
 <a name="introduction"></a>
 ## イントロダクション
 
-`get`メソッドであれリレーションによるものであれ、Eloquentが複数のレコードをリターンする場合`Illuminate\Database\Eloquent\Collection`オブジェクトが返されます。EloquentコレクションオブジェクトはLaravelの[ベースコレクション](/docs/{{version}}/collections)を継承しているので、Eloquentモデルの裏にある配列をスムーズに操作するために継承した多くのメソッドがもちろん使用できます。
+`get`メソッドで取得した結果や、リレーションによりアクセスした結果など、結果として複数のモデルを返すEloquentメソッドはすべて、`Illuminate\Database\Eloquent\Collection`クラスのインスタンスを返します。EloquentコレクションオブジェクトはLaravelの[基本的なコレクション](/docs/{{version}}/collections)を拡張しているため、基になるEloquentモデルの配列を流暢に操作するため使用する数十のメソッドを自然と継承します。これらの便利な方法についてすべて学ぶために、Laravelコレクションのドキュメントは必ず確認してください！
 
-全コレクションはイテレーターとしても動作し、シンプルなPHP配列のようにループで取り扱うことができます。
+すべてのコレクションはイテレーターとしても機能し、単純なPHP配列であるかのようにループで使えます。
 
-    $users = App\Models\User::where('active', 1)->get();
+    use App\Models\User;
+
+    $users = User::where('active', 1)->get();
 
     foreach ($users as $user) {
         echo $user->name;
     }
 
-しかし、コレクションは配列よりもパワフルで直感的なインターフェイスを使ったメソッドチェーンにより、マッピングや要素の省略操作を行うことができます。例としてアクティブでないモデルを削除し、残ったユーザーのファーストネームを集めてみましょう。
+ただし、前述のようにコレクションは配列よりもはるかに強力であり、直感的なインターフェイスを使用してチェーンする可能性を持つさまざまなマップ/リデュース操作を用意しています。たとえば、非アクティブなモデルをすべて削除してから、残りのユーザーの名を収集する場面を考えましょう。
 
-    $users = App\Models\User::all();
-
-    $names = $users->reject(function ($user) {
+    $names = User::all()->reject(function ($user) {
         return $user->active === false;
-    })
-    ->map(function ($user) {
+    })->map(function ($user) {
         return $user->name;
     });
 
-> {note} ほとんどのEloquentコレクションは新しいEloquentコレクションのインスタンスを返しますが、`pluck`、`keys`、`zip`、`collapse`、`flatten`、`flip`メソッドは[ベースのコレクション](/docs/{{version}}/collections)インスタンスを返します。Eloquentモデルをまったく含まないコレクションを返す`map`操作のような場合、自動的にベースコレクションへキャストされます。
+<a name="eloquent-collection-conversion"></a>
+#### Eloquentコレクションの変換
+
+ほとんどのEloquentコレクションメソッドはEloquentコレクションの新しいインスタンスを返しますが、`collapse`、`flatten`、`flip`、`keys`、`pluck`、`zip`メソッドは、[基本のコレクション](/docs/{{version}}/collections)インスタンスを返します。同様に、`map`操作がEloquentモデルを含まないコレクションを返す場合、それは基本コレクションインスタンスに変換されます。
 
 <a name="available-methods"></a>
-## 使用できるメソッド
+## 利用可能なメソッド
 
-全Eloquentコレクションはベースの[Laravelコレクション](/docs/{{version}}/collections#available-methods)オブジェクトを拡張しており、そのためにベースコレクションクラスが提供しているパワフルなメソッドを全部継承しています。
+すべてのEloquentコレクションはベースの[Laravelコレクション](/docs/{{version}}/collections#available-methods)オブジェクトを拡張します。したがって、これらは基本コレクションクラスによって提供されるすべての強力なメソッドを継承します。
 
-さらに、`Illuminate\Database\Eloquent\Collection`クラスは、モデルコレクションを管理するのに役立つメソッドのスーパーセットを提供しています。ほとんどのメソッドは`Illuminate\Database\Eloquent\Collection`インスタンスを返しますが、いくつかのメソッドは`Illuminate\Support\Collection`インスタンスを返します。
+さらに、`Illuminate\Database\Eloquent\Collection`クラスは、モデルコレクションの管理を支援するメソッドのスーパーセットを提供します。ほとんどのメソッドは`Illuminate\Database\Eloquent\Collection`インスタンスを返します。ただし、`modelKeys`などの一部のメソッドは、`Illuminate\Support\Collection`インスタンスを返します。
 
 <style>
     #collection-method-list > p {
@@ -70,7 +72,7 @@
 <a name="method-contains"></a>
 #### `contains($key, $operator = null, $value = null)`
 
-`contains`メソッドは、指定したモデルインスタンスがコレクションに含まれるかを判定します。このメソッドは主キーかモデルインスタンスを引数に取ります。
+`contains`メソッドを使い、指定モデルインスタンスがコレクションに含まれているかどうかを判定できます。このメソッドは、主キーまたはモデルインスタンスを引数に取ります。
 
     $users->contains(1);
 
@@ -79,7 +81,7 @@
 <a name="method-diff"></a>
 #### `diff($items)`
 
-`diff`メソッドは、指定したコレクション中に存在しないモデルをすべて返します。
+`diff`メソッドは、指定コレクションに存在しないすべてのモデルを返します。
 
     use App\Models\User;
 
@@ -88,14 +90,14 @@
 <a name="method-except"></a>
 #### `except($keys)`
 
-`except`メソッドは、指定した主キーを持たないモデルをすべて返します。
+`except`メソッドは、指定する主キーを持たないすべてのモデルを返します。
 
     $users = $users->except([1, 2, 3]);
 
 <a name="method-find"></a>
 #### `find($key)` {#collection-method .first-collection-method}
 
-`find`メソッドは、指定した主キーのモデルを見つけます。`$key`がモデルインスタンスの場合、`find`はその主キーと一致するモデルを返そうとします。`$key`がキーの配列の場合は`whereIn()`を使用して、`$key`と一致するモデルをすべて返します。
+`find`メソッドは、指定キーと一致する主キーを持つモデルを返します。`$key`がモデルインスタンスの場合、`find`は主キーに一致するモデルを返そうとします。`$key`がキーの配列である場合、`find`は指定配列の中の主キーを持つすべてのモデルを返します。
 
     $users = User::all();
 
@@ -104,7 +106,7 @@
 <a name="method-fresh"></a>
 #### `fresh($with = [])`
 
-`fresh`メソッドは、コレクション中の各モデルのインスタンスをデータベースから取得します。さらに、指定されたリレーションをEagerロードします。
+`fresh`メソッドは、データベースからコレクション内の各モデルの新しいインスタンスを取得します。さらに、指定したリレーションはすべてEagerロードされます。
 
     $users = $users->fresh();
 
@@ -113,7 +115,7 @@
 <a name="method-intersect"></a>
 #### `intersect($items)`
 
-`intersect`メソッドは指定したコレクション中にも存在する、すべてのモデルを返します。
+`intersect`メソッドは、指定コレクションにも存在するすべてのモデルを返します。
 
     use App\Models\User;
 
@@ -122,25 +124,25 @@
 <a name="method-load"></a>
 #### `load($relations)`
 
-`load`メソッドは指定したリレーションをコレクションの全モデルに対してEagerロードします。
+`load`メソッドは、コレクション内のすべてのモデルに対して指定するリレーションをEagerロードします。
 
-    $users->load('comments', 'posts');
+    $users->load(['comments', 'posts']);
 
     $users->load('comments.author');
 
 <a name="method-loadMissing"></a>
 #### `loadMissing($relations)`
 
-`loadMissing`メソッドは、リレーションがまだロードされていない場合、指定したリレーションをコレクションのすべてのモデルに対してEagerロードします。
+`loadMissing`メソッドは、関係がまだロードされていない場合、コレクション内のすべてのモデルに対して指定するリレーションをEagerロードします。
 
-    $users->loadMissing('comments', 'posts');
+    $users->loadMissing(['comments', 'posts']);
 
     $users->loadMissing('comments.author');
 
 <a name="method-modelKeys"></a>
 #### `modelKeys()`
 
-`modelKeys`メソッドは、コレクションの全モデルの主キーを返します。
+`modelKeys`メソッドは、コレクション内のすべてのモデルの主キーを返します。
 
     $users->modelKeys();
 
@@ -149,30 +151,32 @@
 <a name="method-makeVisible"></a>
 #### `makeVisible($attributes)`
 
-`makeVisible`メソッドはコレクション中の各モデルの、通常「隠されている(hidden)」属性を可視化(Visible)にします。
+`makeVisible`メソッドは、通常コレクション内の各モデルで"hidden"になっている[属性をvisibleにします](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json)。
 
     $users = $users->makeVisible(['address', 'phone_number']);
 
 <a name="method-makeHidden"></a>
 #### `makeHidden($attributes)`
 
- `makeHidden`メソッドはコレクション中の各モデルの、通常「可視化(Visible)されている」属性を可視化隠し(hidden)ます。
+`makeHidden`メソッドは、通常コレクション内の各モデルで"visible"になっている[属性をhiddenにします](/docs/{{version}}/eloquent-serialization#hiding-attributes-from-json)。
 
     $users = $users->makeHidden(['address', 'phone_number']);
 
 <a name="method-only"></a>
 #### `only($keys)`
 
-`only`メソッドは、指定した主キーを持つモデルを全部返します。
+`only`メソッドは、指定主キーを持つすべてのモデルを返します。
 
     $users = $users->only([1, 2, 3]);
 
 <a name="method-toquery"></a>
 #### `toQuery()`
 
-`toQuery`メソッドはモデルの主キーのコレクションで制約する`whereIn`を含む、Eloquentクエリビルダインスタンスを返します。
+`toQuery`メソッドは、コレクションモデルの主キーに対する`whereIn`制約を含むEloquentクエリビルダインスタンスを返します。
 
-    $users = App\Models\User::where('status', 'VIP')->get();
+    use App\Models\User;
+
+    $users = User::where('status', 'VIP')->get();
 
     $users->toQuery()->update([
         'status' => 'Administrator',
@@ -181,34 +185,34 @@
 <a name="method-unique"></a>
 #### `unique($key = null, $strict = false)`
 
-`unique`メソッドは、コレクション中のユニークなモデルをすべて返します。コレクション中の同じタイプで同じ主キーを持つモデルは削除されます。
+`unique`メソッドは、コレクション内のすべての一意のモデルを返します。コレクション内の、同じタイプで同じ主キーを持つモデルをすべて削除します。
 
     $users = $users->unique();
 
 <a name="custom-collections"></a>
 ## カスタムコレクション
 
-自分で拡張したメソッドを含むカスタム「コレクション」オブジェクトを使いたい場合は、モデルの`newCollection`メソッドをオーバーライドしてください。
+特定のモデルを操作するときにカスタムの`Collection`オブジェクトを使用したい場合は、モデルで`newCollection`メソッドを定義します。
 
     <?php
 
     namespace App\Models;
 
-    use App\Support\CustomCollection;
+    use App\Support\UserCollection;
     use Illuminate\Database\Eloquent\Model;
 
     class User extends Model
     {
         /**
-         * 新しいEloqunetコレクションインスタンスの生成
+         * 新しいEloquentCollectionインスタンスの作成
          *
          * @param  array  $models
          * @return \Illuminate\Database\Eloquent\Collection
          */
         public function newCollection(array $models = [])
         {
-            return new CustomCollection($models);
+            return new UserCollection($models);
         }
     }
 
-`newCollection`メソッドを定義すれば、Eloquentがそのモデルの「コレクション」インスタンスを返す場合にいつでもカスタムコレクションのインスタンスを受け取れます。アプリケーションの全モデルでカスタムコレクションを使いたい場合は、全モデルが拡張しているモデルのベースクラスで`newCollection`メソッドをオーバーライドしてください。
+`newCollection`メソッドを一度定義したら、Eloquentが通常`Illuminate\Database\Eloquent\Collection`インスタンスを返すときは、いつでもカスタムコレクションのインスタンスを受け取ります。アプリケーションのすべてのモデルにカスタムコレクションを使用する場合は、アプリケーションのすべてのモデルによって拡張される基本モデルクラスで`newCollection`メソッドを定義する必要があります。
