@@ -113,6 +113,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [Str::plural](#method-str-plural)
 [Str::pluralStudly](#method-str-plural-studly)
 [Str::random](#method-str-random)
+[Str::remove](#method-str-remove)
 [Str::replaceArray](#method-str-replace-array)
 [Str::replaceFirst](#method-str-replace-first)
 [Str::replaceLast](#method-str-replace-last)
@@ -172,6 +173,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [pipe](#method-fluent-str-pipe)
 [plural](#method-fluent-str-plural)
 [prepend](#method-fluent-str-prepend)
+[remove](#method-fluent-str-remove)
 [replace](#method-fluent-str-replace)
 [replaceArray](#method-fluent-str-replace-array)
 [replaceFirst](#method-fluent-str-replace-first)
@@ -187,6 +189,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [studly](#method-fluent-str-studly)
 [substr](#method-fluent-str-substr)
 [tap](#method-fluent-str-tap)
+[test](#method-fluent-str-test)
 [title](#method-fluent-str-title)
 [trim](#method-fluent-str-trim)
 [ucfirst](#method-fluent-str-ucfirst)
@@ -234,7 +237,6 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [csrf_token](#method-csrf-token)
 [dd](#method-dd)
 [dispatch](#method-dispatch)
-[dispatch_now](#method-dispatch-now)
 [dump](#method-dump)
 [env](#method-env)
 [event](#method-event)
@@ -1421,6 +1423,21 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     $random = Str::random(40);
 
+<a name="method-str-remove"></a>
+#### `Str::remove()` {#collection-method}
+
+`Str::remove`メソッドは、文字列から指定する値または値の配列を削除します。
+
+    use Illuminate\Support\Str;
+
+    $string = 'Peter Piper picked a peck of pickled peppers.';
+
+    $removed = Str::remove('e', $string);
+
+    // Ptr Pipr pickd a pck of pickld ppprs.
+
+文字列を削除するときにケースを無視するには、`remove`メソッドの３番目の引数に`false`を渡してください。
+
 <a name="method-str-replace-array"></a>
 #### `Str::replaceArray()` {#collection-method}
 
@@ -1516,6 +1533,12 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
     use Illuminate\Support\Str;
 
     $result = Str::startsWith('This is my name', 'This');
+
+    // true
+
+可能な値の配列が渡された場合、`startsWith`メソッドは、文字列が与えられた値のいずれかで始まる場合に`true`を返します。
+
+    $result = Str::startsWith('This is my name', ['This', 'That', 'There']);
 
     // true
 
@@ -2114,6 +2137,19 @@ Fluent文字列は読み書きしやすい（fluent）、オブジェクト指�
 
     // Laravel Framework
 
+<a name="method-fluent-str-remove"></a>
+#### `remove` {#collection-method}
+
+`remove`メソッドは、指定する値か文字列の配列を文字列から削除します。
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('Arkansas is quite beautiful!')->remove('quite');
+
+    // Arkansas is beautiful!
+
+削除時にケースを無視するため２番目のパラメータへ`false`を渡すこともできます。
+
 <a name="method-fluent-str-replace"></a>
 #### `replace` {#collection-method}
 
@@ -2311,6 +2347,17 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
         ->upper();
 
     // LARAVEL FRAMEWORK
+
+<a name="method-fluent-str-test"></a>
+#### `test` {#collection-method}
+
+`test`メソッドは、文字列が指定する正規表現パターンと一致するか判定します。
+
+    use Illuminate\Support\Str;
+
+    $result = Str::of('Laravel Framework')->test('/Laravel/');
+
+    // true
 
 <a name="method-fluent-str-title"></a>
 #### `title` {#collection-method}
@@ -2656,13 +2703,6 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 `dispatch`関数は、指定した[ジョブ](/docs/{{version}}/queues#creating-jobs)をLaravelの[ジョブキュー](/docs/{{version}}/queues)へ投入します。
 
     dispatch(new App\Jobs\SendEmails);
-
-<a name="method-dispatch-now"></a>
-#### `dispatch_now()` {#collection-method}
-
-`dispatch_now`関数は、指定した[ジョブ](/docs/{{version}}/queues#creating-jobs)を即時に実行し、`handle`メソッドからの値を返します。
-
-    $result = dispatch_now(new App\Jobs\SendEmails);
 
 <a name="method-dump"></a>
 #### `dump()` {#collection-method}

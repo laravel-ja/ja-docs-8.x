@@ -135,7 +135,7 @@ Laravelに含まれている`config/app.php`ファイルを開くと、`provider
     /**
      * Bootstrap any application services.
      *
-     * @param  \Illuminate\Contracts\Routing\ResponseFactory
+     * @param  \Illuminate\Contracts\Routing\ResponseFactory  $response
      * @return void
      */
     public function boot(ResponseFactory $response)

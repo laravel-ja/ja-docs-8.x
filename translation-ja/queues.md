@@ -10,6 +10,7 @@
 - [ジョブミドルウェア](#job-middleware)
     - [レート制限](#rate-limiting)
     - [ジョブのオーバーラップの防止](#preventing-job-overlaps)
+    - [例外による利用制限](#throttling-exceptions)
 - [ジョブのディスパッチ](#dispatching-jobs)
     - [ディスパッチの遅延](#delayed-dispatching)
     - [同期ディスパッチ](#synchronous-dispatching)
@@ -264,17 +265,17 @@ Redisキューを使用する場合は、`block_for`設定オプションを使�
         public $product;
 
         /**
-        * ジョブの一意のロックが解放されるまでの秒数
-        *
-        * @var int
-        */
+         * ジョブの一意のロックが解放されるまでの秒数
+         *
+         * @var int
+         */
         public $uniqueFor = 3600;
 
         /**
-        * ジョブの一意のID
-        *
-        * @return string
-        */
+         * ジョブの一意のID
+         *
+         * @return string
+         */
         public function uniqueId()
         {
             return $this->product->id;
@@ -311,10 +312,10 @@ Redisキューを使用する場合は、`block_for`設定オプションを使�
         ...
 
         /**
-        * 一意のジョブロックのキャッシュドライバを取得
-        *
-        * @return \Illuminate\Contracts\Cache\Repository
-        */
+         * 一意のジョブロックのキャッシュドライバを取得
+         *
+         * @return \Illuminate\Contracts\Cache\Repository
+         */
         public function uniqueVia()
         {
             return Cache::driver('redis');
@@ -489,6 +490,67 @@ Laravelには、任意のキーに基づいてジョブの重複を防ぐこと�
     }
 
 > {note} `WithoutOverlapping`ミドルウェアには、[ロック](/docs/{{version}}/cache#atomic-locks)をサポートするキャッシュドライバが必要です。現在、`memcached`、`redis`、`dynamodb`、`database`、`file`、`array`キャッシュドライバはアトミックロックをサポートしています。
+
+<a name="throttling-exceptions"></a>
+### 例外による利用制限
+
+Laravelは、例外をスロットルすることができる`Illuminate\Queue\Middleware\ThrottlesExceptions`ミドルウェアを用意しています。ジョブが指定した回数の例外を投げると、それ以降のジョブの実行は指定時間間隔が経過するまで延期されます。このミドルウェアは、不安定なサードパーティのサービスとやり取りするジョブで特に有効です。
+
+例えば、キュー投入したジョブがサードパーティのAPIとやりとりして、例外を投げるようになったとします。例外をスロットルするには、ジョブの `middleware` メソッドから`ThrottlesExceptions`というミドルウェアを返します。通常、このミドルウェアは、[時間ベースの試行](#time-based-attempts)を実装したジョブと組み合わせて使用します。
+
+    use Illuminate\Queue\Middleware\ThrottlesExceptions;
+
+    /**
+     * ジョブがパスする必要のあるミドルウェアの取得
+     *
+     * @return array
+     */
+    public function middleware()
+    {
+        return [new ThrottlesExceptions(10, 5)];
+    }
+
+    /**
+     * ジョブがタイムアウトする時間を決定
+     *
+     * @return \DateTime
+     */
+    public function retryUntil()
+    {
+        return now()->addMinutes(30);
+    }
+
+このミドルウェアが受け取る最初のコンストラクタ引数は、スロットルされる前にジョブが投げることができる例外の数で、２番目のコンストラクタ引数は、ジョブがスロットルされた後に再度試行されるまでの時間数です。上記のコード例では、ジョブが５分以内に１０回例外を投げた場合は、もう一度ジョブを試みる前に５分間待ちます。
+
+ジョブが例外を投げ、例外のしきい値にまだ達していない場合、ジョブは通常すぐに再試行されます。ただし、ミドルウェアをジョブに接続するときに、`backoff`メソッドを呼び出すことで、ジョブを遅らせる必要がある数分を指定できます。
+
+    use Illuminate\Queue\Middleware\ThrottlesExceptions;
+
+    /**
+     * ジョブがパスする必要のあるミドルウェアの取得
+     *
+     * @return array
+     */
+    public function middleware()
+    {
+        return [(new ThrottlesExceptions(10, 5))->backoff(5)];
+    }
+
+内部的には、このミドルウェアはLaravelのキャッシュシステムを使用してレート制限を実装し、ジョブのクラス名をキャッシュ「キー」として利用します。ジョブにミドルウェアを添付するときに`by`メソッドを呼び出し、このキーを上書きできます。これは、同じサードパーティのサービスと対話するジョブが複数のジョブを持っている場合に役立ち、それらに共通のスロットル「バケット」を共有できます。
+
+    use Illuminate\Queue\Middleware\ThrottlesExceptions;
+
+    /**
+     * ジョブがパスする必要のあるミドルウェアの取得
+     *
+     * @return array
+     */
+    public function middleware()
+    {
+        return [(new ThrottlesExceptions(10, 10))->by('key')];
+    }
+
+> {tip} Redisを使用している場合は、Redis用に細かく調整され、基本的な例外スロットリングミドルウェアよりも効率的な、`Illuminate\Queue\Middleware\ThrottlesExceptionsWithRedis`ミドルウェアを使用できます。
 
 <a name="dispatching-jobs"></a>
 ## ジョブのディスパッチ
@@ -1275,6 +1337,10 @@ php artisan queue:retry-batch 32dbc76c-4f82-4749-b610-a639fe0099b5
 デフォルトでは、完了してから２４時間以上経過したすべてのバッチが整理されます。バッチデータを保持する時間を決定するためにコマンド呼び出し時に`hours`オプションを使用できます。たとえば、次のコマンドは４８時間以上前に終了したすべてのバッチを削除します。
 
     $schedule->command('queue:prune-batches --hours=48')->daily();
+
+時々、`jobs_batches` テーブルに、ジョブが失敗して再試行も成功しなかったバッチなど、正常に完了しなかったバッチのバッチレコードが蓄積されることがあります。`queue:prune-batches`コマンドで`unfinished`オプションを使って、こうした未完了のバッチレコードを削除するように指示できます。
+
+    $schedule->command('queue:prune-batches --hours=48 --unfinished=72')->daily();
 
 <a name="queueing-closures"></a>
 ## クロージャのキュー投入

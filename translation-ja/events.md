@@ -8,7 +8,7 @@
 - [イベント定義](#defining-events)
 - [リスナ定義](#defining-listeners)
 - [キュー投入するイベントリスナ](#queued-event-listeners)
-    - [キューの手動操作](#manually-interacting-the-queue)
+    - [キューの手動操作](#manually-interacting-with-the-queue)
     - [キュー投入するイベントリスナとデータベーストランザクション](#queued-event-listeners-and-database-transactions)
     - [失敗したジョブの処理](#handling-failed-jobs)
 - [イベント発行](#dispatching-events)
@@ -146,7 +146,7 @@ Laravelは、PHPのリフレクションサービスを使用してリスナク�
         /**
          * 指定イベントの処理
          *
-         * @param  \App\Events\PodcastProcessed
+         * @param  \App\Events\PodcastProcessed  $event
          * @return void
          */
         public function handle(PodcastProcessed $event)
@@ -373,7 +373,7 @@ Laravelは、PHPのリフレクションサービスを使用してリスナク�
         }
     }
 
-<a name="manually-interacting-the-queue"></a>
+<a name="manually-interacting-with-the-queue"></a>
 ### キューの手動操作
 
 リスナの基になるキュージョブの`delete`メソッドと`release`メソッドへ手動でアクセスする必要がある場合は、`Illuminate\Queue\InteractsWithQueue`トレイトを使用してアクセスできます。このトレイトは、生成したリスナにはデフォルトでインポートされ、以下のメソッドへのアクセスを提供します。

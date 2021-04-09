@@ -7,6 +7,7 @@
     - ["Park"コマンド](#the-park-command)
     - ["Link"コマンド](#the-link-command)
     - [TLSによる安全なサイト](#securing-sites)
+    - [デフォルトサイトの提供](#serving-a-default-site)
 - [サイト共有](#sharing-sites)
     - [Ngrokによるサイト共有](#sharing-sites-via-ngrok)
     - [Exposeによるサイト共有](#sharing-sites-via-expose)
@@ -166,6 +167,13 @@ Valetがインストールされると、Laravelアプリケーションの提�
 
     valet unsecure laravel
 
+<a name="serving-a-default-site"></a>
+### デフォルトサイトの提供
+
+時には、未知の`test`ドメインを訪問したときに、`404`の代わりに「デフォルト」サイトを提供するよう、Valetを設定したいことがあるかもしれません。これを実現するには、デフォルトサイトとして機能するサイトへのパスを含む `~/.config/valet/config.json`設定ファイルへ`default`オプションを追加します。
+
+    "default": "/Users/Sally/Sites/foo",
+
 <a name="sharing-sites"></a>
 ## サイト共有
 
@@ -191,7 +199,7 @@ Valetには、ローカルサイトを世界へ公開し共有するコマンド
 
     cd ~/Sites/laravel
 
-    valet expose
+    expose
 
 サイトの共有を停止するには、`Control + C`を押します。
 

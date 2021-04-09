@@ -587,6 +587,14 @@ Laravelは特定のルートまたはルートのグループのトラフィッ�
                     : Limit::perMinute(100)->by($request->ip());
     });
 
+別の例を使ってこの機能を説明すると、認証されたユーザーIDごとに１分間に１００回、ゲスト用のIPアドレスごとに１分間に１０回、ルートへのアクセス制限ができます。
+
+    RateLimiter::for('uploads', function (Request $request) {
+        return $request->user()
+                    ? Limit::perMinute(100)->by($request->user()->id)
+                    : Limit::perMinute(10)->by($request->ip());
+    });
+
 <a name="multiple-rate-limits"></a>
 #### 複数のレート制限
 

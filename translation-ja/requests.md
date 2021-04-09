@@ -18,6 +18,7 @@
     - [アップロード済みファイルの取得](#retrieving-uploaded-files)
     - [アップロード済みファイルの保存](#storing-uploaded-files)
 - [信頼できるプロキシの設定](#configuring-trusted-proxies)
+- [信頼できるホストの設定](#configuring-trusted-hosts)
 
 <a name="introduction"></a>
 ## イントロダクション
@@ -129,6 +130,10 @@ Laravelの`Illuminate\Http\Request`クラスは、アプリケーションが処
     $url = $request->url();
 
     $urlWithQueryString = $request->fullUrl();
+
+現在のURLへクエリ文字列のデータを追加したい場合は、`fullUrlWithQuery`メソッドを呼び出します。このメソッドは、与えられたクエリ文字列変数の配列を現在のクエリ文字列にマージします。
+
+    $request->fullUrlWithQuery(['type' => 'phone']);
 
 <a name="retrieving-the-request-method"></a>
 #### リクエストメソッドの取得
@@ -508,3 +513,27 @@ Amazon AWSまたは別の「クラウド」ロードバランサープロバイ�
      * @var string|array
      */
     protected $proxies = '*';
+
+<a name="configuring-trusted-hosts"></a>
+## 信頼できるホストの設定
+
+デフォルトでLaravelは、HTTPリクエストの`Host`ヘッダの内容に関わらず、受け取った全てのリクエストに応答します。また、Webリクエスト中にアプリケーションへの絶対的なURLを生成する際には、`Host`ヘッダの値が使用されます。
+
+通常、NginxやApacheなどのウェブサーバは、与えられたホスト名にマッチするリクエストのみをアプリケーションへ送信するように設定する必要があります。しかし、ウェブサーバを直接カスタマイズできず、Laravelに特定のホスト名にしか応答しないように指示する必要がある場合は、アプリケーションのミドルウェアである`App\Http\Middleware\TrustHosts`を有効にすることで可能になります。
+
+`TrustHosts`ミドルウェアは、アプリケーションの`$middleware`スタックに最初から含まれていますが、これを有効にするためにあんコメントする必要があります。このミドルウェアの`hosts`メソッドで、アプリケーションが応答すべきホスト名を指定できます。`Host`に他の値を持つヘッダの受信リクエストは拒否されます。
+
+    /**
+     * 信頼できるホストパターンの取得
+     *
+     * @return array
+     */
+    public function hosts()
+    {
+        return [
+            'laravel.test',
+            $this->allSubdomainsOfApplicationUrl(),
+        ];
+    }
+
+`allSubdomainsOfApplicationUrl`ヘルパメソッドは、アプリケーションの`app.url`設定値のすべてのサブドメインにマッチする正規表現を返します。このヘルパメソッドは、ワイルドカードのサブドメインを利用するアプリケーションを構築する際に、アプリケーションのすべてのサブドメインを許可する便利な手段を提供しています。

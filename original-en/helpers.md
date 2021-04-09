@@ -113,6 +113,7 @@ Laravel includes a variety of global "helper" PHP functions. Many of these funct
 [Str::plural](#method-str-plural)
 [Str::pluralStudly](#method-str-plural-studly)
 [Str::random](#method-str-random)
+[Str::remove](#method-str-remove)
 [Str::replaceArray](#method-str-replace-array)
 [Str::replaceFirst](#method-str-replace-first)
 [Str::replaceLast](#method-str-replace-last)
@@ -172,6 +173,7 @@ Laravel includes a variety of global "helper" PHP functions. Many of these funct
 [pipe](#method-fluent-str-pipe)
 [plural](#method-fluent-str-plural)
 [prepend](#method-fluent-str-prepend)
+[remove](#method-fluent-str-remove)
 [replace](#method-fluent-str-replace)
 [replaceArray](#method-fluent-str-replace-array)
 [replaceFirst](#method-fluent-str-replace-first)
@@ -187,6 +189,7 @@ Laravel includes a variety of global "helper" PHP functions. Many of these funct
 [studly](#method-fluent-str-studly)
 [substr](#method-fluent-str-substr)
 [tap](#method-fluent-str-tap)
+[test](#method-fluent-str-test)
 [title](#method-fluent-str-title)
 [trim](#method-fluent-str-trim)
 [ucfirst](#method-fluent-str-ucfirst)
@@ -234,7 +237,6 @@ Laravel includes a variety of global "helper" PHP functions. Many of these funct
 [csrf_token](#method-csrf-token)
 [dd](#method-dd)
 [dispatch](#method-dispatch)
-[dispatch_now](#method-dispatch-now)
 [dump](#method-dump)
 [env](#method-env)
 [event](#method-event)
@@ -786,7 +788,7 @@ The `Arr::where` method filters an array using the given closure:
 <a name="method-array-wrap"></a>
 #### `Arr::wrap()` {#collection-method}
 
-The `Arr::wrap` method wraps the given value in an array. If the given value is already an array it be returned without modification:
+The `Arr::wrap` method wraps the given value in an array. If the given value is already an array it will be returned without modification:
 
     use Illuminate\Support\Arr;
 
@@ -1421,6 +1423,21 @@ The `Str::random` method generates a random string of the specified length. This
 
     $random = Str::random(40);
 
+<a name="method-str-remove"></a>
+#### `Str::remove()` {#collection-method}
+
+The `Str::remove` method removes the given value or array of values from the string:
+
+    use Illuminate\Support\Str;
+
+    $string = 'Peter Piper picked a peck of pickled peppers.';
+
+    $removed = Str::remove('e', $string);
+
+    // Ptr Pipr pickd a pck of pickld ppprs.
+
+You may also pass `false` as a third argument to the `remove` method to ignore case when removing strings.
+
 <a name="method-str-replace-array"></a>
 #### `Str::replaceArray()` {#collection-method}
 
@@ -1516,6 +1533,12 @@ The `Str::startsWith` method determines if the given string begins with the give
     use Illuminate\Support\Str;
 
     $result = Str::startsWith('This is my name', 'This');
+
+    // true
+
+If an array of possible values is passed, the `startsWith` method will return `true` if the string begins with any of the given values:
+
+    $result = Str::startsWith('This is my name', ['This', 'That', 'There']);
 
     // true
 
@@ -2114,6 +2137,19 @@ The `prepend` method prepends the given values onto the string:
 
     // Laravel Framework
 
+<a name="method-fluent-str-remove"></a>
+#### `remove` {#collection-method}
+
+The `remove` method removes the given value or array of values from the string:
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('Arkansas is quite beautiful!')->remove('quite');
+
+    // Arkansas is beautiful!
+
+You may also pass `false` as a second parameter to ignore case when removing.
+
 <a name="method-fluent-str-replace"></a>
 #### `replace` {#collection-method}
 
@@ -2311,6 +2347,17 @@ The `tap` method passes the string to the given closure, allowing you to examine
         ->upper();
 
     // LARAVEL FRAMEWORK
+
+<a name="method-fluent-str-test"></a>
+#### `test` {#collection-method}
+
+The `test` method determines if a string matches the given regular expression pattern:
+
+    use Illuminate\Support\Str;
+
+    $result = Str::of('Laravel Framework')->test('/Laravel/');
+
+    // true
 
 <a name="method-fluent-str-title"></a>
 #### `title` {#collection-method}
@@ -2656,13 +2703,6 @@ If you do not want to halt the execution of your script, use the [`dump`](#metho
 The `dispatch` function pushes the given [job](/docs/{{version}}/queues#creating-jobs) onto the Laravel [job queue](/docs/{{version}}/queues):
 
     dispatch(new App\Jobs\SendEmails);
-
-<a name="method-dispatch-now"></a>
-#### `dispatch_now()` {#collection-method}
-
-The `dispatch_now` function runs the given [job](/docs/{{version}}/queues#creating-jobs) immediately and returns the value from its `handle` method:
-
-    $result = dispatch_now(new App\Jobs\SendEmails);
 
 <a name="method-dump"></a>
 #### `dump()` {#collection-method}

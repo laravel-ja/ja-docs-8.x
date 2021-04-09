@@ -266,6 +266,13 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
         return $event->order->id === $order->id;
     });
 
+イベントリスナが特定のイベントをリッスンしていることを単にアサートしたい場合は、`assertListening`メソッドを使用することができます。
+
+    Event::assertListening(
+        OrderShipped::class,
+        [SendShipmentNotification::class, 'handle']
+    );
+
 > {note} `Event::fake()`を呼び出した後、イベントリスナはすべて実行されません。したがって、モデルの`creating`イベント中にUUIDを作成するなど、イベントに依存するモデルファクトリをテストで使用する場合は、ファクトリを使用した**後に**`Event::fake()`を呼び出す必要があります。
 
 <a name="faking-a-subset-of-events"></a>

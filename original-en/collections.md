@@ -1404,6 +1404,10 @@ The `mode` method returns the [mode value](https://en.wikipedia.org/wiki/Mode_(s
 
     // [1]
 
+    $mode = collect([1, 1, 2, 2])->mode();
+
+    // [1, 2]
+
 <a name="method-nth"></a>
 #### `nth()` {#collection-method}
 
@@ -1467,11 +1471,11 @@ To pad to the left, you should specify a negative size. No padding will take pla
 <a name="method-partition"></a>
 #### `partition()` {#collection-method}
 
-The `partition` method may be combined with the `list` PHP function to separate elements that pass a given truth test from those that do not:
+The `partition` method may be combined with PHP array destructuring to separate elements that pass a given truth test from those that do not:
 
     $collection = collect([1, 2, 3, 4, 5, 6]);
 
-    list($underThree, $equalOrAboveThree) = $collection->partition(function ($i) {
+    [$underThree, $equalOrAboveThree] = $collection->partition(function ($i) {
         return $i < 3;
     });
 
@@ -1511,7 +1515,7 @@ The `pipeInto` method creates a new instance of the given class and passes the c
         /**
          * Create a new ResourceCollection instance.
          *
-         * @param  Collection  $resource
+         * @param  Collection  $collection
          * @return void
          */
         public function __construct(Collection $collection)

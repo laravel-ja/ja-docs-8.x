@@ -49,6 +49,13 @@ Laravelは、[Guzzle HTTPクライアント](http://docs.guzzlephp.org/en/stable
 
     return Http::get('http://example.com/users/1')['name'];
 
+<a name="dumping-requests"></a>
+#### リクエストのダンプ
+
+送信するリクエストインスタンスを送信して、スクリプトの実行を終了する前にダンプしたい場合は、リクエスト定義の先頭に`dd`メソッドを追加できます。
+
+    return Http::dd()->get('http://example.com');
+
 <a name="request-data"></a>
 ### リクエストデータ
 

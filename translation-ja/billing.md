@@ -1041,6 +1041,12 @@ Cashierは、顧客が非課税であるかどうかを判断するために、`
 
     $user->subscription('default')->cancelNowAndInvoice();
 
+特定の時間に購読をキャンセルすることもできます。
+
+    $user->subscription('default')->cancelAt(
+        now()->addDays(10)
+    );
+
 <a name="resuming-subscriptions"></a>
 ### サブスクリプションの再開
 

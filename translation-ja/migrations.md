@@ -99,6 +99,28 @@ Laravelは、マイグレーションの名前からテーブル名と新しい�
         }
     }
 
+<a name="setting-the-migration-connection"></a>
+#### マイグレーション接続の設定
+
+マイグレーションがアプリケーションのデフォルトのデータベース接続以外のデータベース接続を操作する場合は、マイグレーションの`$connection`プロパティを設定する必要があります。
+
+    /**
+     * マイグレーションが使用するデータベース接続
+     *
+     * @var string
+     */
+    protected $connection = 'pgsql';
+
+    /**
+     * マイグレーションの実行
+     *
+     * @return void
+     */
+    public function up()
+    {
+        //
+    }
+
 <a name="running-migrations"></a>
 ## マイグレーションの実行
 

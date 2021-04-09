@@ -7,6 +7,7 @@
     - [The "Park" Command](#the-park-command)
     - [The "Link" Command](#the-link-command)
     - [Securing Sites With TLS](#securing-sites)
+    - [Serving a Default Site](#serving-a-default-site)
 - [Sharing Sites](#sharing-sites)
     - [Sharing Sites Via Ngrok](#sharing-sites-via-ngrok)
     - [Sharing Sites Via Expose](#sharing-sites-via-expose)
@@ -166,6 +167,13 @@ To "unsecure" a site and revert back to serving its traffic over plain HTTP, use
 
     valet unsecure laravel
 
+<a name="serving-a-default-site"></a>
+### Serving A Default Site
+
+Sometimes, you may wish to configure Valet to serve a "default" site instead of a `404` when visiting an unknown `test` domain. To accomplish this, you may add a `default` option to your `~/.config/valet/config.json` configuration file containing the path to the site that should serve as your default site:
+
+    "default": "/Users/Sally/Sites/foo",
+
 <a name="sharing-sites"></a>
 ## Sharing Sites
 
@@ -191,7 +199,7 @@ If you have [Expose](https://beyondco.de/docs/expose) installed, you can share y
 
     cd ~/Sites/laravel
 
-    valet expose
+    expose
 
 To stop sharing your site, you may press `Control + C`.
 

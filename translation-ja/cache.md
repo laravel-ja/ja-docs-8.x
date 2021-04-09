@@ -84,6 +84,13 @@ LaravelでRedisキャッシュを使用する前に、PECLを介してPhpRedis P
 
 Redisの設定の詳細については、[Laravelドキュメントページ](/docs/{{version}}/redis#configuration)を参照してください。
 
+<a name="dynamodb"></a>
+#### DynamoDB
+
+[DynamoDB](https://aws.amazon.com/dynamodb)キャッシュドライバを使用する前に、すべてのキャッシュデータを格納するためのDynamoDBテーブルを作成する必要があります。通常、このテーブルは`cache`という名前です。ただし、アプリケーションの`cache`設定ファイル内の`stores.dynamodb.table`設定値の値に基づいてテーブルに名前を付ける必要があります。
+
+このテーブルには、アプリケーションの`cache`設定ファイル内の`stores.dynamodb.key`設定項目の値に対応する名前の、文字列パーティションキーもあります。デフォルトでは、パーティションキーは`key`という名前にする必要があります。
+
 <a name="cache-usage"></a>
 ## キャッシュ使用法
 

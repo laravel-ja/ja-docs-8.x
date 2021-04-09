@@ -165,6 +165,20 @@ GET       | `/photos/{photo}/edit` | edit         | photos.edit
 PUT/PATCH | `/photos/{photo}`      | update       | photos.update
 DELETE    | `/photos/{photo}`      | destroy      | photos.destroy
 
+<a name="customizing-missing-model-behavior"></a>
+#### 見つからないモデルの動作のカスタマイズ
+
+暗黙的にバインドしたリソースモデルが見つからない場合、通常404のHTTPレスポンスが生成されます。ただし、リソースルートを定義するときに`missing`メソッドを呼び出すことでこの動作をカスタマイズすることができます。`missing`メソッドは、暗黙的にバインドされたモデルがリソースのルートに対して見つからない場合に呼び出すクロージャを引数に取ります。
+
+    use App\Http\Controllers\PhotoController;
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Redirect;
+
+    Route::resource('photos', PhotoController::class)
+            ->missing(function (Request $request) {
+                return Redirect::route('photos.index');
+            });
+
 <a name="specifying-the-resource-model"></a>
 #### リソースモデルの指定
 

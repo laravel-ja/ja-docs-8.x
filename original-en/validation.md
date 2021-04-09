@@ -717,6 +717,9 @@ Below is a list of all available validation rules and their function:
 [Numeric](#rule-numeric)
 [Password](#rule-password)
 [Present](#rule-present)
+[Prohibited](#rule-prohibited)
+[Prohibited If](#rule-prohibited-if)
+[Prohibited Unless](#rule-prohibited-unless)
 [Regular Expression](#rule-regex)
 [Required](#rule-required)
 [Required If](#rule-required-if)
@@ -880,6 +883,10 @@ Since this rule requires several arguments, you may use the `Rule::dimensions` m
 When validating arrays, the field under validation must not have any duplicate values:
 
     'foo.*.id' => 'distinct'
+
+Distinct uses loose variable comparisons by default. To use strict comparisons, you may add the `strict` parameter to your validation rule definition:
+
+    'foo.*.id' => 'distinct:strict'
 
 You may add `ignore_case` to the validation rule's arguments to make the rule ignore capitalization differences:
 
@@ -1126,6 +1133,21 @@ The field under validation must match the authenticated user's password. You may
 #### present
 
 The field under validation must be present in the input data but can be empty.
+
+<a name="rule-prohibited"></a>
+#### prohibited
+
+The field under validation must be empty or not present.
+
+<a name="rule-prohibited-if"></a>
+#### prohibited_if:_anotherfield_,_value_,...
+
+The field under validation must be empty or not present if the _anotherfield_ field is equal to any _value_.
+
+<a name="rule-prohibited-unless"></a>
+#### prohibited_unless:_anotherfield_,_value_,...
+
+The field under validation must be empty or not present unless the _anotherfield_ field is equal to any _value_.
 
 <a name="rule-regex"></a>
 #### regex:_pattern_

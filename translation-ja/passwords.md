@@ -3,6 +3,7 @@
 - [イントロダクション](#introduction)
     - [モデルの準備](#model-preparation)
     - [データベース準備](#database-preparation)
+    - [信頼するホストの設定](#configuring-trusted-hosts)
 - [ルート](#routing)
     - [パスワードリセットリンクの要求](#requesting-the-password-reset-link)
     - [パスワードのリセット](#resetting-the-password)
@@ -28,6 +29,15 @@ Laravelのパスワードリセット機能を使用する前に、アプリケ�
 アプリケーションのパスワードリセットトークンを保存するためのテーブルを作成する必要があります。このテーブルのマイグレーションはデフォルトのLaravelアプリケーションに含まれているため、データベースをマイグレーションするだけでこのテーブルを作成できます。
 
     php artisan migrate
+
+<a name="configuring-trusted-hosts"></a>
+### 信頼するホストの設定
+
+デフォルトでは、LaravelはHTTPリクエストの`host`ヘッダの内容に関係なく受信したすべてのリクエストにレスポンスします。さらに、Webリクエスト中にアプリケーションへの絶対URLを生成するときに、`host`ヘッダの値を使用します。
+
+通常、NginxやApacheなどのウェブサーバは、与えられたホスト名にマッチするリクエストのみをアプリケーションに送信するように設定する必要があります。しかし、ウェブサーバを直接カスタマイズできず、Laravelに特定のホスト名にしか応答しないように指示する必要がある場合は、アプリケーションのミドルウェアである`App\Http\Middleware\TrustHosts`を有効にすることで、それが可能になります。これは、アプリケーションがパスワードリセット機能を提供している場合、特に重要です。
+
+このミドルウェアについて詳しく知りたい方は、[`TrustHosts`ミドルウェアのドキュメント](/docs/{{version}}/requests#configuring-trusted-hosts)を参照してください。
 
 <a name="routing"></a>
 ## ルート
@@ -113,9 +123,9 @@ Laravelのパスワードリセット機能を使用する前に、アプリケ�
             function ($user, $password) use ($request) {
                 $user->forceFill([
                     'password' => Hash::make($password)
-                ])->save();
+                ])->setRememberToken(Str::random(60));
 
-                $user->setRememberToken(Str::random(60));
+                $user->save();
 
                 event(new PasswordReset($user));
             }

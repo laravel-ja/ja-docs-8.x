@@ -7,6 +7,7 @@
     - [セッション／認証](#session-and-authentication)
     - [レスポンスのデバッグ](#debugging-responses)
 - [JSON APIのテスト](#testing-json-apis)
+    - [FluentなJSONテスト](#fluent-json-testing)
 - [ファイルアップロードのテスト](#testing-file-uploads)
 - [ビューのテスト](#testing-views)
     - [Bladeとコンポーネントのレンダー](#rendering-blade-and-components)
@@ -297,6 +298,120 @@ JSONレスポンスの指定パスに指定データが含まれていること�
                 ->assertJsonPath('team.owner.name', 'Darian');
         }
     }
+
+<a name="fluent-json-testing"></a>
+### FluentなJSONテスト
+
+また、LaravelはアプリケーションのJSONレスポンスを流暢にテストする美しい方法を提供しています。まず始めに、`assertJson`メソッドにクロージャを渡します。このクロージャは、アプリケーションが返すJSONに対してアサートを行うために使用できる、`Illuminate\Testing\Fluent\AssertableJson`のインスタンスで呼び出されます。`where`メソッドはJSONの特定の属性に対してアサートを行うために使用でき、`missing`メソッドはJSONに特定の属性がないことをアサートするために使用できます。
+
+    use Illuminate\Testing\Fluent\AssertableJson;
+
+    /**
+     * 基本的な機能テストの例
+     *
+     * @return void
+     */
+    public function test_fluent_json()
+    {
+        $response = $this->json('GET', '/users/1');
+
+        $response
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->where('id', 1)
+                     ->where('name', 'Victoria Faith')
+                     ->missing('password')
+                     ->etc()
+            );
+    }
+
+#### `etc`メソッドを理解する
+
+上記の例では、アサートのチェーンの最後で`etc`メソッドを呼び出したことに気づかれた方もいらっしゃるでしょう。このメソッドはLaravelへJSONオブジェクト中に他の属性が存在する可能性があることを伝えます。`etc`メソッドが使用されていない場合は、JSONオブジェクトに他の属性が存在していることをアサートしていないため、テストは失敗します。
+
+この動作の意図は、属性に対して明示的にアサーションを行うか、`etc` メソッドで追加の属性を明示的に許可することで、JSONレスポンスで意図せず機密情報を公開してしまうことを防ぐことにあります。
+
+<a name="asserting-against-json-collections"></a>
+#### JSONコレクションに対するアサート
+
+多くの場合、ルートは複数のユーザーなど、複数の項目を含むJSONレスポンスを返します。
+
+    Route::get('/users', function () {
+        return User::all();
+    });
+
+このような状況では、レスポンスに含まれているユーザーに対するアサートを行うために、fluentなJSONオブジェクトの`has`メソッドを使用することができます。例として、JSONレスポンスに３つのユーザーが含まれていることをアサートしましょう。次に、`first`メソッドを使用して、コレクション内の最初のユーザーに関するいくつかのアサートを行います。`first`メソッドは、JSONコレクション内の最初のオブジェクトに関するアサートを行うために使用できる別のアサートJSON文字列を受信するクロージャを引数に取ります。
+
+    $response
+        ->assertJson(fn (AssertableJson $json) =>
+            $json->has(3)
+                 ->first(fn ($json) =>
+                    $json->where('id', 1)
+                         ->where('name', 'Victoria Faith')
+                         ->missing('password')
+                         ->etc()
+                 )
+        );
+
+<a name="scoping-json-collection-assertions"></a>
+#### JSONコレクションをスコープするアサーション
+
+時々、アプリケーションのルートは名前付きキーが割り当てられているJSONコレクションを返します。
+
+    Route::get('/users', function () {
+        return [
+            'meta' => [...],
+            'users' => User::all(),
+        ];
+    })
+
+これらのルートをテストするときは、コレクション内の項目数に対して`has`メソッドを使えます。さらに、`has`メソッドを使用してアサーションチェーンをスコープできます。
+
+    $response
+        ->assertJson(fn (AssertableJson $json) =>
+            $json->has('meta')
+                 ->has('users', 3)
+                 ->has('users.0', fn ($json) =>
+                    $json->where('id', 1)
+                         ->where('name', 'Victoria Faith')
+                         ->missing('password')
+                         ->etc()
+                 )
+        );
+
+ただし、`has`コレクションに`has`コレクションにアサートする２つの別々の呼び出しをするのではなく、クロージャを３番目の引数に渡す呼び出し一つにまとめられます。これで、クロージャが自動的に呼び出され、コレクション内の最初の項目にスコープされます。
+
+    $response
+        ->assertJson(fn (AssertableJson $json) =>
+            $json->has('meta')
+                 ->has('users', 3, fn ($json) =>
+                    $json->where('id', 1)
+                         ->where('name', 'Victoria Faith')
+                         ->missing('password')
+                         ->etc()
+                 )
+        );
+
+<a name="asserting-json-types"></a>
+#### JSONタイプのアサート
+
+JSONレスポンス内のプロパティが特定の型のものであることをアサートできます。`Illuminate\Testing\Fluent\AssertableJson`クラスは、これを行う`whereType`と`whereAllType`メソッドを提供しています。
+
+    $response->assertJson(fn (AssertableJson $json) =>
+        $json->whereType('id', 'integer')
+             ->whereAllType([
+                'users.0.name' => 'string',
+                'meta' => 'array'
+            ])
+    );
+
+複数のタイプを指定するには `|` 文字を使用するか、タイプの配列を `whereType` メソッドの 2 番目のパラメータとして渡します。レスポンスの値がリストアップされたタイプのいずれかであれば、アサーションは成功します。
+
+    $response->assertJson(fn (AssertableJson $json) =>
+        $json->whereType('name', 'string|null')
+             ->whereType('id', ['string', 'integer'])
+    );
+
+`whereType`と`whereTypeAll`メソッドは、`string`、`integer`、`double`、`boolean`、`array`、`null`タイプを認識します。
 
 <a name="testing-file-uploads"></a>
 ## ファイルアップロードのテスト
@@ -653,6 +768,37 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
     $response->assertJsonStructure([
         'user' => [
             'name',
+        ]
+    ]);
+
+時々、アプリケーションが返すJSONレスポンスには、オブジェクトの配列が含まれている可能性があります。
+
+```js
+{
+    "user": [
+        {
+            "name": "Steve Schoger",
+            "age": 55,
+            "location": "Earth"
+        },
+        {
+            "name": "Mary Schoger",
+            "age": 60,
+            "location": "Earth"
+        }
+    ]
+}
+```
+
+この状況では、`*`文字を使って配列内のすべてのオブジェクトの構造に対してアサートすることができます。
+
+    $response->assertJsonStructure([
+        'user' => [
+            '*' => [
+                 'name',
+                 'age',
+                 'location'
+            ]
         ]
     ]);
 

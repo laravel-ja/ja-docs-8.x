@@ -717,6 +717,9 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 [数値](#rule-numeric)
 [パスワード](#rule-password)
 [存在](#rule-present)
+[禁止](#rule-prohibited)
+[禁止If](#rule-prohibited-if)
+[禁止Unless](#rule-prohibited-unless)
 [正規表現](#rule-regex)
 [必須](#rule-required)
 [指定フィールド値一致時必須](#rule-required-if)
@@ -880,6 +883,10 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 配列のバリデーション時、フィールドに重複した値がないことをバリデートします。
 
     'foo.*.id' => 'distinct'
+
+distinctはデフォルトで緩い比較を使用します。厳密な比較を使用するには、検証ルール定義に`strict`パラメータを追加することができます。
+
+    'foo.*.id' => 'distinct:strict'
 
 バリデーションルールの引数に`ignore_case`を追加して、大文字と小文字の違いを無視するルールを加えられます。
 
@@ -1126,6 +1133,21 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
 #### present
 
 フィールドが存在していることをバリデートしますが、存在していれば空を許します。
+
+<a name="rule-prohibited"></a>
+#### prohibited
+
+フィールドが空であるか、存在していないことをバリデートします。
+
+<a name="rule-prohibited-if"></a>
+#### prohibited_if:_anotherfield_,_value_,...
+
+**anotherfield**フィールドが任意の**value**と等しい場合、対象のフィールドは空であるか、存在しないことをバリデートします。
+
+<a name="rule-prohibited-unless"></a>
+#### prohibited_unless:_anotherfield_,_value_,...
+
+**anotherfiel**フィールドが任意の**value**と等しくない場合、対象のフィールドは空であるか、存在していないことをバリデートします。
 
 <a name="rule-regex"></a>
 #### regex:_正規表現_

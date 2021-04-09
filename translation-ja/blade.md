@@ -797,6 +797,10 @@ Bladeコンポーネントを使用すると、クラスのrenderメソッド内
 
     {{ $attributes->whereStartsWith('wire:model') }}
 
+逆に、`whereDoesntStartWith`メソッドは、指定する文字列で始まるすべての属性を除外するために使用します。
+
+    {{ $attributes->whereDoesntStartWith('wire:model') }}
+
 `first`メソッドを使用して、特定の属性バッグの最初の属性をレンダーできます。
 
     {{ $attributes->whereStartsWith('wire:model')->first() }}

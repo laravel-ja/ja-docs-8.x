@@ -18,7 +18,7 @@
 - MySQL5.7以上 ([バージョンポリシー](https://en.wikipedia.org/wiki/MySQL#Release_history))
 - PostgreSQL9.6以上 ([バージョンポリシー](https://www.postgresql.org/support/versioning/))
 - SQLite3.8.8以上
-- SQL Server2017以上 ([バージョンポリシー](https://support.microsoft.com/en-us/lifecycle/search))
+- SQL Server2017以上 ([バージョンポリシー](https://docs.microsoft.com/en-us/lifecycle/products/?products=sql-server))
 </div>
 
 <a name="configuration"></a>
@@ -253,9 +253,9 @@ SELECTステートメントに１つのデータベース接続を使用し、IN
         public function boot()
         {
             DB::listen(function ($query) {
-                // $query->sql
-                // $query->bindings
-                // $query->time
+                // $query->sql;
+                // $query->bindings;
+                // $query->time;
             });
         }
     }

@@ -18,6 +18,7 @@
 - [コマンド登録](#registering-commands)
 - [プログラムからのコマンド実行](#programmatically-executing-commands)
     - [他コマンドからのコマンド呼び出し](#calling-commands-from-other-commands)
+- [シグナルの処理](#signal-handling)
 - [スタブのカスタマイズ](#stub-customization)
 - [イベント](#events)
 
@@ -586,6 +587,51 @@ Artisanコマンドから他のコマンドを呼び出したい場合があり�
     $this->callSilently('mail:send', [
         'user' => 1, '--queue' => 'default'
     ]);
+
+<a name="signal-handling"></a>
+## シグナルの処理
+
+Artisanコンソールのベースとして動作しているSymfonyコンソールコンポーネントを使用すると、コマンドで処理したいプロセスのシグナルを指定できます。たとえば、コマンドが`SIGINT`信号と`SIGTERM`信号を処理することを指示するとします。
+
+処理するには、Artisanコマンドクラスの`Symfony\Component\Console\Command\SignalableCommandInterface`インタフェースを実装する必要があります。このインタフェースは、`getSubscribedSignals`と`handleSignal`、２つのメソッドを定義する必要があります。
+
+```php
+<?php
+
+use Symfony\Component\Console\Command\SignalableCommandInterface;
+
+class StartServer extends Command implements SignalableCommandInterface
+{
+    // ...
+
+    /**
+     * コマンドにより処理するシグナルのリストを取得
+     *
+     * @return array
+     */
+    public function getSubscribedSignals(): array
+    {
+        return [SIGINT, SIGTERM];
+    }
+
+    /**
+     * 受け取ったシグナルの処理
+     *
+     * @param  int  $signal
+     * @return void
+     */
+    public function handleSignal(int $signal): void
+    {
+        if ($signal === SIGINT) {
+            $this->stopServer();
+
+            return;
+        }
+    }
+}
+```
+
+ご期待のとおり、`getSubscribedSignals`メソッドはコマンドが扱えるシグナルの配列を返し、`handleSignal`メソッドはシグナルを受け取り、それに応答できるようにします。
 
 <a name="stub-customization"></a>
 ## スタブのカスタマイズ

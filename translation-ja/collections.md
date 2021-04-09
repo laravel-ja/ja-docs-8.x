@@ -1404,6 +1404,10 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
     // [1]
 
+    $mode = collect([1, 1, 2, 2])->mode();
+
+    // [1, 2]
+
 <a name="method-nth"></a>
 #### `nth()` {#collection-method}
 
@@ -1467,11 +1471,11 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 <a name="method-partition"></a>
 #### `partition()` {#collection-method}
 
-`partition`メソッドは指定したテストの合否に要素を分け、結果を`list` PHP関数で受け取ります。
+`partition`メソッドは、PHPの配列のデストラクションと組み合わせて、与えられた真理値テストに合格した要素とそうでない要素を分離できます。
 
     $collection = collect([1, 2, 3, 4, 5, 6]);
 
-    list($underThree, $equalOrAboveThree) = $collection->partition(function ($i) {
+    [$underThree, $equalOrAboveThree] = $collection->partition(function ($i) {
         return $i < 3;
     });
 
@@ -1511,7 +1515,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
         /**
          * 新しいResourceCollectionインスタンスの生成
          *
-         * @param  Collection  $resource
+         * @param  Collection  $collection
          * @return void
          */
         public function __construct(Collection $collection)

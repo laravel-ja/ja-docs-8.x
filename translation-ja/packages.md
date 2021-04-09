@@ -211,7 +211,7 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'courier');
     }
 
-パッケージのビューは、`package::view`記法を使い参照します。そのため、ビューのパスを登録し終えたあとで、`courier`パッケージの`admin`ビューをロードする場合は、次のようになります。
+パッケージのビューは、`package::view`記法を使い参照します。そのため、ビューのパスを登録し終えたあとで、`courier`パッケージの`dashboard`ビューをロードする場合は、次のようになります。
 
     Route::get('admin', function () {
         return view('courier::admin');

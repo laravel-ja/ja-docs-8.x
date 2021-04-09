@@ -3,6 +3,7 @@
 - [イントロダクション](#introduction)
 - [データベースクエリの実行](#running-database-queries)
     - [結果の分割](#chunking-results)
+    - [ルーズなストリーミング結果](#streaming-results-lazily)
     - [集計](#aggregates)
 - [SELECT文](#select-statements)
 - [素のSQL](#素のSQL)
@@ -70,7 +71,7 @@ Laravelクエリビルダは、PDOパラメーターバインディングを使�
         }
     }
 
-`get`メソッドは、クエリの結果を含む`Illuminate\Support\Collection`を返します。各結果は、PHPの`stdClass`オブジェクトのインスタンスです。オブジェクトのプロパティとしてカラムにアクセスすることにより、各カラムの値にアクセスできます。
+`get`メソッドは、クエリの結果を含む`Illuminate\Support\Collection`インスタンスを返します。各結果は、PHPの`stdClass`オブジェクトのインスタンスです。オブジェクトのプロパティとしてカラムにアクセスすることにより、各カラムの値にアクセスできます。
 
     use Illuminate\Support\Facades\DB;
 
@@ -153,6 +154,32 @@ Laravelクエリビルダは、PDOパラメーターバインディングを使�
         });
 
 > {note} チャンクコールバックの中でレコードを更新または削除する場合、主キーまたは外部キーの変更がチャンククエリに影響を与える可能性があります。これにより、レコードがチャンク化された結果に含まれない可能性が発生します。
+
+<a name="streaming-results-lazily"></a>
+### ルーズなストリーミング結果
+
+`lazy`メソッドは、チャンク単位でクエリを実行するという意味で、[`chunk`メソッド](#chunking-results)と似たような動作をします。しかし、各チャンクをコールバックに渡すのではなく、`lazy()`メソッドは [`LazyCollection`](/docs/{{version}}/collections#lazy-collections)を返し、結果をひとつのストリームとして扱えます。
+
+```php
+use Illuminate\Support\Facades\DB;
+
+DB::table('users')->lazy()->each(function ($user) {
+    //
+});
+```
+
+繰り返しになりますが、検索したレコードを反復しながら更新する予定がある場合は、代わりに`lazyById`メソッドの使用を推奨します。このメソッドは、レコードの主キーに基づいて結果を自動的にページ分割します。
+
+```php
+DB::table('users')->where('active', false)
+    ->lazyById()->each(function ($user) {
+        DB::table('users')
+            ->where('id', $user->id)
+            ->update(['active' => true]);
+    });
+```
+
+> {note} レコードの反復処理中にレコードの更新や削除を行うと、主キーや外部キーの変更がチャンククエリへ影響を与える可能性があります。これにより、レコードが結果に含まれない可能性があります。
 
 <a name="aggregates"></a>
 ### 集計
@@ -805,7 +832,7 @@ where exists (
 
 上記の例では、Laravelは２つのレコードを挿入しようとします。同じ`departure`カラムと`destination`カラムの値を持つレコードがすでに存在する場合、Laravelはそのレコードの`price`カラムを更新します。
 
-> {note} SQL Serverを除くすべてのデータベースでは、`upsert`メソッドの２番目の引数のカラムに「プライマリ」または「一意の」インデックスが必要です。
+> {note} SQL Serverを除くすべてのデータベースでは、`upsert`メソッドの２番目の引数のカラムに「プライマリ」または「ユニーク」インデックスが必要です。また、MySQLデータベースドライバは、`upert`メソッドの第２引数を無視し、常にテーブルの「プライマリ」および「ユニーク」インデックスを使用して既存のレコードを検出します。
 
 <a name="update-statements"></a>
 ## UPDATE文

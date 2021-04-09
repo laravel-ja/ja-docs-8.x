@@ -3,6 +3,7 @@
 - [Introduction](#introduction)
 - [Running Database Queries](#running-database-queries)
     - [Chunking Results](#chunking-results)
+    - [Streaming Results Lazily](#streaming-results-lazily)
     - [Aggregates](#aggregates)
 - [Select Statements](#select-statements)
 - [Raw Expressions](#raw-expressions)
@@ -70,7 +71,7 @@ You may use the `table` method provided by the `DB` facade to begin a query. The
         }
     }
 
-The `get` method returns an `Illuminate\Support\Collection` containing the results of the query where each result is an instance of the PHP `stdClass` object. You may access each column's value by accessing the column as a property of the object:
+The `get` method returns an `Illuminate\Support\Collection` instance containing the results of the query where each result is an instance of the PHP `stdClass` object. You may access each column's value by accessing the column as a property of the object:
 
     use Illuminate\Support\Facades\DB;
 
@@ -153,6 +154,32 @@ If you are updating database records while chunking results, your chunk results 
         });
 
 > {note} When updating or deleting records inside the chunk callback, any changes to the primary key or foreign keys could affect the chunk query. This could potentially result in records not being included in the chunked results.
+
+<a name="streaming-results-lazily"></a>
+### Streaming Results Lazily
+
+The `lazy` method works similarly to [the `chunk` method](#chunking-results) in the sense that it executes the query in chunks. However, instead of passing each chunk into a callback, the `lazy()` method returns a [`LazyCollection`](/docs/{{version}}/collections#lazy-collections), which lets you interact with the results as a single stream:
+
+```php
+use Illuminate\Support\Facades\DB;
+
+DB::table('users')->lazy()->each(function ($user) {
+    //
+});
+```
+
+Once again, if you plan to update the retrieved records while iterating over them, it is best to use the `lazyById` method instead. This method will automatically paginate the results based on the record's primary key:
+
+```php
+DB::table('users')->where('active', false)
+    ->lazyById()->each(function ($user) {
+        DB::table('users')
+            ->where('id', $user->id)
+            ->update(['active' => true]);
+    });
+```
+
+> {note} When updating or deleting records while iterating over them, any changes to the primary key or foreign keys could affect the chunk query. This could potentially result in records not being included in the results.
 
 <a name="aggregates"></a>
 ### Aggregates
@@ -686,7 +713,7 @@ The `reorder` method removes all of the "order by" clauses that have previously 
 
     $unorderedUsers = $query->reorder()->get();
 
-You may pass a column and direction when calling the `reorder` method in order to remove all existing "order by "clauses" and apply an entirely new order to the query:
+You may pass a column and direction when calling the `reorder` method in order to remove all existing "order by" clauses and apply an entirely new order to the query:
 
     $query = DB::table('users')->orderBy('name');
 
@@ -805,7 +832,7 @@ The `upsert` method will insert records that do not exist and update the records
 
 In the example above, Laravel will attempt to insert two records. If a record already exists with the same `departure` and `destination` column values, Laravel will update that record's `price` column.
 
-> {note} All databases except SQL Server require the columns in the second argument of the `upsert` method to have a "primary" or "unique" index.
+> {note} All databases except SQL Server require the columns in the second argument of the `upsert` method to have a "primary" or "unique" index. In addition, the MySQL database driver ignores the second argument of the `upsert` method and always uses the "primary" and "unique" indexes of the table to detect existing records.
 
 <a name="update-statements"></a>
 ## Update Statements

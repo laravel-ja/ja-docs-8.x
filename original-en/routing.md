@@ -587,6 +587,14 @@ Sometimes you may wish to segment rate limits by some arbitrary value. For examp
                     : Limit::perMinute(100)->by($request->ip());
     });
 
+To illustrate this feature using another example, we can limit access to the route to 100 times per minute per authenticated user ID or 10 times per minute per IP address for guests:
+
+    RateLimiter::for('uploads', function (Request $request) {
+        return $request->user()
+                    ? Limit::perMinute(100)->by($request->user()->id)
+                    : Limit::perMinute(10)->by($request->ip());
+    });
+
 <a name="multiple-rate-limits"></a>
 #### Multiple Rate Limits
 
@@ -624,7 +632,7 @@ Typically, the `throttle` middleware is mapped to the `Illuminate\Routing\Middle
 <a name="form-method-spoofing"></a>
 ## Form Method Spoofing
 
-HTML forms do not support `PUT`, `PATCH` or `DELETE` actions. So, when defining `PUT`, `PATCH` or `DELETE` routes that are called from an HTML form, you will need to add a hidden `_method` field to the form. The value sent with the `_method` field will be used as the HTTP request method:
+HTML forms do not support `PUT`, `PATCH`, or `DELETE` actions. So, when defining `PUT`, `PATCH`, or `DELETE` routes that are called from an HTML form, you will need to add a hidden `_method` field to the form. The value sent with the `_method` field will be used as the HTTP request method:
 
     <form action="/example" method="POST">
         <input type="hidden" name="_method" value="PUT">

@@ -2,7 +2,7 @@
 
 - [イントロダクション](#introduction)
 - [インストール](#installation)
-    - [Socialiteのアップグレード](#upgrading-socialite)
+- [Socialiteのアップグレード](#upgrading-socialite)
 - [設定](#configuration)
 - [認証](#authentication)
     - [ルート](#routing)
@@ -25,7 +25,7 @@ Socialiteを使い始めるには、Composerパッケージマネージャーを
     composer require laravel/socialite
 
 <a name="upgrading-socialite"></a>
-### Socialiteのアップグレード
+## Socialiteのアップグレード
 
 Socialiteの新しいメジャーバージョンにアップグレードするときは、[アップグレードガイド](https://github.com/laravel/socialite/blob/master/UPGRADE.md)を注意深く確認することが重要です。
 

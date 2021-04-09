@@ -9,6 +9,8 @@
     - [Sailサービスの選択](#choosing-your-sail-services)
     - [Composerでのインストール](#installation-via-composer)
 - [初期設定](#initial-configuration)
+    - [環境ベースの設定](#environment-based-configuration)
+    - [ディレクトリ設定](#directory-configuration)
 - [次のステップ](#next-steps)
     - [Laravelフルスタックフレームワーク](#laravel-the-fullstack-framework)
     - [Laravel APIバックエンド](#laravel-the-api-backend)
@@ -184,6 +186,36 @@ Composerのシステム全体のvendor/binディレクトリを`$PATH`に配置�
 - GNU／Linuxディストリビューション: `$HOME/.config/composer/vendor/bin`もしくは`$HOME/.composer/vendor/bin`
 </div>
 
+利便性のため、Laravelインストーラはあなたの新しいプロジェクトのためにGitリポジトリを作成することもできます。Gitリポジトリを作成することを指示するには、新しいプロジェクトを作成するときに`--git`フラグを渡します。
+
+```bash
+laravel new example-app --git
+```
+
+このコマンドはプロジェクトの新しいGitリポジトリを初期化し、基本的なLaravelのスケルトンを自動的にコミットします。`git`フラグは正しくインストールされ、設定したGitを持っていると仮定しています。`--branch`フラグを使用して最初の分岐名を設定することもできます。
+
+```bash
+laravel new example-app --git --branch="main"
+```
+
+`--git`フラグを使用する代わりに、`--github`フラグを使用してGitリポジトリを作成し、GitHubで対応するプライベートリポジトリを作成することもできます。
+
+```bash
+laravel new example-app --github
+```
+
+作成されたリポジトリは`https://github.com/<your-account>/my-app.com`で入手できます。`github`フラグは、[`gh` CLIツール](https://cli.github.com)を正しくインストールし、GitHubで認証されていると仮定しています。さらに、`git`がインストールされ、正しく設定されている必要があります。必要に応じて、GitHub CLIでサポートされている追加のフラグを渡せます。
+
+```bash
+laravel new example-app --github="--public"
+```
+
+`--organization`フラグを使用して、特定のGitHub組織の下へリポジトリを作成できます。
+
+```bash
+laravel new example-app --github="--public" --organization="laravel"
+```
+
 <a name="initial-configuration"></a>
 ## 初期設定
 
@@ -191,14 +223,19 @@ Laravelフレームワークのすべての設定ファイルは、`config`デ�
 
 Laravelは最初から、追加の設定をほぼ必要としません。あなたは自由に開発を始めることができます！ただし、`config/app.php`ファイルとコメントを確認されることを推奨します。`timezone`や`locale`などのいくつかのオプションが含まれており、アプリケーションに合わせて変更したいはずです。
 
-<a name="environment-configuration"></a>
-#### 環境を元にした設定
+<a name="environment-based-configuration"></a>
+### 環境ベースの設定
 
 Laravelの設定オプション値の多くは、アプリケーションがローカルコンピューターで実行されているか、本番Webサーバで実行されているかにより別の値にする場合があるため、多くの重要な設定値をアプリケーションのルートにある`.env`ファイルを使用して定義しています。
 
 アプリケーションを使用する開発者／サーバごとに異なる環境設定が必要になる可能性があるため、`.env`ファイルをアプリケーションのソース管理へコミットしないでください。さらに、機密性の高い資格情報が公開されるため、侵入者がソース管理リポジトリにアクセスした場合のセキュリティリスクになります。
 
 > {tip} `.env`ファイルと環境ベースの設定の詳細については、完全な[設定ドキュメント](/docs/{{version}}/configuration#environment-configuration)で確認してください。
+
+<a name="directory-configuration"></a>
+### ディレクトリ設定
+
+Laravelは常に、Webサーバで設定した「Webディレクトリ」のルートから提供するべきです。WebディレクトリのサブディレクトリからLaravelアプリケーションを提供しないでください。そうしてしまうと、アプリケーション内に存在する機密ファイルが漏洩する可能性があります。
 
 <a name="next-steps"></a>
 ## 次のステップ

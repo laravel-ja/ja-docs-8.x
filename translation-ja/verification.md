@@ -49,7 +49,7 @@
 <a name="database-preparation"></a>
 ### データベースの検討事項
 
-次に、`user`テーブルにユーザーの電子メールアドレスが確認された日時を格納するための`email_verified_at`カラムを用意する必要があります。デフォルトでLaravelフレームワークに含まれている`users`テーブルのマイグレーションには、はじめからこのカラムが含まれています。したがって、必要なのはデータベースのマイグレーションを実行することだけです。
+次に、`users`テーブルにユーザーの電子メールアドレスが確認された日時を格納するための`email_verified_at`カラムを用意する必要があります。デフォルトでLaravelフレームワークに含まれている`users`テーブルのマイグレーションには、はじめからこのカラムが含まれています。したがって、必要なのはデータベースのマイグレーションを実行することだけです。
 
     php artisan migrate
 
@@ -81,7 +81,6 @@
 次に、ユーザーが電子メールで送信された電子メール確認リンクをクリックしたときに生成されるリクエストを処理するルートを定義する必要があります。このルートには`verification.verify`という名前を付け、`auth`および`signed`ミドルウェアを割り当てる必要があります。
 
     use Illuminate\Foundation\Auth\EmailVerificationRequest;
-    use Illuminate\Http\Request;
 
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();

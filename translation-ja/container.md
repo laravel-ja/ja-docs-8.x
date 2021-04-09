@@ -364,7 +364,7 @@ Laravelコンテナインスタンス自体をコンテナにより解決中の�
     /**
      * 新しいクラスインスタンスの生成
      *
-     * @param  \Illuminate\Container\Container
+     * @param  \Illuminate\Container\Container  $container
      * @return void
      */
     public function __construct(Container $container)

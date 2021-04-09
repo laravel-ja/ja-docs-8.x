@@ -109,6 +109,7 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 - Grafana
 - InfluxDB
 - MariaDB
+- Meilisearch
 - MinIO
 - MongoDB
 - Neo4j
@@ -307,6 +308,7 @@ Homesteadをインストールしたら、Homesteadの`make`コマンドを呼�
         - grafana: true
         - influxdb: true
         - mariadb: true
+        - meilisearch: true
         - minio: true
         - mongodb: true
         - neo4j: true

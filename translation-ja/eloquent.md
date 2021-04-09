@@ -11,6 +11,7 @@
 - [モデルの取得](#retrieving-models)
     - [コレクション](#collections)
     - [結果の分割](#chunking-results)
+    - [ルーズなストリーミング結果](#streaming-results-lazily)
     - [カーソル](#cursors)
     - [上級サブクエリ](#advanced-subqueries)
 - [単一モデル/集計の取得](#retrieving-single-models)
@@ -69,6 +70,9 @@ php artisan make:model Flight -c
 
 # モデルとマイグレーション、ファクトリ、シーダ、およびコントローラを生成
 php artisan make:model Flight -mfsc
+
+# ピボットモデルを生成
+php artisan make:model Member --pivot
 ```
 
 <a name="eloquent-model-conventions"></a>
@@ -318,9 +322,11 @@ Laravelの基本コレクションクラスによって提供されるメソッ�
 
 LaravelのコレクションはすべてPHPのiterableなインターフェイスを実装しているため、コレクションを配列のようにループ処理できます。
 
-    foreach ($flights as $flight) {
-        echo $flight->name;
-    }
+```php
+foreach ($flights as $flight) {
+    echo $flight->name;
+}
+```
 
 <a name="chunking-results"></a>
 ### 結果の分割
@@ -329,47 +335,82 @@ LaravelのコレクションはすべてPHPのiterableなインターフェイ�
 
 `chunk`メソッドは、Eloquentモデルのサブセットを取得し、それらをクロージャに渡して処理します。Eloquentモデルの現在のチャンクのみ一度に取得されるため、`chunk`メソッドを使用すると大量のモデルを操作するときに、メモリ使用量が大幅に削減できます。
 
-    use App\Models\Flight;
+```php
+use App\Models\Flight;
 
-    Flight::chunk(200, function ($flights) {
-        foreach ($flights as $flight) {
-            //
-        }
-    });
+Flight::chunk(200, function ($flights) {
+    foreach ($flights as $flight) {
+        //
+    }
+});
+```
 
 `chunk`メソッドに渡す最初の引数は、「チャンク」ごとに受信するレコード数です。２番目の引数として渡すクロージャは、データベースから取得したチャンクごとに呼び出されます。レコードのチャンクを取得しクロージャへ渡すために、毎回データベースクエリを実行します。
 
 結果を反復処理するときに、更新するカラムに基づいて`chunk`メソッドの結果をフィルタリングする場合は、`chunkById`メソッドを使用する必要があります。こうしたシナリオで`chunk`メソッドを使用すると、一貫性が無く予期しない結果を生じる可能性があります。内部的に`chunkById`メソッドは常に、前のチャンクの最後のモデルよりも大きい`id`カラムを持つモデルを取得します。
 
-    Flight::where('departed', true)
-            ->chunkById(200, function ($flights) {
-                $flights->each->update(['departed' => false]);
-            }, $column = 'id');
+```php
+Flight::where('departed', true)
+    ->chunkById(200, function ($flights) {
+        $flights->each->update(['departed' => false]);
+    }, $column = 'id');
+```
+
+<a name="streaming-results-lazily"></a>
+### ルーズなストリーミング結果
+
+`lazy`メソッドは、裏でチャンク単位でクエリを実行するという意味で、[`chunk`メソッド](#chunking-results)と同様に動作します。しかし、`lazy`メソッドは、各チャンクをそのままコールバックへ渡すのではなく、フラット化したEloquentモデルの[`LazyCollection`](/docs/{{version}}/collections#lazy-collections)を返すので、結果を単一のストリームとして操作できます。
+
+```php
+use App\Models\Flight;
+
+foreach (Flight::lazy() as $flight) {
+    //
+}
+```
+
+もし、`lazy`メソッドの結果を、結果の反復処理中に更新されるカラムに基づいてフィルタリングするのであれば、`lazyById`メソッドを使うべきです。内部的には、`lazyById`メソッドは、`id`カラムが前のチャンクの最後のモデルよりも大きいモデルを常に取得します。
+
+```php
+Flight::where('departed', true)
+    ->lazyById(200, $column = 'id')
+    ->each->update(['departed' => false]);
+```
 
 <a name="cursors"></a>
 ### カーソル
 
-`chunk`メソッドと同様に、`cursor`メソッドも数万のEloquentモデルレコードを反復処理するときにアプリケーションのメモリ消費を大幅に削減できます。
+`lazy`メソッドと同様に、`cursor`メソッドを使用すると、何万ものEloquentモデルのレコードを反復処理する際に、アプリケーションのメモリ消費量を大幅に削減できます。
 
-`cursor`メソッドは単一のデータベースクエリのみを実行します。ただし、個々のEloquentモデルは、実際の繰り返し処理までハイドレートされません。したがって、カーソルを反復処理している間、常に１つのEloquentモデルのみがメモリに保持されます。内部的には、`cursor`メソッドはPHP [ジェネレータ](https://www.php.net/manual/en/language.generators.overview.php)を使用してこの機能を実装します。
+`cursor`メソッドは単一のデータベースクエリのみを実行します。ただし、個々のEloquentモデルは、実際の繰り返し処理までハイドレートされません。したがって、カーソルを反復処理している間、常に１つのEloquentモデルのみがメモリに保持されます。
 
-    use App\Models\Flight;
+> {note} `cursor`メソッドは一度に１つのEloquentモデルしかメモリに保持しないため、リレーションをEagerロードできません。リレーションシップをEagerロードする必要がある場合は、代わりに [`lazy`メソッド](#streaming-results-lazily) の使用を検討してください。
 
-    foreach (Flight::where('destination', 'Zurich')->cursor() as $flight) {
-        //
-    }
+内部的には、`cursor`メソッドはPHPの[ジェネレータ](https://www.php.net/manual/en/language.generators.overview.php)を使ってこの機能を実装しています。
+
+```php
+use App\Models\Flight;
+
+foreach (Flight::where('destination', 'Zurich')->cursor() as $flight) {
+    //
+}
+```
 
 `cursor`は`Illuminate\Support\LazyCollection`インスタンスを返します。[レイジーコレクション](/docs/{{version}}/collections#lazy-collections)を使用すると、一度に1つのモデルのみをメモリにロードしながら、一般的なLaravelコレクションで使用できる多くのコレクションメソッドを使用できます。
 
-    use App\Models\User;
+```php
+use App\Models\User;
 
-    $users = User::cursor()->filter(function ($user) {
-        return $user->id > 500;
-    });
+$users = User::cursor()->filter(function ($user) {
+    return $user->id > 500;
+});
 
-    foreach ($users as $user) {
-        echo $user->id;
-    }
+foreach ($users as $user) {
+    echo $user->id;
+}
+```
+
+`cursor`メソッドは、通常のクエリよりもはるかに少ないメモリしか使用しませんが（一度に１つのEloquentモデルをメモリ内に保持するだけです）、それでも最終的にはメモリが不足するでしょう。これは、[PHPのPDOドライバが、素のクエリ結果をすべてバッファに内部的にキャッシュしているため](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php)です。非常に多くのEloquentレコードを扱う場合には、代わりに[`lazy`メソッド](#streaming-results-lazily)の使用を検討してください。
 
 <a name="advanced-subqueries"></a>
 ### 上級サブクエリ
@@ -763,7 +804,7 @@ Eloquentは、データベースから実際にレコードを削除するだけ
 データベーステーブルに`deleted_at`カラムを追加する必要があります。Laravel[スキーマビルダ](/docs/{{version}}/migrations)はこのカラムを作成するためのヘルパメソッドを用意しています。
 
     use Illuminate\Database\Schema\Blueprint;
-    use Illuminate\Facades\Schema;
+    use Illuminate\Support\Facades\Schema;
 
     Schema::table('flights', function (Blueprint $table) {
         $table->softDeletes();
@@ -1230,6 +1271,38 @@ Eloquentイベントを定義してマッピングした後は、そのイベン
     public function boot()
     {
         User::observe(UserObserver::class);
+    }
+
+<a name="observers-and-database-transactions"></a>
+#### オブザーバとデータベーストランザクション
+
+データベーストランザクション内でモデルを作成している場合、データベーストランザクションがコミットされた後にのみイベントハンドラを実行するようにオブザーバへ指示したい場合があるでしょう。これを実現するには、オブザーバで`$afterCommit`プロパティを定義します。データベーストランザクションが進行中でなければ、イベントハンドラは直ちに実行されます。
+
+    <?php
+
+    namespace App\Observers;
+
+    use App\Models\User;
+
+    class UserObserver
+    {
+        /**
+         * すべてのトランザクションがコミットされた後にイベントを処理
+         *
+         * @var bool
+         */
+        public $afterCommit = true;
+
+        /**
+         * ユーザーの"created"イベントを処理
+         *
+         * @param  \App\Models\User  $user
+         * @return void
+         */
+        public function created(User $user)
+        {
+            //
+        }
     }
 
 <a name="muting-events"></a>
