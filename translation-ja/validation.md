@@ -310,6 +310,19 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
         });
     }
 
+
+<a name="request-stopping-on-first-validation-rule-failure"></a>
+#### 最初のバリデーション失敗属性で停止
+
+リクエストクラスに`stopOnFirstFailure`プロパティを追加することで、バリデーションの失敗が起きてすぐに、すべての属性のバリデーションを停止する必要があることをバリデータへ指示できます。
+
+    /**
+     * バリデータが最初のルールの失敗で停​​止するかを指示
+     *
+     * @var bool
+     */
+    protected $stopOnFirstFailure = true;
+
 <a name="authorizing-form-requests"></a>
 ### フォームリクエストの認可
 
@@ -389,7 +402,6 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 
 バリデーションルールを適用する前にリクエストからのデータを準備またはサニタイズする必要がある場合は、`prepareForValidation`メソッド使用します。
 
-
     use Illuminate\Support\Str;
 
     /**
@@ -446,6 +458,14 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 
 リクエストのバリデーションが失敗したかどうかを判断した後、`withErrors`メソッドを使用してエラーメッセージをセッションに一時保持保存できます。この方法を使用すると、リダイレクト後に`$errors`変数がビューと自動的に共有されるため、メッセージをユーザーへ簡単に表示できます。`withErrors`メソッドは、バリデータ、`MessageBag`、またはPHPの`array`を引数に取ります。
 
+#### 最初のバリデート失敗時に停止
+
+`stopOnFirstFailure`メソッドは、バリデーションが失敗したら、すぐにすべての属性のバリデーションを停止する必要があることをバリデータへ指示します。
+
+    if ($validator->stopOnFirstFailure()->fails()) {
+        // ...
+    }
+
 <a name="automatic-redirection"></a>
 ### 自動リダイレクト
 
@@ -477,7 +497,7 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 <a name="manual-customizing-the-error-messages"></a>
 ### エラーメッセージのカスタマイズ
 
-必要に応じて、デフォルトのエラーメッセージの代わりに、バリデータインスタンスでカスタムエラーメッセージを使用できます。カスタムメッセージを指定する方法はいくつかあります。まず、カスタムメッセージを３番目の引数として`Validator::make`メソッドに渡す方法です。
+必要に応じて、Laravelが提供するデフォルトのエラーメッセージの代わりにバリデータインスタンスが使用するカスタムエラーメッセージを指定できます。カスタムメッセージを指定する方法はいくつかあります。まず、カスタムメッセージを`validator::make`メソッドに３番目の引数として渡す方法です。
 
     $validator = Validator::make($input, $rules, $messages = [
         'required' => 'The :attribute field is required.',
@@ -766,7 +786,13 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 <a name="rule-bail"></a>
 #### bail
 
-バリデーションにはじめて失敗した時点で、残りのルールのバリデーションを中止します。
+フィールドでバリデーションにはじめて失敗した時点で、残りのルールのバリデーションを中止します。
+
+`bail`ルールはバリデーションが失敗したときに、特定のフィールドのバリデーションのみを停止するだけで、一方の`stopOnFirstFailure`メソッドは、ひとつバリデーション失敗が発生したら、すべての属性のバリデーションを停止する必要があることをバリデータに指示します。
+
+    if ($validator->stopOnFirstFailure()->fails()) {
+        // ...
+    }
 
 <a name="rule-before"></a>
 #### before:_日付_
@@ -930,7 +956,7 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
     Validator::make($data, [
         'email' => [
             'required',
-            Rule::exists('staff')->where(function ($query) {
+                return $query->where('account_id', 1);
                 $query->where('account_id', 1);
             }),
         ],
@@ -986,7 +1012,7 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
 
 フィールドが整数値であることをバリデートします。
 
-> {note} このバリデーションルールは入力が「整数」変数型であるのかを検証するわけではありません。ただ入力が整数で構成された文字列か数値であることを確認します。
+> {note} このバリデーションルールは、入力が「整数」変数タイプであるか確認しません。入力がPHPの`FILTER_VALIDATE_INT`ルールで受け入れられるか検証するだけです。入力を数値として検証する必要がある場合は、このルールを[`numeric`バリデーションルール](#rule-numeric)と組み合わせて使用​​してください。
 
 <a name="rule-ip"></a>
 #### ip
@@ -1087,7 +1113,7 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
 <a name="rule-numeric"></a>
 #### numeric
 
-フィールドは数値であることをバリデートします。
+フィールドは[数値](https://www.php.net/manual/en/function.is-numeric.php)であることをバリデートします。
 
 <a name="rule-password"></a>
 #### password
@@ -1286,7 +1312,7 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
     use Illuminate\Support\Facades\Validator;
 
     $validator = Validator::make($data, [
-        'has_appointment' => 'required|bool',
+        'has_appointment' => 'required|boolean',
         'appointment_date' => 'exclude_if:has_appointment,false|required|date',
         'doctor_name' => 'exclude_if:has_appointment,false|required|string',
     ]);
@@ -1294,7 +1320,7 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
 もしくは逆に`exclude_unless`ルールを使い、他のフィールドに指定値が入力されていない場合は、バリデーションを行わないことも可能です。
 
     $validator = Validator::make($data, [
-        'has_appointment' => 'required|bool',
+        'has_appointment' => 'required|boolean',
         'appointment_date' => 'exclude_unless:has_appointment,true|required|date',
         'doctor_name' => 'exclude_unless:has_appointment,true|required|string',
     ]);

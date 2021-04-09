@@ -233,7 +233,7 @@ Laravelはメッセージをログに記録するときに、デフォルトで`
         }
     }
 
->{tip}すべての「tap」クラスは[サービスコンテナ](/docs/{{version}}/container)によって解決されるため、必要なコンストラクターの依存関係は自動的に依存注入されます。
+> {tip} すべての「tap」クラスは[サービスコンテナ](/docs/{{version}}/container)によって解決されるため、必要なコンストラクターの依存関係は自動的に依存注入されます。
 
 <a name="creating-monolog-handler-channels"></a>
 ### Monolog処理チャンネルの作成

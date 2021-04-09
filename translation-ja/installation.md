@@ -6,6 +6,7 @@
     - [macOSで始める](#getting-started-on-macos)
     - [Windowsで始める](#getting-started-on-windows)
     - [Linuxで始める](#getting-started-on-linux)
+    - [Sailサービスの選択](#choosing-your-sail-services)
     - [Composerでのインストール](#installation-via-composer)
 - [初期設定](#initial-configuration)
 - [次のステップ](#next-steps)
@@ -59,7 +60,7 @@ Laravel Sailは、LaravelのデフォルトのDocker構成と、操作するた�
 Macで開発していて、[Docker Desktop](https://www.docker.com/products/docker-desktop)がすでにインストールされているならば、簡単なターミナルコマンドを使用して新しいLaravelプロジェクトを作成できます。たとえば、「example-app」という名前のディレクトリに新しいLaravelアプリケーションを作成するには、ターミナルで以下のコマンドを実行します。
 
 ```nothing
-curl -s https://laravel.build/example-app | bash
+curl -s "https://laravel.build/example-app" | bash
 ```
 
 もちろん、このURLの"example-app"は好きなように変更できます。Laravelアプリケーションのディレクトリは、コマンドを実行したディレクトリ内に作成されます。
@@ -138,6 +139,17 @@ Sailの`up`コマンドをはじめて実行すると、Sailのアプリケー�
 
 > {tip} Laravel Sailの詳細は、[完全なドキュメント](/docs/{{version}}/sail)で確認してください。
 
+<a name="choosing-your-sail-services"></a>
+### Sailサービスの選択
+
+Sailで新しいLaravelアプリケーションを作成する際に、`with`というクエリ文字列変数を使って、新しいアプリケーションの`docker-compose.yml`ファイルで設定するサービスを選択することができます。利用可能なサービスは、`mysql`、`pgsql`、`redis`、`memcached`、`meilisearch`、`selenium`、`mailhog`です。
+
+```nothing
+curl -s "https://laravel.build/example-app?with=mysql,redis" | bash
+```
+
+設定したいサービスを指定しない場合は、`mysql`、`redis`、`meilisearch`、`mailhog`、`selenium`のデフォルトのスタックが設定されます。
+
 <a name="installation-via-composer"></a>
 ### Composerでのインストール
 
@@ -158,6 +170,8 @@ Sailの`up`コマンドをはじめて実行すると、Sailのアプリケー�
 composer global require laravel/installer
 
 laravel new example-app
+
+cd example-app
 
 php artisan serve
 ```

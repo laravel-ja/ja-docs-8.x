@@ -21,13 +21,13 @@ do
   en=$(awk -f scripts/structure-to-string.awk "original-en/${i}")
   ja=$(awk -f scripts/structure-to-string.awk "translation-ja/${i}")
 
-  # if [ "${en}" != "${ja}" ]
-  # then
-  #   echo 日英ファイルの構造が一致しません "${i}"
-  #   diff <(echo "${en}") <(echo "${ja}")
-  #   awk -v en="${en}" -v ja="${ja}" -e 'BEGIN {error_line=0; for (i=8; i<=length(en); i++){ if (substr(en,i,1)!= substr(ja,i,1)) {print i-7 "行目が一致しません。英語ファイル：" substr(en,i,1), "日本語ファイル：" substr(ja,i,1)}; error_line++;} if(error_line>10) {exit}}'
-  #   exit 1
-  # fi
+  if [ "${en}" != "${ja}" ]
+  then
+    echo 日英ファイルの構造が一致しません "${i}"
+    diff <(echo "${en}") <(echo "${ja}")
+    awk -v en="${en}" -v ja="${ja}" -e 'BEGIN {error_line=0; for (i=8; i<=length(en); i++){ if (substr(en,i,1)!= substr(ja,i,1)) {print i-5 "行目が一致しません。英語ファイル：" substr(en,i,1), "日本語ファイル：" substr(ja,i,1); if(error_line++ > 10) exit;}; } }'
+    exit 1
+  fi
 done
 
 # 用語の不統一を調べる

@@ -77,7 +77,7 @@ Laravelのイベントブロードキャストの使用を開始するには、L
 
 [Pusherチャンネル](https://pusher.com/channels)を使用してイベントをブロードキャストする場合は、Composerパッケージマネージャーを使用してPusher Channels PHP SDKをインストールする必要があります。
 
-    composer require pusher/pusher-php-server "~4.0"
+    composer require pusher/pusher-php-server "^5.0"
 
 次に、`config/broadcasting.php`設定ファイルでPusherチャンネルの利用資格情報を設定する必要があります。Pusherチャンネル設定の例はすでにこのファイルに含まれているため、キー、シークレット、およびアプリケーションIDを手軽に指定できます。通常、これらの値は、`PUSHER_APP_KEY`、`PUSHER_APP_SECRET`、`PUSHER_APP_ID`[環境変数](/docs/{{version}}/configuration#environment-configuration)を介して設定する必要があります。
 
@@ -581,7 +581,7 @@ HTTPルートと同様に、チャンネルルートも暗黙的および明示�
 
     use App\Events\OrderShipmentStatusUpdated;
 
-    OrderShipmentStatusUpdated::dispatch($order));
+    OrderShipmentStatusUpdated::dispatch($order);
 
 <a name="only-to-others"></a>
 ### 他の人だけへの送信
@@ -645,7 +645,6 @@ Echo.private(`orders.${this.order.id}`)
 Echo.leaveChannel(`orders.${this.order.id}`);
 ```
 
-If you would like to leave a channel and also its associated private and presence channels, you may call the `leave` method:
 チャンネルとそれに関連するプライベートチャンネルおよびプレゼンスチャンネルを離れたい場合は、`leave`メソッドを呼び出してください。
 
 ```js

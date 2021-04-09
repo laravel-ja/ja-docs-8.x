@@ -107,7 +107,7 @@
 
     Route::permanentRedirect('/here', '/there');
 
->　{note} リダイレクトルートでルートパラメータを使用する場合、以降のパラメータはLaravelによって予約されており、使用できません。：`destination`、`status`
+> {note} リダイレクトルートでルートパラメータを使用する場合、以降のパラメータはLaravelによって予約されており、使用できません。：`destination`、`status`
 
 <a name="view-routes"></a>
 ### ビュールート
@@ -425,6 +425,21 @@ Laravelは、タイプヒントの変数名がルートセグメント名と一�
     });
 
 ネストしたルートパラメーターとしてカスタムキー付き暗黙的結合を使用する場合、Laravelはクエリのスコープを自動的に設定し、親の関係名を推測する規則を使用して、親によってネストされたモデルを取得します。この場合、`User`モデルには、`Post`モデルを取得するために使用できる`posts`(ルートパラメータ名の複数形)という名前のリレーションが存在していると仮定します。
+
+<a name="customizing-missing-model-behavior"></a>
+#### 見つからないモデルの動作をカスタマイズする
+
+暗黙的にバインドされたモデルが見つからない場合、通常404のHTTPレスポンスが生成されます。ただし、ルートを定義するときに`Missing`メソッドを呼び出し、この動作をカスタマイズできます。`Missing`メソッドは、暗黙的にバインドされたモデルが見つからない場合に呼び出されるクロージャを引数に取ります。
+
+    use App\Http\Controllers\LocationsController;
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Redirect;
+
+    Route::get('/locations/{location:slug}', [LocationsController::class, 'show'])
+            ->name('locations.view')
+            ->missing(function (Request $request) {
+                return Redirect::route('locations.index');
+            });
 
 <a name="explicit-binding"></a>
 ### 明示的な結合

@@ -18,7 +18,8 @@ Laravel facades serve as "static proxies" to underlying classes in the service c
 All of Laravel's facades are defined in the `Illuminate\Support\Facades` namespace. So, we can easily access a facade like so:
 
     use Illuminate\Support\Facades\Cache;
-
+    use Illuminate\Support\Facades\Route;
+    
     Route::get('/cache', function () {
         return Cache::get('key');
     });
@@ -151,7 +152,7 @@ The `Facade` base class makes use of the `__callStatic()` magic-method to defer 
         }
     }
 
-Notice that near the top of the file we are "importing" the `Cache` facade. This facade serves as a proxy to accessing the underlying implementation of the `Illuminate\Contracts\Cache\Factory` interface. Any calls we make using the facade will be passed to the underlying instance of Laravel's cache service.
+Notice that near the top of the file we are "importing" the `Cache` facade. This facade serves as a proxy for accessing the underlying implementation of the `Illuminate\Contracts\Cache\Factory` interface. Any calls we make using the facade will be passed to the underlying instance of Laravel's cache service.
 
 If we look at that `Illuminate\Support\Facades\Cache` class, you'll see that there is no static method `get`:
 

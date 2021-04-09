@@ -39,6 +39,8 @@ Laravelの認証機能は、基本的に「ガード」と「プロバイダ」�
 
 アプリケーションの認証設定ファイルは`config/auth.php`にあります。このファイルは、Laravelの認証サービスの動作を微調整できるように、十分なコメントの付いたオプションがいくつか含まれています。
 
+> {tip} ガードとプロバイダを「役割」や「許可」と混同しないでください。権限を介したユーザーアクションの承認の詳細については、[承認](/docs/{{version}}/authorization)のドキュメントを参照してください。
+
 <a name="starter-kits"></a>
 ### スターターキット
 
@@ -119,7 +121,7 @@ Laravelをバックエンドで利用するシングルページアプリケー�
 
 まず、[Laravelアプリケーションスターターキットをインストールする](/docs/{{version}}/starter-kits)必要があります。現在のスターターキットであるLaravel BreezeとLaravel Jetstreamは、認証を新しいLaravelアプリケーションへ組み込むために美しく設計された開始点を提供します。
 
-Laravel Breezeは、ログイン、ユーザー登録、パスワードリセット、メールの確認、パスワードの確認など、Laravelのすべての認証機能の最小限でシンプルな実装です。Laravel Breezeのビューレイヤーは、[Tailwind CSS](htts://tailwindcss.com)を用いスタイル設定されたシンプルな[Bladeテンプレート](/docs/{{version}}/blade)で構成しています。
+Laravel Breezeは、ログイン、ユーザー登録、パスワードリセット、メールの確認、パスワードの確認など、Laravelのすべての認証機能の最小限でシンプルな実装です。Laravel Breezeのビューレイヤーは、[Tailwind CSS](https://tailwindcss.com)を用いスタイル設定されたシンプルな[Bladeテンプレート](/docs/{{version}}/blade)で構成しています。
 
 [Laravel Jetstream](https://jetstream.laravel.com)は、[Livewire](https://jetstream.laravel.com)か[Inertia.jsとVue]((https://inertiajs.com))を使用する、アプリケーションのスカフォールドのサポートを含む、より堅牢なアプリケーションスターターキットです。さらに、Jetstreamはオプションとして２要素認証、チーム、プロファイル管理、ブラウザセッション管理、[Laravel Sanctum](/docs/{{version}}/sanctum)を介するAPIサポート、アカウント削除などのサポートを備えています。
 
@@ -278,33 +280,6 @@ Laravelのリダイレクタが提供する`intended`メソッドは、認証ミ
 
     if (Auth::guard('admin')->attempt($credentials)) {
         // ...
-    }
-
-<a name="manually-logging-out"></a>
-#### ログアウト
-
-アプリケーションからユーザーをログアウトするには、`Auth`ファサードで`logout`メソッドを使用します。これにより、ユーザーセッションの認証情報がクリアされ、アプリケーションへの以降のリクエストが認証されなくなります。
-
-`logout`メソッドを呼び出すことに加えて、ユーザーのセッションを無効にして、[CSRFトークン](/docs/{{version}}/csrf)を再生成することを推奨します。ユーザーをログアウトした後、通常はユーザーをアプリケーションのルートにリダイレクトします。
-
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Auth;
-
-    /**
-     * ユーザーをアプリケーションからログアウトさせる
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function logout(Request $request)
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return redirect('/');
     }
 
 <a name="remembering-users"></a>

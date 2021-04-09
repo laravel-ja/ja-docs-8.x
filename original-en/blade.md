@@ -17,6 +17,7 @@
     - [Rendering Components](#rendering-components)
     - [Passing Data To Components](#passing-data-to-components)
     - [Component Attributes](#component-attributes)
+    - [Reserved Keywords](#reserved-keywords)
     - [Slots](#slots)
     - [Inline Component Views](#inline-component-views)
     - [Anonymous Components](#anonymous-components)
@@ -339,7 +340,7 @@ If you are in a nested loop, you may access the parent loop's `$loop` variable v
     @foreach ($users as $user)
         @foreach ($user->posts as $post)
             @if ($loop->parent->first)
-                This is first iteration of the parent loop.
+                This is the first iteration of the parent loop.
             @endif
         @endforeach
     @endforeach
@@ -431,197 +432,6 @@ The `@once` directive allows you to define a portion of the template that will o
         @endpush
     @endonce
 
-<a name="building-layouts"></a>
-## Building Layouts
-
-<a name="layouts-using-components"></a>
-### Layouts Using Components
-
-Most web applications maintain the same general layout across various pages. It would be incredibly cumbersome and hard to maintain our application if we had to repeat the entire layout HTML in every view we create. Thankfully, it's convenient to define this layout as a single [Blade component](#components) and then use it throughout our application.
-
-<a name="defining-the-layout-component"></a>
-#### Defining The Layout Component
-
-For example, imagine we are building a "todo" list application. We might define a `layout` component that looks like the following:
-
-```html
-<!-- resources/views/components/layout.blade.php -->
-
-<html>
-    <head>
-        <title>{{ $title ?? 'Todo Manager' }}
-    </head>
-    <body>
-        <h1>Todos</h1>
-        <hr/>
-        {{ $slot }}
-    </body>
-</html>
-```
-
-<a name="applying-the-layout-component"></a>
-#### Applying The Layout Component
-
-Once the `layout` component has been defined, we may create a Blade view that utilizes the component. In this example, we will define a simple view that displays our task list:
-
-```html
-<!-- resources/views/tasks.blade.php -->
-
-<x-layout>
-    @foreach ($tasks as $task)
-        {{ $task }}
-    @endforeach
-</x-layout>
-```
-
-Remember, content that is injected into a component will be supplied to the default `$slot` variable within our `layout` component. As you may have noticed, our `layout` also respects a `$title` slot if one is provided; otherwise, a default title is shown. We may inject a custom title from our task list view using the standard slot syntax discussed in the [component documentation](#components):
-
-```html
-<!-- resources/views/tasks.blade.php -->
-
-<x-layout>
-    <x-slot name="title">
-        Custom Title
-    </x-slot>
-
-    @foreach ($tasks as $task)
-        {{ $task }}
-    @endforeach
-</x-layout>
-```
-
-Now that we have defined our layout and task list views, we just need to return the `task` view from a route:
-
-    use App\Models\Task;
-
-    Route::get('/tasks', function () {
-        return view('tasks', ['tasks' => Task::all()]);
-    });
-
-<a name="layouts-using-template-inheritance"></a>
-### Layouts Using Template Inheritance
-
-<a name="defining-a-layout"></a>
-#### Defining A Layout
-
-Layouts may also be created via "template inheritance". This was the primary way of building applications prior to the introduction of [components](#components).
-
-To get started, let's take a look at a simple example. First, we will examine a page layout. Since most web applications maintain the same general layout across various pages, it's convenient to define this layout as a single Blade view:
-
-```html
-<!-- resources/views/layouts/app.blade.php -->
-
-<html>
-    <head>
-        <title>App Name - @yield('title')</title>
-    </head>
-    <body>
-        @section('sidebar')
-            This is the master sidebar.
-        @show
-
-        <div class="container">
-            @yield('content')
-        </div>
-    </body>
-</html>
-```
-
-As you can see, this file contains typical HTML mark-up. However, take note of the `@section` and `@yield` directives. The `@section` directive, as the name implies, defines a section of content, while the `@yield` directive is used to display the contents of a given section.
-
-Now that we have defined a layout for our application, let's define a child page that inherits the layout.
-
-<a name="extending-a-layout"></a>
-#### Extending A Layout
-
-When defining a child view, use the `@extends` Blade directive to specify which layout the child view should "inherit". Views which extend a Blade layout may inject content into the layout's sections using `@section` directives. Remember, as seen in the example above, the contents of these sections will be displayed in the layout using `@yield`:
-
-```html
-<!-- resources/views/child.blade.php -->
-
-@extends('layouts.app')
-
-@section('title', 'Page Title')
-
-@section('sidebar')
-    @@parent
-
-    <p>This is appended to the master sidebar.</p>
-@endsection
-
-@section('content')
-    <p>This is my body content.</p>
-@endsection
-```
-
-In this example, the `sidebar` section is utilizing the `@@parent` directive to append (rather than overwriting) content to the layout's sidebar. The `@@parent` directive will be replaced by the content of the layout when the view is rendered.
-
-> {tip} Contrary to the previous example, this `sidebar` section ends with `@endsection` instead of `@show`. The `@endsection` directive will only define a section while `@show` will define and **immediately yield** the section.
-
-The `@yield` directive also accepts a default value as its second parameter. This value will be rendered if the section being yielded is undefined:
-
-    @yield('content', 'Default content')
-
-<a name="forms"></a>
-## Forms
-
-<a name="csrf-field"></a>
-### CSRF Field
-
-Anytime you define an HTML form in your application, you should include a hidden CSRF token field in the form so that [the CSRF protection](https://laravel.com/docs/{{version}}/csrf) middleware can validate the request. You may use the `@csrf` Blade directive to generate the token field:
-
-```html
-<form method="POST" action="/profile">
-    @csrf
-
-    ...
-</form>
-```
-
-<a name="method-field"></a>
-### Method Field
-
-Since HTML forms can't make `PUT`, `PATCH`, or `DELETE` requests, you will need to add a hidden `_method` field to spoof these HTTP verbs. The `@method` Blade directive can create this field for you:
-
-```html
-<form action="/foo/bar" method="POST">
-    @method('PUT')
-
-    ...
-</form>
-```
-
-<a name="validation-errors"></a>
-### Validation Errors
-
-The `@error` directive may be used to quickly check if [validation error messages](/docs/{{version}}/validation#quick-displaying-the-validation-errors) exist for a given attribute. Within an `@error` directive, you may echo the `$message` variable to display the error message:
-
-```html
-<!-- /resources/views/post/create.blade.php -->
-
-<label for="title">Post Title</label>
-
-<input id="title" type="text" class="@error('title') is-invalid @enderror">
-
-@error('title')
-    <div class="alert alert-danger">{{ $message }}</div>
-@enderror
-```
-
-You may pass [the name of a specific error bag](/docs/{{version}}/validation#named-error-bags) as the second parameter to the `@error` directive to retrieve validation error messages on pages containing multiple forms:
-
-```html
-<!-- /resources/views/auth.blade.php -->
-
-<label for="email">Email address</label>
-
-<input id="email" type="email" class="@error('email', 'login') is-invalid @enderror">
-
-@error('email', 'login')
-    <div class="alert alert-danger">{{ $message }}</div>
-@enderror
-```
-
 <a name="raw-php"></a>
 ### Raw PHP
 
@@ -662,7 +472,7 @@ However, if you are building a package that utilizes Blade components, you will 
      */
     public function boot()
     {
-        Blade::component('package-alert', AlertComponent::class);
+        Blade::component('package-alert', Alert::class);
     }
 
 Once your component has been registered, it may be rendered using its tag alias:
@@ -786,13 +596,28 @@ The `$alertType` argument may be provided to the component like so:
 
     <x-alert alert-type="danger" />
 
+<a name="escaping-attribute-rendering"></a>
+#### Escaping Attribute Rendering
+
+Since some JavaScript frameworks such as Alpine.js also use colon-prefixed attributes, you may use a double colon (`::`) prefix to inform Blade that the attribute is not a PHP expression. For example, given the following component:
+
+    <x-button ::class="{ danger: isDeleting }">
+        Submit
+    </x-button>
+
+The following HTML will be rendered by Blade:
+
+    <button :class="{ danger: isDeleting }">
+        Submit
+    </button>
+
 <a name="component-methods"></a>
 #### Component Methods
 
-In addition to public variables being available to your component template, any public methods on the component may be invoked. For example, imagine a component that has a `isSelected` method:
+In addition to public variables being available to your component template, any public methods on the component may be invoked. For example, imagine a component that has an `isSelected` method:
 
     /**
-     * Determine if the given option is the current selected option.
+     * Determine if the given option is the currently selected option.
      *
      * @param  string  $option
      * @return bool
@@ -808,7 +633,7 @@ You may execute this method from your component template by invoking the variabl
         {{ $label }}
     </option>
 
-<a name="using-attributes-slots-wthin-component-class"></a>
+<a name="using-attributes-slots-within-component-class"></a>
 #### Accessing Attributes & Slots Within Component Classes
 
 Blade components also allow you to access the component name, attributes, and slot inside the class's render method. However, in order to access this data, you should return a closure from your component's `render` method. The closure will receive a `$data` array as its only argument. This array will contain several elements that provide information about the component:
@@ -855,6 +680,34 @@ If your component requires dependencies from Laravel's [service container](/docs
         $this->message = $message;
     }
 
+<a name="hiding-attributes-and-methods"></a>
+#### Hiding Attributes / Methods
+
+If you would like to prevent some public methods or properties from being exposed as variables to your component template, you may add them to an `$except` array property on your component:
+
+    <?php
+
+    namespace App\View\Components;
+
+    use Illuminate\View\Component;
+
+    class Alert extends Component
+    {
+        /**
+         * The alert type.
+         *
+         * @var string
+         */
+        public $type;
+
+        /**
+         * The properties / methods that should not be exposed to the component template.
+         *
+         * @var array
+         */
+        protected $except = ['type'];
+    }
+
 <a name="component-attributes"></a>
 ### Component Attributes
 
@@ -873,7 +726,7 @@ All of the attributes that are not part of the component's constructor will auto
 <a name="default-merged-attributes"></a>
 #### Default / Merged Attributes
 
-Sometimes you may need to specify default values for attributes or merge additional values into some of the component's attributes. To accomplish this, you may use the attribute bag's `merge` method. This method is particularly useful for defining a set a default CSS classes that should always be applied to a component:
+Sometimes you may need to specify default values for attributes or merge additional values into some of the component's attributes. To accomplish this, you may use the attribute bag's `merge` method. This method is particularly useful for defining a set of default CSS classes that should always be applied to a component:
 
     <div {{ $attributes->merge(['class' => 'alert alert-'.$type]) }}>
         {{ $message }}
@@ -891,10 +744,25 @@ The final, rendered HTML of the component will appear like the following:
 </div>
 ```
 
+<a name="conditionally-merge-classes"></a>
+#### Conditionally Merge Classes
+
+Sometimes you may wish to merge classes if a given condition is `true`. You can accomplish this via the `class` method, which accepts an array of classes where the array key contains the class or classes you wish to add, while the value is a boolean expression. If the array element has a numeric key, it will always be included in the rendered class list:
+
+    <div {{ $attributes->class(['p-4', 'bg-red' => $hasError]) }}>
+        {{ $message }}
+    </div>
+
+If you need to merge other attributes onto your component, you can chain the `merge` method onto the `class` method:
+
+    <button {{ $attributes->class(['p-4'])->merge(['type' => 'button']) }}>
+        {{ $slot }}
+    </button>
+
 <a name="non-class-attribute-merging"></a>
 #### Non-Class Attribute Merging
 
-When merging attributes that are not `class` attributes, the values provided to the `merge` method will be considered the "default" values of attribute. However, unlike the `class` attribute, these attributes will not be merged with injected attribute values. Instead, they will be overwritten. For example, a `button` component's implementation may look like the following:
+When merging attributes that are not `class` attributes, the values provided to the `merge` method will be considered the "default" values of the attribute. However, unlike the `class` attribute, these attributes will not be merged with injected attribute values. Instead, they will be overwritten. For example, a `button` component's implementation may look like the following:
 
     <button {{ $attributes->merge(['type' => 'button']) }}>
         {{ $slot }}
@@ -919,7 +787,7 @@ If you would like an attribute other than `class` to have its default value and 
     </div>
 
 <a name="filtering-attributes"></a>
-#### Filtering Attributes
+#### Retrieving & Filtering Attributes
 
 You may filter attributes using the `filter` method. This method accepts a closure which should return `true` if you wish to retain the attribute in the attribute bag:
 
@@ -932,6 +800,31 @@ For convenience, you may use the `whereStartsWith` method to retrieve all attrib
 Using the `first` method, you may render the first attribute in a given attribute bag:
 
     {{ $attributes->whereStartsWith('wire:model')->first() }}
+
+If you would like to check if an attribute is present on the component, you may use the `has` method. This method accepts the attribute name as its only argument and returns a boolean indicating whether or not the attribute is present:
+
+    @if ($attributes->has('class'))
+        <div>Class attribute is present</div>
+    @endif
+
+You may retrieve a specific attribute's value using the `get` method:
+
+    {{ $attributes->get('class') }}
+
+<a name="reserved-keywords"></a>
+### Reserved Keywords
+
+By default, some keywords are reserved for Blade's internal use in order to render components. The following keywords cannot be defined as public properties or method names within your components:
+
+<div class="content-list" markdown="1">
+- `data`
+- `render`
+- `resolveView`
+- `shouldRender`
+- `view`
+- `withAttributes`
+- `withName`
+</div>
 
 <a name="slots"></a>
 ### Slots
@@ -1104,6 +997,197 @@ This will allow the usage of package components by their vendor namespace using 
     <x-nightshade::color-picker />
 
 Blade will automatically detect the class that's linked to this component by pascal-casing the component name. Subdirectories are also supported using "dot" notation.
+
+<a name="building-layouts"></a>
+## Building Layouts
+
+<a name="layouts-using-components"></a>
+### Layouts Using Components
+
+Most web applications maintain the same general layout across various pages. It would be incredibly cumbersome and hard to maintain our application if we had to repeat the entire layout HTML in every view we create. Thankfully, it's convenient to define this layout as a single [Blade component](#components) and then use it throughout our application.
+
+<a name="defining-the-layout-component"></a>
+#### Defining The Layout Component
+
+For example, imagine we are building a "todo" list application. We might define a `layout` component that looks like the following:
+
+```html
+<!-- resources/views/components/layout.blade.php -->
+
+<html>
+    <head>
+        <title>{{ $title ?? 'Todo Manager' }}</title>
+    </head>
+    <body>
+        <h1>Todos</h1>
+        <hr/>
+        {{ $slot }}
+    </body>
+</html>
+```
+
+<a name="applying-the-layout-component"></a>
+#### Applying The Layout Component
+
+Once the `layout` component has been defined, we may create a Blade view that utilizes the component. In this example, we will define a simple view that displays our task list:
+
+```html
+<!-- resources/views/tasks.blade.php -->
+
+<x-layout>
+    @foreach ($tasks as $task)
+        {{ $task }}
+    @endforeach
+</x-layout>
+```
+
+Remember, content that is injected into a component will be supplied to the default `$slot` variable within our `layout` component. As you may have noticed, our `layout` also respects a `$title` slot if one is provided; otherwise, a default title is shown. We may inject a custom title from our task list view using the standard slot syntax discussed in the [component documentation](#components):
+
+```html
+<!-- resources/views/tasks.blade.php -->
+
+<x-layout>
+    <x-slot name="title">
+        Custom Title
+    </x-slot>
+
+    @foreach ($tasks as $task)
+        {{ $task }}
+    @endforeach
+</x-layout>
+```
+
+Now that we have defined our layout and task list views, we just need to return the `task` view from a route:
+
+    use App\Models\Task;
+
+    Route::get('/tasks', function () {
+        return view('tasks', ['tasks' => Task::all()]);
+    });
+
+<a name="layouts-using-template-inheritance"></a>
+### Layouts Using Template Inheritance
+
+<a name="defining-a-layout"></a>
+#### Defining A Layout
+
+Layouts may also be created via "template inheritance". This was the primary way of building applications prior to the introduction of [components](#components).
+
+To get started, let's take a look at a simple example. First, we will examine a page layout. Since most web applications maintain the same general layout across various pages, it's convenient to define this layout as a single Blade view:
+
+```html
+<!-- resources/views/layouts/app.blade.php -->
+
+<html>
+    <head>
+        <title>App Name - @yield('title')</title>
+    </head>
+    <body>
+        @section('sidebar')
+            This is the master sidebar.
+        @show
+
+        <div class="container">
+            @yield('content')
+        </div>
+    </body>
+</html>
+```
+
+As you can see, this file contains typical HTML mark-up. However, take note of the `@section` and `@yield` directives. The `@section` directive, as the name implies, defines a section of content, while the `@yield` directive is used to display the contents of a given section.
+
+Now that we have defined a layout for our application, let's define a child page that inherits the layout.
+
+<a name="extending-a-layout"></a>
+#### Extending A Layout
+
+When defining a child view, use the `@extends` Blade directive to specify which layout the child view should "inherit". Views which extend a Blade layout may inject content into the layout's sections using `@section` directives. Remember, as seen in the example above, the contents of these sections will be displayed in the layout using `@yield`:
+
+```html
+<!-- resources/views/child.blade.php -->
+
+@extends('layouts.app')
+
+@section('title', 'Page Title')
+
+@section('sidebar')
+    @@parent
+
+    <p>This is appended to the master sidebar.</p>
+@endsection
+
+@section('content')
+    <p>This is my body content.</p>
+@endsection
+```
+
+In this example, the `sidebar` section is utilizing the `@@parent` directive to append (rather than overwriting) content to the layout's sidebar. The `@@parent` directive will be replaced by the content of the layout when the view is rendered.
+
+> {tip} Contrary to the previous example, this `sidebar` section ends with `@endsection` instead of `@show`. The `@endsection` directive will only define a section while `@show` will define and **immediately yield** the section.
+
+The `@yield` directive also accepts a default value as its second parameter. This value will be rendered if the section being yielded is undefined:
+
+    @yield('content', 'Default content')
+
+<a name="forms"></a>
+## Forms
+
+<a name="csrf-field"></a>
+### CSRF Field
+
+Anytime you define an HTML form in your application, you should include a hidden CSRF token field in the form so that [the CSRF protection](https://laravel.com/docs/{{version}}/csrf) middleware can validate the request. You may use the `@csrf` Blade directive to generate the token field:
+
+```html
+<form method="POST" action="/profile">
+    @csrf
+
+    ...
+</form>
+```
+
+<a name="method-field"></a>
+### Method Field
+
+Since HTML forms can't make `PUT`, `PATCH`, or `DELETE` requests, you will need to add a hidden `_method` field to spoof these HTTP verbs. The `@method` Blade directive can create this field for you:
+
+```html
+<form action="/foo/bar" method="POST">
+    @method('PUT')
+
+    ...
+</form>
+```
+
+<a name="validation-errors"></a>
+### Validation Errors
+
+The `@error` directive may be used to quickly check if [validation error messages](/docs/{{version}}/validation#quick-displaying-the-validation-errors) exist for a given attribute. Within an `@error` directive, you may echo the `$message` variable to display the error message:
+
+```html
+<!-- /resources/views/post/create.blade.php -->
+
+<label for="title">Post Title</label>
+
+<input id="title" type="text" class="@error('title') is-invalid @enderror">
+
+@error('title')
+    <div class="alert alert-danger">{{ $message }}</div>
+@enderror
+```
+
+You may pass [the name of a specific error bag](/docs/{{version}}/validation#named-error-bags) as the second parameter to the `@error` directive to retrieve validation error messages on pages containing multiple forms:
+
+```html
+<!-- /resources/views/auth.blade.php -->
+
+<label for="email">Email address</label>
+
+<input id="email" type="email" class="@error('email', 'login') is-invalid @enderror">
+
+@error('email', 'login')
+    <div class="alert alert-danger">{{ $message }}</div>
+@enderror
+```
 
 <a name="stacks"></a>
 ## Stacks

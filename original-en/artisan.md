@@ -166,7 +166,7 @@ Closure based commands provide an alternative to defining console commands as cl
         require base_path('routes/console.php');
     }
 
-Even though this file does not define HTTP routes, it defines console based entry points (routes) into your application. Within this file, you may define all of your closure based console commands using the `Artisan::command` method. The `command` method accepts two arguments: the [command signature](#defining-input-expectations) and a closure which receives the commands arguments and options:
+Even though this file does not define HTTP routes, it defines console based entry points (routes) into your application. Within this file, you may define all of your closure based console commands using the `Artisan::command` method. The `command` method accepts two arguments: the [command signature](#defining-input-expectations) and a closure which receives the command's arguments and options:
 
     Artisan::command('mail:send {user}', function ($user) {
         $this->info("Sending email to: {$user}!");
@@ -273,6 +273,10 @@ If you would like to define arguments or options to expect multiple input values
 When calling this method, the `user` arguments may be passed in order to the command line. For example, the following command will set the value of `user` to an array with `foo` and `bar` as its values:
 
     php artisan mail:send foo bar
+
+This `*` character can be combined with an optional argument definition to allow zero or more instances of an argument:
+
+    mail:send {user?*}
 
 <a name="option-arrays"></a>
 #### Option Arrays

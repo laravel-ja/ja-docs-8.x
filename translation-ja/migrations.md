@@ -36,11 +36,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、Laravelが�
 
     php artisan make:migration create_flights_table
 
-`--table`や`--create`オプションを使用して、テーブルの名前とマイグレーションにより新しいテーブルを作成するかを指定します。これらのオプションは、生成するマイグレーションファイルへ指定したテーブル名をあらかじめ取り込ませます。
-
-    php artisan make:migration create_flights_table --create=flights
-
-    php artisan make:migration add_destination_to_flights_table --table=flights
+Laravelは、マイグレーションの名前からテーブル名と新しいテーブルを作成しようとしているかを推測しようとします。Laravelがマイグレーション名からテーブル名を決定できる場合、Laravelは生成するマイグレーションファイルへ指定したテーブル名を事前に埋め込みます。それ以外の場合は、マイグレーションファイルのテーブルを手動で指定してください。
 
 生成するマイグレーションのカスタムパスを指定する場合は、`make:migration`コマンドを実行するときに`--path`オプションを使用します。指定したパスは、アプリケーションのベースパスを基準にする必要があります。
 
@@ -60,7 +56,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、Laravelが�
 
 チームの新しい開発者がアプリケーションの初期データベース構造をすばやく作成できるようにするため、データベーススキーマファイルはソース管理にコミットすべきでしょう。
 
-> {note} マイグレーションの圧縮は、MySQL、PostgreSQL、SQLiteデータベースでのみ使用できます。ただし、スキーマダンプはSQLiteデータベースのインメモリには、復元されない場合があります。
+> {note} マイグレーションの圧縮は、MySQL、PostgreSQL、SQLiteデータベースでのみ利用可能で、データベースのコマンドラインクライアントを利用しています。スキーマダンプは、メモリ内SQLiteデータベースへ復元されない場合があります。
 
 <a name="migration-structure"></a>
 ## マイグレーションの構造
@@ -109,6 +105,10 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、Laravelが�
 未処理のマイグレーションをすべて実行するには、`migrate` Artisanコマンドを実行します。
 
     php artisan migrate
+
+これまでどのマイグレーションが実行されているかを確認したい場合は、`migrate:status` Artisanコマンドを使用してください。
+
+    php artisan migrate:status
 
 <a name="forcing-migrations-to-run-in-production"></a>
 #### マイグレーションを強制的に本番環境で実行する
@@ -352,7 +352,7 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、Laravelが�
 </div>
 
 <a name="column-method-bigIncrements"></a>
-#### `bigIncrements()` {#collection-method .first-collection-method}
+#### `bigIncrements()` {#collection-method}
 
 `bigIncrements`メソッドは、自動増分する`UNSIGNED BIGINT`(主キー)カラムを作成します。
 
@@ -594,7 +594,6 @@ Laravelの`Schema`[ファサード](/docs/{{version}}/facades)は、Laravelが�
 <a name="column-method-point"></a>
 #### `point()` {#collection-method}
 
-The `point` method creates an `POINT` equivalent column:
 `point`メソッドは`POINT`カラムを作成します。
 
     $table->point('position');
@@ -847,6 +846,17 @@ The `point` method creates an `POINT` equivalent column:
 
 > {note} デフォルト式のサポートは、データベースドライバー、データベースバージョン、およびフィールドタイプによって異なります。データベースのドキュメントを参照してください。
 
+<a name="column-order"></a>
+#### カラム順序
+
+MySQLデータベースを使用するときは、スキーマ内の既存の列の後に列を追加するために`after`メソッドを使用できます。
+
+    $table->after('password', function ($table) {
+        $table->string('address_line1');
+        $table->string('address_line2');
+        $table->string('city');
+    });
+
 <a name="modifying-columns"></a>
 ### カラムの変更
 
@@ -856,6 +866,20 @@ The `point` method creates an `POINT` equivalent column:
 カラムを変更する前に、Composerパッケージマネージャーを使用して`doctrine/dbal`パッケージをインストールする必要があります。DoctrineDBALライブラリは、カラムの現在の状態を判別し、カラムに要求された変更を加えるために必要なSQLクエリを作成するのに使用します。
 
     composer require doctrine/dbal
+
+`timestamp`メソッドを使用して作成したカラムを変更する予定があるときは、アプリケーションの`config/database.php`設定ファイルに以下の設定を追加する必要があります。
+
+```php
+use Illuminate\Database\DBAL\TimestampType;
+
+'dbal' => [
+    'types' => [
+        'timestamp' => TimestampType::class,
+    ],
+],
+```
+
+> {note} アプリケーションでMicrosoft SQL Serverを使用している場合は、`doctrine/dbal:^3.0`を確実にインストールしてください。
 
 <a name="updating-column-attributes"></a>
 #### カラム属性の更新
@@ -872,10 +896,10 @@ The `point` method creates an `POINT` equivalent column:
         $table->string('name', 50)->nullable()->change();
     });
 
-> {note} 以降のカラムタイプを変更できます。`bigInteger`、`binary`、`boolean`、`date`、`dateTime`、`dateTimeTz`、`decimal`、`integer`、`json`、`longText`、`mediumText`、`smallInteger`、`string`、`text`、`time`、`unsignedBigInteger`、`unsignedInteger`、`unsignedSmallInteger`、`uuid`。
+> {note} 以降のカラムタイプを変更できます。`bigInteger`、`binary`、`boolean`、`date`、`dateTime`、`dateTimeTz`、`decimal`、`integer`、`json`、`longText`、`mediumText`、`smallInteger`、`string`、`text`、`time`、`unsignedBigInteger`、`unsignedInteger`、`unsignedSmallInteger`、`uuid`。`timestamp`のカラムタイプを変更するには、[Doctrineタイプを登録する必要があります](#prerequisites)。
 
 <a name="renaming-columns"></a>
-#### カラムのりネーム
+#### カラムのリネーム
 
 カラムをリネームするには、スキーマビルダBlueprintが提供する`renameColumn`メソッドを使用します。カラムの名前を変更する前に、Composerパッケージマネージャーを介して`doctrine/dbal`ライブラリをインストールしていることを確認してください。
 

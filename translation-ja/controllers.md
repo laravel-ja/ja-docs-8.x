@@ -78,7 +78,6 @@
         /**
          * 新しいWebサーバをプロビジョニング
          *
-         * @param  int  $id
          * @return \Illuminate\Http\Response
          */
         public function __invoke()
@@ -144,7 +143,7 @@
 
     Route::resource('photos', PhotoController::class);
 
-この一つのルート宣言で、リソースに対するさまざまなアクションを処理するための複数のルートを定義しています。生成したコントローラには、これらのアクションごとにスタブしたメソッドがすでに含まれています。`route:list` Artisanコマンドを実行すると、いつでもアプリケーションの概要をすばやく確認できます。
+この一つのルート宣言で、リソースに対するさまざまなアクションを処理するための複数のルートを定義しています。生成したコントローラには、これらのアクションごとにスタブしたメソッドがすでに含まれています。`route:list` Artisanコマンドを実行すると、いつでもアプリケーションのルートの概要をすばやく確認できます。
 
 配列を`resources`メソッドに渡すことで、一度に多くのリソースコントローラを登録することもできます。
 
@@ -209,7 +208,7 @@ APIに使用するリソースルートを宣言する場合、`create`や`edit`
 
 `create`や`edit`メソッドを含まないAPIリソースコントローラを素早く生成するには、`make:controller`コマンドを実行する際、`--api`スイッチを使用してください。
 
-    php artisan make:controller API/PhotoController --api
+    php artisan make:controller PhotoController --api
 
 <a name="restful-nested-resources"></a>
 ### ネストしたリソース
@@ -380,8 +379,8 @@ Laravelの[スコープ付き暗黙モデル結合](/docs/{{version}}/routing#im
         /**
          * 新ユーザーの保存
          *
-         * @param  Request  $request
-         * @return Response
+         * @param  \Illuminate\Http\Request  $request
+         * @return \Illuminate\Http\Response
          */
         public function store(Request $request)
         {

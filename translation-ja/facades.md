@@ -18,6 +18,7 @@ Laravelファサードは、サービスコンテナ内の基礎となるクラ�
 Laravelのファサードはすべて、`Illuminate\Support\Facades`名前空間で定義します。したがって、次のようなファサードに簡単にアクセスできます。
 
     use Illuminate\Support\Facades\Cache;
+    use Illuminate\Support\Facades\Route;
 
     Route::get('/cache', function () {
         return Cache::get('key');

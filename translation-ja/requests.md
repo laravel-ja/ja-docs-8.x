@@ -156,7 +156,7 @@ Laravelの`Illuminate\Http\Request`クラスは、アプリケーションが処
         //
     }
 
-便利なように、`bearerToken`を`Authorization`ヘッダからのBearerトークンに使用できます。そのようなヘッダが存在しない場合、空の文字列が返されます。
+便利なように、`bearerToken`メソッドを`Authorization`ヘッダからのBearerトークン取得で使用できます。そのようなヘッダが存在しない場合、空の文字列が返されます。
 
     $token = $request->bearerToken();
 
@@ -492,7 +492,7 @@ TLS/SSL証明書を末端とするロードバランサーの背後でアプリ�
          *
          * @var int
          */
-        protected $headers = Request::HEADER_X_FORWARDED_ALL;
+        protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO;
     }
 
 > {tip} AWS Elasticロードバランシングを使用している場合、`$headers`の値は`Request::HEADER_X_FORWARDED_AWS_ELB`である必要があります。`$headers`プロパティで使用できる定数の詳細については、[信頼の置けるプロキシ](https://symfony.com/doc/current/deployment/proxies.html)に関するSymfonyのドキュメントを確認してください。

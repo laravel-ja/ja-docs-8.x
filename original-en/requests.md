@@ -22,7 +22,7 @@
 <a name="introduction"></a>
 ## Introduction
 
-Laravel's `Illuminate\Http\Request` class provides an object-oriented way to interact with the current HTTP request being handled by your application as well retrieve the input, cookies, and files that were submitted with the request.
+Laravel's `Illuminate\Http\Request` class provides an object-oriented way to interact with the current HTTP request being handled by your application as well as retrieve the input, cookies, and files that were submitted with the request.
 
 <a name="interacting-with-the-request"></a>
 ## Interacting With The Request
@@ -156,7 +156,7 @@ The `hasHeader` method may be used to determine if the request contains a given 
         //
     }
 
-For convenience, the `bearerToken` may be used to a bearer token from the `Authorization` header. If no such header is present, an empty string will be returned:
+For convenience, the `bearerToken` method may be used to retrieve a bearer token from the `Authorization` header. If no such header is present, an empty string will be returned:
 
     $token = $request->bearerToken();
 
@@ -492,7 +492,7 @@ To solve this, you may use the `App\Http\Middleware\TrustProxies` middleware tha
          *
          * @var int
          */
-        protected $headers = Request::HEADER_X_FORWARDED_ALL;
+        protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO;
     }
 
 > {tip} If you are using AWS Elastic Load Balancing, your `$headers` value should be `Request::HEADER_X_FORWARDED_AWS_ELB`. For more information on the constants that may be used in the `$headers` property, check out Symfony's documentation on [trusting proxies](https://symfony.com/doc/current/deployment/proxies.html).

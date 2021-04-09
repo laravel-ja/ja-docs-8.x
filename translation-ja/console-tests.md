@@ -32,7 +32,7 @@ Laravelで`expectsQuestion`メソッドを使用すれば、コンソールコ�
      *
      * @return void
      */
-    public function testConsoleCommand()
+    public function test_console_command()
     {
         $this->artisan('question')
              ->expectsQuestion('What is your name?', 'Taylor Otwell')

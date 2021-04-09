@@ -274,6 +274,10 @@ Artisanが提供するコマンドに加え、独自のカスタムコマンド�
 
     php artisan mail:send foo bar
 
+この`*`文字をオプションの引数定義と組み合わせ、引数を０個以上許可することができます。
+
+    mail:send {user?*}
+
 <a name="option-arrays"></a>
 #### オプション配列
 

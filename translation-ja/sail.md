@@ -2,6 +2,7 @@
 
 - [イントロダクション](#introduction)
 - [インストールと準備](#installation)
+    - [既存アプリケーションへのSailインストール](#installing-sail-into-existing-applications)
     - [Bashエイリアスの設定](#configuring-a-bash-alias)
 - [Sailの開始と停止](#starting-and-stopping-sail)
 - [コマンドの実行](#executing-sail-commands)
@@ -12,11 +13,13 @@
 - [データベース操作](#interacting-with-sail-databases)
     - [MySQL](#mysql)
     - [Redis](#redis)
+    - [MeiliSearch](#meilisearch)
 - [テスト実行](#running-tests)
     - [Laravel Dusk](#laravel-dusk)
 - [メールのプレビュー](#previewing-emails)
 - [コンテナCLI](#sail-container-cli)
 - [PHPバージョン](#sail-php-versions)
+- [サイトの共有](#sharing-your-site)
 - [カスタマイズ](#sail-customization)
 
 <a name="introduction"></a>
@@ -31,7 +34,22 @@ Laravel Sailは、macOS、Linux、およびWindows（WSL2利用）をサポー�
 <a name="installation"></a>
 ## インストールと準備
 
-Laravel Sailはいつも、新しいLaravelアプリケーションとともに自動的にインストールされるため、すぐ使用を開始できます。新しいLaravelアプリケーションを作成する方法については、使用しているオペレーティングシステム用のLaravel[インストールドキュメント](/docs/{{version}}/installation)を参照してください。
+Laravel Sailはいつも、新しいLaravelアプリケーションとともに自動的にインストールされるため、すぐ使用を開始できます。新しいLaravelアプリケーションを作成する方法については、使用しているオペレーティングシステム用のLaravel[インストールドキュメント](/docs/{{version}}/installation)を参照してください。インストール時には、アプリケーションで操作するSailサポートサービスを選択するよう求められます。
+
+<a name="installing-sail-into-existing-applications"></a>
+### 既存アプリケーションへのSailインストール
+
+既存のLaravelアプリケーションでSailを使うことに興味を持っている場合は、Composerパッケージマネージャを使用してSailをインストールできます。もちろん、以降の手順は、既存のローカル開発環境で、Composerの依存関係をインストールできると仮定しています。
+
+    composer require laravel/sail --dev
+
+Sailをインストールした後は、`sail:install` Artisanコマンドを実行してください。このコマンドは、Sailの`docker-compose.yml`ファイルをアプリケーションのルートへリソース公開します。
+
+    php artisan sail:install
+
+最後に、Sailを立ち上げましょう。Sailの使い方を学び続けるには、このドキュメントの残りを続けてお読みください。
+
+    ./vendor/bin/sail up
 
 <a name="configuring-a-bash-alias"></a>
 ### Bashエイリアスの設定
@@ -114,6 +132,21 @@ Composerコマンドは、`composer`コマンドを使用して実行します�
 sail composer require laravel/sanctum
 ```
 
+<a name="installing-composer-dependencies-for-existing-projects"></a>
+#### 既存アプリケーションでComposer依存関係のインストール
+
+チームでアプリケーションを開発している場合、最初にLaravelアプリケーションを作成するのは自分ではないかもしれません。そのため、アプリケーションのリポジトリをローカルコンピュータにクローンした後、Sailを含むアプリケーションのComposer依存関係は一切インストールされていません。
+
+アプリケーションの依存関係をインストールするには、アプリケーションのディレクトリに移動し、次のコマンドを実行します。このコマンドは、PHPとComposerを含む小さなDockerコンテナを使用して、アプリケーションの依存関係をインストールします。
+
+```nothing
+docker run --rm \
+    -v $(pwd):/opt \
+    -w /opt \
+    laravelsail/php80-composer:latest \
+    composer install
+```
+
 <a name="executing-artisan-commands"></a>
 ### Arttisanコマンドの実行
 
@@ -153,6 +186,13 @@ sail npm run prod
 
 ローカルマシンからアプリケーションのRedisデータベースに接続するには、[TablePlus](https://tableplus.com)などのグラフィカルデータベース管理アプリケーションを使用できます。デフォルトでは、Redisデータベースは`localhost`のポート6379でアクセスできます。
 
+<a name="meilisearch"></a>
+### MeiliSearch
+
+Sailのインストール時に[MeiliSearch](https://www.meilisearch.com)サービスのインストールを選択した場合、アプリケーションの`docker-compose.yml`ファイルには、[Laravel Scout](/docs/{{version}}/scout)と[コンパチブル](https://github.com/meilisearch/meilisearch-laravel-scout)である、この強力な検索エンジンのエントリが含まれます。コンテナを起動したら、環境変数`MEILISEARCH_HOST`に`http://meilisearch:7700`を設定すると、アプリケーション内のMeiliSearchインスタンスに接続できます。
+
+ローカルマシンから、Webブラウザの`http://localhost:7700`に移動して、MeiliSearchのWebベース管理パネルへアクセスできます。
+
 <a name="running-tests"></a>
 ## テスト実行
 
@@ -171,19 +211,23 @@ Sailの`test`コマンドは、`test` Artisanコマンドを実行するのと�
 
 [Laravel Dusk](/docs/{{version}}/dusk)は、表現力豊かで使いやすいブラウザ自動化およびテストのAPIを提供します。Sailのおかげで、Seleniumやその他のツールをローカルコンピューターにインストールしなくても、これらのテストを実行できます。使い始めるには、アプリケーションの`docker-compose.yml`ファイルでSeleniumサービスのコメントを解除します。
 
-    selenium:
-        image: 'selenium/standalone-chrome'
-        volumes:
-            - '/dev/shm:/dev/shm'
-        networks:
-            - sail
+```yaml
+selenium:
+    image: 'selenium/standalone-chrome'
+    volumes:
+        - '/dev/shm:/dev/shm'
+    networks:
+        - sail
+```
 
 次に、アプリケーションの`docker-compose.yml`ファイルの`laravel.test`サービスに`selenium`の`depends_on`エントリがあることを確認します。
 
-        depends_on:
-            - mysql
-            - redis
-            - selenium
+```yaml
+depends_on:
+    - mysql
+    - redis
+    - selenium
+```
 
 最後に、Sailを起動して`dusk`コマンドを実行することにより、Duskテストスイートを実行できます。
 
@@ -192,9 +236,10 @@ Sailの`test`コマンドは、`test` Artisanコマンドを実行するのと�
 <a name="previewing-emails"></a>
 ## メールのプレビュー
 
-LaravelSailのデフォルトの `docker-compose.yml`ファイルには、[MailHog](https://github.com/mailhog/MailHog)のサービスエントリが含まれています。MailHogは、ローカル開発中にアプリケーションから送信された電子メールをインターセプトし、ブラウザで電子メールメッセージをプレビューできる便利なWebインターフェイスを提供します。 MailHogのデフォルトのSMTPポートは`1025`です。
+LaravelSailのデフォルトの `docker-compose.yml`ファイルには、[MailHog](https://github.com/mailhog/MailHog)のサービスエントリが含まれています。MailHogは、ローカル開発中にアプリケーションから送信された電子メールをインターセプトし、ブラウザで電子メールメッセージをプレビューできる便利なWebインターフェイスを提供します。Sailを使う場合、MailHogのデフォルトホストは`mailhog`で、ポートは1025です。
 
 ```bash
+MAIL_HOST=mailhog
 MAIL_PORT=1025
 ```
 
@@ -239,6 +284,19 @@ image: sail-8.0/app
     sail build --no-cache
 
     sail up
+
+<a name="sharing-your-site"></a>
+## サイトの共有
+
+同僚のためにサイトをプレビューしたり、アプリケーションとのWebhook統合をテストしたりするために、サイトを公開して共有する必要がある場合があります。サイトを共有するには、 `share`コマンドを使用します。このコマンドを実行すると、アプリケーションへのアクセスに使用するランダムな`laravel-sail.site` URLが発行されます。
+
+    sail share
+
+共有サイトでサブドメインを選択する場合は、`share`コマンドを実行するときに`subdomain`オプションを指定します。
+
+    sail share --subdomain=my-sail-site
+
+> {tip} `share`コマンドは、[BeyondCode](https://beyondco.de)によるオープンソースのトンネリングサービスである[Expose](https://github.com/beyondcode/expose)により提供しています。
 
 <a name="sail-customization"></a>
 ## Sailカスタマイズ

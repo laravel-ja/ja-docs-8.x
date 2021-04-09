@@ -192,7 +192,7 @@ After making a test request to your application, the `dump`, `dumpHeaders`, and 
          *
          * @return void
          */
-        public function testBasicTest()
+        public function test_basic_test()
         {
             $response = $this->get('/');
 
@@ -444,6 +444,7 @@ Laravel's `Illuminate\Testing\TestResponse` class provides a variety of custom a
 [assertHeaderMissing](#assert-header-missing)
 [assertJson](#assert-json)
 [assertJsonCount](#assert-json-count)
+[assertJsonFragment](#assert-json-fragment)
 [assertJsonMissing](#assert-json-missing)
 [assertJsonMissingExact](#assert-json-missing-exact)
 [assertJsonMissingValidationErrors](#assert-json-missing-validation-errors)
@@ -571,6 +572,23 @@ Assert that the response JSON has an array with the expected number of items at 
 
     $response->assertJsonCount($count, $key = null);
 
+<a name="assert-json-fragment"></a>
+#### assertJsonFragment
+
+Assert that the response contains the given JSON data anywhere in the response:
+
+    Route::get('/users', function () {
+        return [
+            'users' => [
+                [
+                    'name' => 'Taylor Otwell',
+                ],
+            ],
+        ];
+    });
+
+    $response->assertJsonFragment(['name' => 'Taylor Otwell']);
+
 <a name="assert-json-missing"></a>
 #### assertJsonMissing
 
@@ -597,7 +615,7 @@ Assert that the response has no JSON validation errors for the given keys:
 
 Assert that the response contains the given data at the specified path:
 
-    $response->assertJsonPath($path, array $data, $strict = true);
+    $response->assertJsonPath($path, $expectedValue);
 
 For example, if the JSON response returned by your application contains the following data:
 
@@ -752,7 +770,7 @@ Assert that the session contains an error for the given `$keys`. If `$keys` is a
         array $keys, $format = null, $errorBag = 'default'
     );
 
-For example, to assert that the `name` and `email` field have validation error messages that were flashed to the session, you may invoke the `assertSessionHasErrors` method like so:
+For example, to assert that the `name` and `email` fields have validation error messages that were flashed to the session, you may invoke the `assertSessionHasErrors` method like so:
 
     $response->assertSessionHasErrors(['name', 'email']);
 
@@ -831,14 +849,14 @@ Assert that the response view has a given list of data:
 
 This method may be used to assert that the view simply contains data matching the given keys:
 
-    $rseponse->assertViewHasAll([
+    $response->assertViewHasAll([
         'name',
         'email',
     ]);
 
 Or, you may assert that the view data is present and has specific values:
 
-    $rseponse->assertViewHasAll([
+    $response->assertViewHasAll([
         'name' => 'Taylor Otwell',
         'email' => 'taylor@example.com,',
     ]);

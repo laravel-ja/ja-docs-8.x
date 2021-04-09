@@ -33,6 +33,7 @@ Laravelには、表現力豊かで統一されたAPIを介してアクセスで�
 - `cookie` - セッションを暗号化され安全なクッキーに保存します
 - `database` - セッションをリレーショナルデータベースへ保存します
 - `memcached`／`redis` - セッションをこれらの高速なキャッシュベースの保存域へ保存します
+- `dynamodb` - セッションをAWS DynamoDBへ保存します
 - `array` - セッションをPHP配列に格納し、永続化しません
 </div>
 
@@ -173,6 +174,19 @@ Laravelでセッションデータを操作する主な方法は、グローバ�
 
     $value = $request->session()->pull('key', 'default');
 
+<a name="#incrementing-and-decrementing-session-values"></a>
+#### セッション値の増分と減分
+
+セッションデータが増分や減分をしたい整数の場合は、`Inclient`メソッドと`Decrement`メソッドを使えます。
+
+    $request->session()->increment('count');
+
+    $request->session()->increment('count', $incrementBy = 2);
+
+    $request->session()->decrement('count');
+
+    $request->session()->decrement('count', $decrementBy = 2);
+
 <a name="flash-data"></a>
 ### データの一時保存
 
@@ -185,6 +199,10 @@ Laravelでセッションデータを操作する主な方法は、グローバ�
     $request->session()->reflash();
 
     $request->session()->keep(['username', 'email']);
+
+一時保存データを現在のリクエストに対してのみ持続するには、`now`メソッドを使用します。
+
+    $request->session()->now('status', 'Task was successful!');
 
 <a name="deleting-data"></a>
 ### データの削除
@@ -207,6 +225,10 @@ Laravelでセッションデータを操作する主な方法は、グローバ�
 Laravel[アプリケーションスターターキット](/docs/{{version}}/starter-kits)または[Laravel　Fortify](/docs/{{version}}/fortify)のどちらかを使用している場合、Laravelは認証中にセッションIDを自動的に再生成します。しかし、セッションIDを手動で再生成する必要がある場合は、`regenerate`メソッドを使用できます。
 
     $request->session()->regenerate();
+
+セッションIDを再生成してセッションからすべてのデータを一文で削除する必要がある場合は、`invalidate`メソッドを使用します。
+
+    $request->session()->invalidate();
 
 <a name="session-blocking"></a>
 ## セッションブロッキング
@@ -262,7 +284,7 @@ Laravel[アプリケーションスターターキット](/docs/{{version}}/star
 これらのメソッドの目的は簡単には理解できないため、各メソッドの機能について簡単に説明します。
 
 <div class="content-list" markdown="1">
-- `open`メソッドは通常、ファイルベースのセッションストアシステムで使用します。Laravelには`file`セッションドライバーが付属しているため、このメソッドに何も入れる必要はほとんどありません。このメソッドは空のままにしておくことができます。
+- `open`メソッドは通常、ファイルベースのセッションストアシステムで使用します。Laravelには`file`セッションドライバーが付属しているため、このメソッドに何も入れる必要があることはまれです。このメソッドは空のままにしておくことができます。
 - `open`メソッドと同様に、`close`メソッドも通常は無視できます。ほとんどのドライバーにとって、それは必要ありません。
 - `read`メソッドは、指定された`$sessionId`に関連付いたセッションデータの文字列バージョンを返す必要があります。Laravelがシリアル化を実行するため、ドライバーでセッションデータを取得または保存するときに、シリアル化やその他のエンコードを行う必要はありません。
 - `write`メソッドは、`$sessionId`に関連付いた、指定`$data`文字列を、MongoDBや選択した別のストレージシステムなどの永続ストレージシステムに書き込む必要があります。繰り返しになりますが、シリアル化を実行しないでください。Laravelがすでにそれを処理しています。

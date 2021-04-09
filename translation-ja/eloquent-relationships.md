@@ -388,7 +388,7 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
 
     class Project extends Model
     {
-        public function posts()
+        public function deployments()
         {
             return $this->hasManyThrough(
                 Deployment::class,
@@ -588,7 +588,7 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
         //
     }
 
->　{note} ピボットモデルは`SoftDeletes`トレイトを使用できません。ピボットレコードをソフト削除する必要がある場合は、ピボットモデルを実際のEloquentモデルに変換することを検討してください。
+> {note} ピボットモデルは`SoftDeletes`トレイトを使用できません。ピボットレコードをソフト削除する必要がある場合は、ピボットモデルを実際のEloquentモデルに変換することを検討してください。
 
 <a name="custom-pivot-models-and-incrementing-ids"></a>
 #### カスタムピボットモデルと増分ID
@@ -605,7 +605,7 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
 <a name="polymorphic-relationships"></a>
 ## ポリモーフィックリレーション
 
-ポリモーフィックリレーションにより、子モデルは単一の関連を使用して複数タイプのモデルに属せます。たとえば、ユーザーがブログの投稿やビデオを共有できるようにするアプリケーションを構築しているとします。`Comment`モデルは`Post`モデルと`Video`モデルの両方に属する可能性があります。
+ポリモーフィックリレーションにより、子モデルは単一の関連を使用して複数タイプのモデルに属せます。たとえば、ユーザーがブログの投稿やビデオを共有できるようにするアプリケーションを構築しているとします。このようなアプリケーションで、`Comment`モデルは`Post`モデルと`Video`モデルの両方に属する可能性があります。
 
 <a name="one-to-one-polymorphic-relations"></a>
 ### １対１（ポリモーフィック）
@@ -941,7 +941,7 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
 
 `resolveRelationUsing`メソッドを使用して、実行時にEloquentモデル間のリレーションを定義できます。通常のアプリケーション開発には推奨しませんが、Laravelパッケージの開発時には役立つでしょう。
 
-`resolveRelationshipUsing`メソッドは、最初の引数に付けたいリレーション名を引数に取ります。メソッドの２番目の引数は、モデルインスタンスを引数に取り、有効なEloquenリレーションの定義を返すクロージャです。通常、[サービスプロバイダ](/docs/{{version}}/provider)のbootメソッド内で動的リレーションを設定する必要があります。
+`resolveRelationUsing`メソッドは、最初の引数に付けたいリレーション名を引数に取ります。メソッドの２番目の引数は、モデルインスタンスを引数に取り、有効なEloquenリレーションの定義を返すクロージャです。通常、[サービスプロバイダ](/docs/{{version}}/provider)のbootメソッド内で動的リレーションを設定する必要があります。
 
     use App\Models\Order;
     use App\Models\Customer;
@@ -996,7 +996,7 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
             ->orWhere('votes', '>=', 100)
             ->get();
 
-上記の例は、以下のSQLを生成します。ご覧のとおり、`or`句は、100票を超える**全**ポストを返すようにクエリに指示します。クエリは特定のユーザーに制約されなくなりました。
+上記の例は、以下のSQLを生成します。ご覧のとおり、`or`句は、100票を超える**全**ユーザーを返すようにクエリに指示します。クエリは特定のユーザーに制約されなくなりました。
 
 ```sql
 select *
@@ -1072,7 +1072,7 @@ Eloquentリレーションクエリへ制約を追加する必要がない場合
         $query->where('content', 'like', 'code%');
     }, '>=', 10)->get();
 
->　{note} Eloquentは現在、データベース間をまたぐリレーションの存在のクエリをサポートしていません。リレーションは同じデータベース内に存在する必要があります。
+> {note} Eloquentは現在、データベース間をまたぐリレーションの存在のクエリをサポートしていません。リレーションは同じデータベース内に存在する必要があります。
 
 <a name="querying-relationship-absence"></a>
 ### 存在しないリレーションのクエリ
@@ -1121,7 +1121,7 @@ Eloquentリレーションクエリへ制約を追加する必要がない場合
     // code%と似ていないタイトルの投稿と関連付けられたコメントを取得
     $comments = Comment::whereDoesntHaveMorph(
         'commentable',
-        Post::class
+        Post::class,
         function (Builder $query) {
             $query->where('title', 'like', 'code%');
         }
@@ -1576,7 +1576,7 @@ Eloquentは、リレーションへ新しいモデルを追加する便利な手
         ['message' => 'Another new comment.'],
     ]);
 
-`findOrNew`、`firstOrNew`、`firstOrCreate`、`updateOrCreate`メソッドを使用して[関係のモデルを作成および更新](/docs/{{version}}/eloquent#other-creation-methods)することもできます。
+`findOrNew`、`firstOrNew`、`firstOrCreate`、`updateOrCreate`メソッドを使用して[関係のモデルを作成および更新](https://laravel.com/docs/{{version}}/eloquent#upserts)することもできます。
 
 > {tip} `create`メソッドを使用する前に、必ず[複数代入](/docs/{{version}}/eloquent#mass-assignment)のドキュメントを確認してください。
 

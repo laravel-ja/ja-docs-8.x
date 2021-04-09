@@ -94,7 +94,7 @@ Sanctumのデフォルトマイグレーションを使用しない場合は、`
 
 次に、Sanctumが提供する`usePersonalAccessTokenModel`メソッドを使用して、カスタムモデルを使用するようにSanctumに指示します。通常、このメソッドは、アプリケーションのサービスプロバイダの1つの`boot`メソッドで呼び出す必要があります。
 
-    use App\Models\Passport\PersonalAccessToken;
+    use App\Models\Sanctum\PersonalAccessToken;
     use Laravel\Sanctum\Sanctum;
 
     /**

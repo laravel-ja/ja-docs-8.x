@@ -74,6 +74,15 @@ Postmarkドライバを使用するには、Composerを介してPostmarkのSwift
         'token' => env('POSTMARK_TOKEN'),
     ],
 
+特定のメーラで使用する必要があるPostmarkメッセージストリームを指定したい場合は、`message_stream_id`設定オプションをメーラの設定配列に追加してください。この設定配列は、アプリケーションの`config/mail.php`設定ファイルにあります。
+
+    'postmark' => [
+        'transport' => 'postmark',
+        'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
+    ],
+
+この方法で、メッセージストリームが異なる複数のPostmarkメーラを設定することもできます。
+
 <a name="ses-driver"></a>
 #### SESドライバ
 
@@ -151,7 +160,6 @@ Mailableクラスを生成したら、それを開いて、その内容を調べ
 ### ビューの設定
 
 Mailableクラスの`build`メソッド内で、`view`メソッドを使用して、電子メールのコンテンツをレンダーするときに使用するテンプレートを指定できます。通常、各メールは[Bladeテンプレート](/docs/{{version}}/Blade)を使用してコンテンツをレンダーするため、メールのHTMLを作成するときにBladeテンプレートエンジンの能力と利便性を最大限に活用できます。
-
 
     /**
      * メッセージの作成
@@ -676,7 +684,7 @@ Mailableのテンプレートを設計するときは、通常のBladeテンプ�
         return new App\Mail\InvoicePaid($invoice);
     });
 
->{注}[インライン添付ファイル](#inline-attachments)は、Mailableファイルがブラウザでプレビューされたときにレンダリングされません。これらのメーラブルをプレビューするには、[MailHog](https://github.com/mailhog/MailHog)や[HELO](https://usehelo.com)などのメールテストアプリケーションに送信する必要があります。
+> {note} [インライン添付ファイル](#inline-attachments)は、Mailableファイルがブラウザでプレビューされたときにレンダリングされません。これらのメーラブルをプレビューするには、[MailHog](https://github.com/mailhog/MailHog)や[HELO](https://usehelo.com)などのメールテストアプリケーションに送信する必要があります。
 
 <a name="localizing-mailables"></a>
 ## Mailableの多言語化

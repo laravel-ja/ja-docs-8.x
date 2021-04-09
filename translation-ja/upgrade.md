@@ -135,7 +135,7 @@
 
 **影響の可能性： 高い**
 
-Laravelの[モデルファクトリ](/docs/{{version}}/database-testing#creating-factories)機能は、クラスをサポートするよう完全に書き直されており、Laravel7.xスタイルのファクトリとは互換性がありません。ただし、アップグレードプロセスを簡単にするため、新しい`laravel/legacy-factories`パッケージが作成され、Laravel 8.xで既存のファクトリを続けて使用できます。このパッケージはComposerでインストールできます。
+Laravelの[モデルファクトリ](/docs/{{version}}/database-testing#defining-model-factories)機能は、クラスをサポートするよう完全に書き直されており、Laravel7.xスタイルのファクトリとは互換性がありません。ただし、アップグレードプロセスを簡単にするため、新しい`laravel/legacy-factories`パッケージが作成され、Laravel 8.xで既存のファクトリを続けて使用できます。このパッケージはComposerでインストールできます。
 
     composer require laravel/legacy-factories
 
@@ -157,6 +157,13 @@ Eloquentモデルインスタンスで`increment`または` decrement`メソッ�
 
 <a name="events"></a>
 ### イベント
+
+<a name="the-event-service-provider-class"></a>
+#### `EventServiceProvider`クラス
+
+**影響の可能性： 低い**
+
+`App\Providers\EventServiceProvider`クラスに`register`関数が含まれている場合は、このメソッドの先頭で確実に`parent::register`を呼び出す必要があります。そうしないと、アプリケーションのイベントは登録されません。
 
 <a name="the-dispatcher-contract"></a>
 #### `Dispatcher`契約
@@ -363,7 +370,7 @@ Laravel8では、このプロパティをデフォルトで`null`に設定して
         protected function configureRateLimiting()
         {
             RateLimiter::for('api', function (Request $request) {
-                return Limit::perMinute(60);
+                return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
             });
         }
     }
@@ -427,4 +434,4 @@ Laravelの依存パッケージである`dragonmantank/cron-expression`が、`2.
 <a name="miscellaneous"></a>
 ### その他
 
-`laravel/laravel`の[GitHubリポジトリ](https://github.com/laravel/laravel)で、変更を確認することを推奨します。これらの変更は必須でありませんが、皆さんのアプリケーションではファイルの同期を保つほうが良いでしょう。変更のいくつかは、このアップグレードガイドで取り扱っていますが、設定ファイルやコメントなどの変更は取り扱っていません。変更は簡単に[GitHubの比較ツール](https://github.com/laravel/laravel/compare/7.x...master)で閲覧でき、みなさんにとって重要な変更を選択できます。
+`laravel/laravel`の[GitHubリポジトリ](https://github.com/laravel/laravel)で、変更を確認することを推奨します。これらの変更は必須でありませんが、皆さんのアプリケーションではファイルの同期を保つほうが良いでしょう。変更のいくつかは、このアップグレードガイドで取り扱っていますが、設定ファイルやコメントなどの変更は取り扱っていません。変更は簡単に[GitHubの比較ツール](https://github.com/laravel/laravel/compare/7.x...8.x)で閲覧でき、みなさんにとって重要な変更を選択できます。

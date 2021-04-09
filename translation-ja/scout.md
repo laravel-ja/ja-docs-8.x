@@ -66,6 +66,11 @@ Algoliaドライバを使用する場合、Algolia `id`と`secret`接続情報�
 
     composer require algolia/algoliasearch-client-php
 
+<a name="meilisearch"></a>
+#### MeiliSearch
+
+MeiliSearchは強力なオープンソースの検索エンジンで、[Laravel Sail](/docs/{{version}}/sail)を使い、ローカルで実行できます。MeiliSearchは、[Laravel向け公式MeiliSearchドライバ](https://github.com/meilisearch/meilisearch-laravel-scout)を提供し、メンテナンスしています。MeiliSearchをLaravel Scoutで使用する方法については、このパッケージのドキュメントを参照してください。
+
 <a name="queueing"></a>
 ### キュー投入
 
@@ -242,7 +247,7 @@ Eloquentリレーションインスタンスで `searchable`メソッドを呼�
 
     $orders->searchable();
 
->{tip}`searchable`メソッドは、「アップサート（upsert）」操作と考えるられます。つまり、モデルレコードがすでにインデックスに含まれている場合は、更新され、検索インデックスに存在しない場合は追加されます。
+> {tip} `searchable`メソッドは、「アップサート（upsert）」操作と考えるられます。つまり、モデルレコードがすでにインデックスに含まれている場合は、更新され、検索インデックスに存在しない場合は追加されます。
 
 <a name="updating-records"></a>
 ### レコード更新

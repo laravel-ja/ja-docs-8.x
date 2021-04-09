@@ -209,6 +209,41 @@ JSON属性の単一のフィールドをより簡潔な構文で更新するに�
 
     $user->update(['options->key' => 'value']);
 
+<a name="array-object-and-collection-casting"></a>
+#### 配列オブジェクトとコレクションのキャスト
+
+多くのアプリケーションには標準の`array`キャストで十分ですが、いくつかの欠点を持ちます。`array`キャストはプリミティブ型を返すので、配列のオフセットを直接変更することはできません。たとえば、次のコードはPHPエラーを起こします。
+
+    $user = User::find(1);
+
+    $user->options['key'] = $value;
+
+これを解決するために、Laravelは、JSON属性を[ArrayObject](https://www.php.net/manual/en/class.arrayobject.php)クラスにキャストする`asArrayObject`キャストを提供します。この機能はLaravelの[カスタムキャスト](#custom-cast)の実装を使用しており、Laravelがインテリジェントにキャッシュし、PHPエラーを引き起こすことなく、個々のオフセットを変更できるように、ミューテートしたオブジェクトを変換することができます。AsArrayObject`のキャストを使用するには、単純に属性に割り当てるだけです。
+
+    use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+
+    /**
+     * キャストする属性
+     *
+     * @var array
+     */
+    protected $casts = [
+        'options' => AsArrayObject::class,
+    ];
+
+同様に、LaravelはJSON属性をLaravel[コレクション](/docs/{{version}}/collections)へキャストする`ASCollection`キャストを提供しています
+
+    use Illuminate\Database\Eloquent\Casts\AsCollection;
+
+    /**
+     * キャストする属性
+     *
+     * @var array
+     */
+    protected $casts = [
+        'options' => AsCollection::class,
+    ];
+
 <a name="date-casting"></a>
 ### 日付のキャスト
 

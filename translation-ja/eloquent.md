@@ -1,6 +1,5 @@
 # Eloquentの準備
 
-
 - [イントロダクション](#introduction)
 - [モデルクラスの生成](#generating-model-classes)
 - [Eloquentモデルの規約](#eloquent-model-conventions)
@@ -159,6 +158,11 @@ Eloquentは、各モデルの対応するデータベーステーブルに`id`�
          */
         protected $keyType = 'string';
     }
+
+<a name="composite-primary-keys"></a>
+#### 「コンポジット」主キー
+
+Elomequentは、それぞれのモデルがその主キーとして役立つことができる、少なくとも１つの一意に識別される「ID」を持つ必要があります。Eloquentモデルは「コンポジット」主キーをサポートしていません。しかし、テーブルの一意に識別される主キーに加えて、データベーステーブルに追加のマルチカラム、ユニークなインデックスを追加することができます。
 
 <a name="timestamps"></a>
 ### 主キータイムスタンプ
@@ -401,7 +405,6 @@ Eloquentは、高度なサブクエリサポートも提供します。これに
 <a name="retrieving-single-models"></a>
 ## 単一モデル/集計の取得
 
-In addition to retrieving all of the records matching a given query, you may also retrieve single records using the `find`, `first`, or `firstWhere` methods. Instead of returning a collection of models, these methods return a single model instance:
 特定のクエリに一致するすべてのレコードを取得することに加えて、`find`、`first`、または`firstWhere`メソッドを使用して単一のレコードを取得することもできます。モデルのコレクションを返す代わりに、これらのメソッドは単一のモデルインスタンスを返します。
 
     use App\Models\Flight;
@@ -662,7 +665,7 @@ JSONカラムへ代入するときは、各カラムの複数代入可能キー�
      *
      * @var array
      */
-    $fillable = [
+    protected $fillable = [
         'options->enabled',
     ];
 
@@ -710,6 +713,10 @@ JSONカラムへ代入するときは、各カラムの複数代入可能キー�
 
     $flight->delete();
 
+モデルに関連しているすべてのデータベースレコードを削除するには、`truncate`メソッドを呼びだせます。`truncate`操作は、モデルの関連テーブルの自動増分IDをリセットします。
+
+    Flight::truncate();
+
 <a name="deleting-an-existing-model-by-its-primary-key"></a>
 #### 主キーによる既存のモデルの削除
 
@@ -723,7 +730,7 @@ JSONカラムへ代入するときは、各カラムの複数代入可能キー�
 
     Flight::destroy(collect([1, 2, 3]));
 
->　{note}　`destroy`メソッドは各モデルを個別にロードし、`delete`メソッドを呼び出して、`deleting`イベントと`deleted`イベントが各モデルに適切にディスパッチされるようにします。
+> {note} `destroy`メソッドは各モデルを個別にロードし、`delete`メソッドを呼び出して、`deleting`イベントと`deleted`イベントが各モデルに適切にディスパッチされるようにします。
 
 <a name="deleting-models-using-queries"></a>
 #### クエリを使用したモデルの削除
@@ -918,7 +925,7 @@ Eloquentリレーションクエリを作成するときに、`forceDelete`メ�
 上記の例のスコープを`App\Models\User`モデルに追加した後、`User::all()`メソッドを呼び出すと、次のSQLクエリが実行されます。
 
 ```sql
-select * from `users` where `age` > 200
+select * from `users` where `created_at` < 0021-02-18 00:00:00
 ```
 
 <a name="anonymous-global-scopes"></a>
@@ -1059,13 +1066,17 @@ Eloquenはクロージャを使用してグローバルスコープを定義す�
 <a name="comparing-models"></a>
 ## モデルの比較
 
-２つのモデルが「同一」かを判断する必要のある場合があります。`is`メソッドを使用すると、2つのモデルの主キー、テーブル、およびデータベース接続が同じであることをすばやく確認できます。
+２つのモデルが「同じ」であるかを判定する必要がある場合があるでしょう。２つのモデルに同じ主キー、テーブル、およびデータベース接続があるかどうかを手早く検証するために、`is`と`isNot`メソッドを使用できます。
 
     if ($post->is($anotherPost)) {
         //
     }
 
-`is`メソッドは`belongsTo`、`hasOne`、`morphTo`、`morphOne`[リレーション](/docs/{{version}}/eloquent-relationships)を使用する場合にも使用できます。このメソッドは、そのモデルを取得するクエリを発行しないで関連したモデルを比較したい場合でとくに役立ちます。
+    if ($post->isNot($anotherPost)) {
+        //
+    }
+
+`is`と`isNot`メソッドは、`belongsTo`、`hasOne`、`morphTo`、`morphOne`[リレーション](/docs/{{version}}/eloquent-relationships)を使用するときにも利用できます。このメソッドは、そのモデルを取得するためにクエリを発行せずに関連モデルを比較したい場合に特に役立ちます。
 
     if ($post->author()->is($user)) {
         //
@@ -1076,7 +1087,7 @@ Eloquenはクロージャを使用してグローバルスコープを定義す�
 
 Eloquentモデルはいくつかのイベントをディスパッチし、モデルのライフサイクルの以下の瞬間をフックできるようにしています。：`retrieved`、`creating`、`created`、`updating`、`updated`、`saved`、`saved`、`delete`、`deleted`、`restoreing`、`restored`、`replicating`。
 
-`retrieved`イベントは、既存のモデルをデータベースから取得したときにディスパッチします。新しいモデルをはじめて保存するときは、`creating`イベントと`created`イベントをディスパッチします。`updating`/`updated`イベントは、既存のモデルを変更し、`save`メソッドが呼び出されたときにディスパッチします。`saving`/`saved`イベントは、モデルを作成または更新したときにディスパッチします。
+`retrieved`イベントは、既存のモデルをデータベースから取得したときにディスパッチします。新しいモデルをはじめて保存するときは、`creating`イベントと`created`イベントをディスパッチします。`updating`/`updated`イベントは、既存のモデルを変更し、`save`メソッドが呼び出されたときにディスパッチします。`saving`/`saved`イベントは、モデルを作成または更新したときにディスパッチします。モデルの属性に変化がない場合でも、ディスパッチします。
 
 モデルイベントのリッスンを開始するには、Eloquentモデルで`$dispatchesEvents`プロパティを定義します。このプロパティは、Eloquentモデルのライフサイクルのさまざまなポイントを独自の[イベントクラス](/docs/{{version}}/events)にマップします。各モデルイベントクラスはコンストラクターにより、影響を受けるモデルのインスタンスを引数に受け取ります。
 

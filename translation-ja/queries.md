@@ -102,7 +102,7 @@ Laravelクエリビルダは、PDOパラメーターバインディングを使�
 <a name="retrieving-a-list-of-column-values"></a>
 #### カラム値のリストの取得
 
-単一のカラムの値を含む`Illuminate\Support\Collection`インスタンスを取得する場合は、`pluck`メソッドを使用します。この例では、役割のタイトルのコレクションを取得します。
+単一のカラムの値を含む`Illuminate\Support\Collection`インスタンスを取得する場合は、`pluck`メソッドを使用します。この例では、ユーザーのタイトルのコレクションを取得します。
 
     use Illuminate\Support\Facades\DB;
 

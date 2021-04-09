@@ -8,6 +8,7 @@
     - [準備](#setup)
     - [変数](#variables)
     - [ストーリー](#stories)
+    - [完了フック](#completion-hooks)
 - [タスク実行](#running-tasks)
     - [タスク実行の確認](#confirming-task-execution)
 - [通知](#notifications)
@@ -172,6 +173,63 @@ Bladeの「エコー（echo）」構文を使用して、タスク内のオプ�
 
     php vendor/bin/envoy run deploy
 
+<a name="completion-hooks"></a>
+### 完了フック
+
+タスクとストーリーが終了すると、いくつかのフックが実行されます。Envoyがサポートしているフックタイプは`@after`、`@error`、`@success`、`@finished`です。これらのフック内のすべてのコードはPHPとして解釈され、ローカルで実行されます。タスクが操作するリモートサーバ上では実行されません。
+
+好きなようにこれらのフックを好きなだけ定義できます。それらはEnvoyスクリプトに現れる順序で実行されます。
+
+<a name="completion-after"></a>
+#### `@after`
+
+各タスクの実行の後、Envoyスクリプト中で登録したすべての`@after`フックが実行されます。`@after`フックは、実行したタスクの名前を受け取ります。
+
+```php
+@after
+    if ($task === 'deploy') {
+        // ...
+    }
+@endafter
+```
+
+<a name="completion-error"></a>
+#### `@error`
+
+すべてのタスクが失敗した（ステータスコードが`0`より大きかった）場合、Envoyスクリプトに登録されているすべての`@error`フックが実行されます。`@error`フックは実行したタスクの名前を受け取ります。
+
+```php
+@error
+    if ($task === 'deploy') {
+        // ...
+    }
+@enderror
+```
+
+<a name="completion-success"></a>
+#### `@success`
+
+すべてのタスクがエラーなしで実行された場合は、Envoyスクリプトで登録したすべての`@success`フックが実行されます。
+
+```bash
+@success
+    // ...
+@endsuccess
+```
+
+<a name="completion-finished"></a>
+#### `@finished`
+
+すべてのタスクが実行された後(終了ステータスに関係なく)、すべての`@finished`フックが実行されます。`@finished`フックは`null`か`0`以上の`integer`を終了したタスクのステータスコードとして受け取ります。
+
+```bash
+@finished
+    if ($exitCode > 0) {
+        // １つのタスクにエラーがあった
+    }
+@endfinished
+```
+
 <a name="running-tasks"></a>
 ## タスク実行
 
@@ -204,6 +262,12 @@ Envoyは、各タスクの実行後に[Slack](https://slack.com)への通知送�
 
     @finished
         @slack('webhook-url', '#bots')
+    @endfinished
+
+デフォルトでEnvoy の通知は、実行したタスクを説明するメッセージを通知チャネルに送信します。しかし、`@slack` ディレクティブに第三引数を渡すことで、このメッセージを自分のカスタムメッセージで上書きすることができます。
+
+    @finished
+        @slack('webhook-url', '#bots', 'Hello, Slack.')
     @endfinished
 
 <a name="discord"></a>

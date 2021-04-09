@@ -80,7 +80,7 @@ Passportの[サービスプロバイダ](/docs/{{version}}/provider)は独自の
 
     namespace App\Models;
 
-    use Illuminate\Database\Eloquent\Factories\HasFactory
+    use Illuminate\Database\Eloquent\Factories\HasFactory;
     use Illuminate\Foundation\Auth\User as Authenticatable;
     use Illuminate\Notifications\Notifiable;
     use Laravel\Passport\HasApiTokens;
@@ -120,7 +120,9 @@ Passportの[サービスプロバイダ](/docs/{{version}}/provider)は独自の
         {
             $this->registerPolicies();
 
-            Passport::routes();
+            if (! $this->app->routesAreCached()) {
+                Passport::routes();
+            }
         }
     }
 
@@ -558,7 +560,6 @@ Passportには、承認済みアクセストークンを管理するためのJSO
 この認可グラントではクライアント秘密コードが提供されないため、開発者はトークンを要求するためにコードベリファイヤとコードチャレンジのコンビネーションを生成する必要があります。
 
 コードベリファイアは、[RFC 7636 仕様](https://tools.ietf.org/html/rfc7636)で定義されているように、文字、数字、`"-"`、`"."`、`"_"`、`"~"`文字を含む４３文字から１２８文字のランダムな文字列でなければなりません。
-
 
 コードチャレンジはURL／ファイルネームセーフな文字をBase64エンコードしたものである必要があります。文字列終端の`'='`文字を削除し、ラインブレイクやホワイトスペースを含まず、その他はそのままにします。
 

@@ -15,7 +15,7 @@
 <a name="laravel-breeze"></a>
 ## Laravel Breeze
 
-Laravel Breezeにログイン、ユーザー登録、パスワードのリセット、メールの検証、パスワードの確認など、Laravelのすべての[認証機能](/docs/{{version}}/authentication)を最小限シンプルに実装プルな実装しました。Laravel Breezeのビュー層は、[Tailwind CSS](https://tailwindcss.com)でスタイルを設定したシンプルな[Bladeテンプレート](/docs/{{version}}/blade)で構成しています。Breezeは、新しいLaravelアプリケーションを開始するための素晴らしい出発点を提供します。
+Laravel Breezeにログイン、ユーザー登録、パスワードのリセット、メールの検証、パスワードの確認など、Laravelのすべての[認証機能](/docs/{{version}}/authentication)を最小限シンプルに実装プルな実装しました。Laravel Breezeのデフォルトビュー層は、[Tailwind CSS](https://tailwindcss.com)でスタイルを設定したシンプルな[Bladeテンプレート](/docs/{{version}}/blade)で構成しています。Breezeは、新しいLaravelアプリケーションを開始するための素晴らしい出発点を提供します。
 
 <a name="laravel-breeze-installation"></a>
 ### インストール
@@ -44,11 +44,28 @@ php artisan breeze:install
 npm install
 
 npm run dev
+
+php artisan migrate
 ```
 
 次に、Webブラウザでアプリケーションの`/login`または`/register`のURLにアクセスしてください。Breezeのすべてのルートは、`routes/auth.php'ファイル内に定義しています。
 
 > {tip} アプリケーションのCSSとJavaScriptのコンパイルの詳細は、[Laravel Mixドキュメント](/docs/{{version}}/mix#running-mix)をご覧ください。
+
+<a name="breeze-and-inertia"></a>
+#### BreezeとInertia
+
+Laravel Breezeでは、Vueによる[Inertia.js](https://inertiajs.com)フロントエンドの実装も提供しています。Inertiaスタックを使用するには、`breeze:install` Artisanコマンドを実行する際に、`--inertia`オプションを指定します。
+
+```bash
+php artisan breeze:install --inertia
+
+npm install
+
+npm run dev
+
+php artisan migrate
+```
 
 <a name="laravel-jetstream"></a>
 ## Laravel Jetstream
@@ -57,4 +74,4 @@ Laravel Breezeは、Laravelアプリケーションを構築するためのシ�
 
 Jetstreamは、Laravelに美しく設計されたアプリケーションのスカフォールドを提供し、ログイン、ユーザー登録、メール検証、２要素認証、セッション管理、Laravel Sanctumを介したAPIサポート、およびオプションとしてチーム管理機能を含みます。Jetstreamは[TailwindCSS](https://tailwindcss.com)を使用して設計されており、[Livewire](https://laravel-livewire.com)（[日本語](/livewire/2.x/ja/quickstart.html)）もしくは[Inertia.js](https://inertiajs.com)または[Inertia.js]（https://inertiajs.com)駆動のフロントエンドスカフォールドから選択できます。
 
-Laravel Jetstreamをインストールするための完全なドキュメントは、[公式Jetstreamドキュメント](https://jetstream.laravel.com/1.x/introduction.html)にあります。
+Laravel Jetstreamをインストールするための完全なドキュメントは、[公式Jetstreamドキュメント](https://jetstream.laravel.com/2.x/introduction.html)にあります。

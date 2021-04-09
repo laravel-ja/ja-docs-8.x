@@ -159,6 +159,11 @@ If your model's primary key is not an integer, you should define a protected `$k
         protected $keyType = 'string';
     }
 
+<a name="composite-primary-keys"></a>
+#### "Composite" Primary Keys
+
+Eloquent requires each model to have at least one uniquely identifying "ID" that can serve as its primary key. "Composite" primary keys are not supported by Eloquent models. However, you are free to add additional multi-column, unique indexes to your database tables in addition to the table's uniquely identifying primary key.
+
 <a name="timestamps"></a>
 ### Timestamps
 
@@ -322,7 +327,7 @@ Since all of Laravel's collections implement PHP's iterable interfaces, you may 
 
 Your application may run out of memory if you attempt to load tens of thousands of Eloquent records via the `all` or `get` methods. Instead of using these methods, the `chunk` method may be used to process large numbers of models more efficiently.
 
-The `chunk` method will retrieve a subset of Eloquent models, passing them to a closure for processing. Since only the current chunk of Eloquent models is retrieved at a time, the `chunk` method will provide significantly reduced memory usage when working with a large amount of models:
+The `chunk` method will retrieve a subset of Eloquent models, passing them to a closure for processing. Since only the current chunk of Eloquent models is retrieved at a time, the `chunk` method will provide significantly reduced memory usage when working with a large number of models:
 
     use App\Models\Flight;
 
@@ -660,7 +665,7 @@ When assigning JSON columns, each column's mass assignable key must be specified
      *
      * @var array
      */
-    $fillable = [
+    protected $fillable = [
         'options->enabled',
     ];
 
@@ -681,7 +686,7 @@ If you would like to make all of your attributes mass assignable, you may define
 
 Occasionally, you may need to update an existing model or create a new model if no matching model exists. Like the `firstOrCreate` method, the `updateOrCreate` method persists the model, so there's no need to manually call the `save` method.
 
-In the example below, if a flight exists with a `departure` location of `Oakland` and a `destination` location of `San Diego`, it's `price` and `discounted` columns will be updated. If no such flight exists, a new flight will be created which has the attributes resulting from merging the first argument array with the second argument array:
+In the example below, if a flight exists with a `departure` location of `Oakland` and a `destination` location of `San Diego`, its `price` and `discounted` columns will be updated. If no such flight exists, a new flight will be created which has the attributes resulting from merging the first argument array with the second argument array:
 
     $flight = Flight::updateOrCreate(
         ['departure' => 'Oakland', 'destination' => 'San Diego'],
@@ -707,6 +712,10 @@ To delete a model, you may call the `delete` method on the model instance:
     $flight = Flight::find(1);
 
     $flight->delete();
+
+You may call the `truncate` method to delete all of the model's associated database records. The `truncate` operation will also reset any auto-incrementing IDs on the model's associated table:
+   
+    Flight::truncate();
 
 <a name="deleting-an-existing-model-by-its-primary-key"></a>
 #### Deleting An Existing Model By Its Primary Key
@@ -916,7 +925,7 @@ To assign a global scope to a model, you should override the model's `booted` me
 After adding the scope in the example above to the `App\Models\User` model, a call to the `User::all()` method will execute the following SQL query:
 
 ```sql
-select * from `users` where `age` > 200
+select * from `users` where `created_at` < 0021-02-18 00:00:00
 ```
 
 <a name="anonymous-global-scopes"></a>
@@ -1057,13 +1066,17 @@ Once the expected arguments have been added to your scope method's signature, yo
 <a name="comparing-models"></a>
 ## Comparing Models
 
-Sometimes you may need to determine if two models are the "same". The `is` method may be used to quickly verify two models have the same primary key, table, and database connection:
+Sometimes you may need to determine if two models are the "same" or not. The `is` and `isNot` methods may be used to quickly verify two models have the same primary key, table, and database connection or not:
 
     if ($post->is($anotherPost)) {
         //
     }
 
-The `is` method is also available when using the `belongsTo`, `hasOne`, `morphTo`, and `morphOne` [relationships](/docs/{{version}}/eloquent-relationships). This method is particularly helpful when you would like to compare a related model without issuing a query to retrieve that model:
+    if ($post->isNot($anotherPost)) {
+        //
+    }
+
+The `is` and `isNot` methods are also available when using the `belongsTo`, `hasOne`, `morphTo`, and `morphOne` [relationships](/docs/{{version}}/eloquent-relationships). This method is particularly helpful when you would like to compare a related model without issuing a query to retrieve that model:
 
     if ($post->author()->is($user)) {
         //
@@ -1074,7 +1087,7 @@ The `is` method is also available when using the `belongsTo`, `hasOne`, `morphTo
 
 Eloquent models dispatch several events, allowing you to hook into the following moments in a model's lifecycle: `retrieved`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`, `restoring`, `restored`, and `replicating`.
 
-The `retrieved` event will dispatch when an existing model is retrieved from the database. When a new model is saved for the first time, the `creating` and `created` events will dispatch. The `updating` / `updated` events will dispatch when an existing model is modified and the `save` method is called. The `saving` / `saved` events will dispatch when a model is created or updated.
+The `retrieved` event will dispatch when an existing model is retrieved from the database. When a new model is saved for the first time, the `creating` and `created` events will dispatch. The `updating` / `updated` events will dispatch when an existing model is modified and the `save` method is called. The `saving` / `saved` events will dispatch when a model is created or updated - even if the model's attributes have not been changed.
 
 To start listening to model events, define a `$dispatchesEvents` property on your Eloquent model. This property maps various points of the Eloquent model's lifecycle to your own [event classes](/docs/{{version}}/events). Each model event class should expect to receive an instance of the affected model via its constructor:
 
@@ -1103,7 +1116,7 @@ To start listening to model events, define a `$dispatchesEvents` property on you
 
 After defining and mapping your Eloquent events, you may use [event listeners](https://laravel.com/docs/{{version}}/events#defining-listeners) to handle the events.
 
-> {note} When issuing a mass update or delete query via Eloquent, the `saved`, `updated`, `deleting`, and `deleted` model events will not be dispatched for the affected models. This is because the models are never actually retrieved when performing a mass updates or deletes.
+> {note} When issuing a mass update or delete query via Eloquent, the `saved`, `updated`, `deleting`, and `deleted` model events will not be dispatched for the affected models. This is because the models are never actually retrieved when performing mass updates or deletes.
 
 <a name="events-using-closures"></a>
 ### Using Closures

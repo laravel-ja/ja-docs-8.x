@@ -16,6 +16,7 @@
     - [Mailerのカスタマイズ](#customizing-the-mailer)
     - [テンプレートのカスタマイズ](#customizing-the-templates)
     - [添付](#mail-attachments)
+    - [Mailablesの使用](#using-mailables)
     - [メール通知のプレビュー](#previewing-mail-notifications)
 - [Markdownメール通知](#markdown-mail-notifications)
     - [メッセージ生成](#generating-the-message)
@@ -292,22 +293,6 @@ Laravelでは、各通知は通常、`app/Notifications`ディレクトリに保
         );
     }
 
-さらに、`toMail`メソッドから[Mailableオブジェクト](/docs/{{version}}/mail)をそのまま返すこともできます。
-
-    use App\Mail\InvoicePaid as InvoicePaidMailable;
-
-    /**
-     * 通知のメールプレゼンテーションを取得
-     *
-     * @param  mixed  $notifiable
-     * @return Mailable
-     */
-    public function toMail($notifiable)
-    {
-        return (new InvoicePaidMailable($this->invoice))
-                    ->to($notifiable->email);
-    }
-
 <a name="error-messages"></a>
 #### エラーメッセージ
 
@@ -491,6 +476,49 @@ Mailableオブジェクトにファイルを添付するのとは異なり、`at
                     ->attachData($this->pdf, 'name.pdf', [
                         'mime' => 'application/pdf',
                     ]);
+    }
+
+<a name="using-mailables"></a>
+### Mailablesの使用
+
+必要に応じ、通知の`toMail`メソッドから完全な[Mailableオブジェクト](/docs/{{version}}/mail)を返せます。`MailMessage`の代わりに`Maileable`を返すときは、Mailableオブジェクトの`to`メソッドを使ってメッセージ受信者を指定する必要があります。
+
+    use App\Mail\InvoicePaid as InvoicePaidMailable;
+
+    /**
+     * 通知のメール表現の入手
+     *
+     * @param  mixed  $notifiable
+     * @return Mailable
+     */
+    public function toMail($notifiable)
+    {
+        return (new InvoicePaidMailable($this->invoice))
+                    ->to($notifiable->email);
+    }
+
+<a name="mailables-and-on-demand-notifications"></a>
+#### Mailablesとオンデマンド通知
+
+[オンデマンド通知](#on-demand-notifications)を送信する場合、`toMail`メソッドに渡される`$notifiable`インスタンスは`Illuminate\Notifications\AnonymousNotifiable`インスタンスになります。`routeNotificationFor`メソッドは、オンデマンド通知の送信先のメールアドレスを取得するために使用することができます。
+
+    use App\Mail\InvoicePaid as InvoicePaidMailable;
+    use Illuminate\Notifications\AnonymousNotifiable;
+
+    /**
+     * 通知のメール表現の入手
+     *
+     * @param  mixed  $notifiable
+     * @return Mailable
+     */
+    public function toMail($notifiable)
+    {
+        $address = $notifiable instanceof AnonymousNotifiable
+                ? $notifiable->routeNotificationFor('mail')
+                : $notifiable->email;
+
+        return (new InvoicePaidMailable($this->invoice))
+                    ->to($address);
     }
 
 <a name="previewing-mail-notifications"></a>
@@ -939,7 +967,7 @@ Slackへの通知を送信し始める前に、ComposerによりSlack通知チ�
      * 通知のSlackプレゼンテーションを取得
      *
      * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Message\SlackMessage
+     * @return \Illuminate\Notifications\Messages\SlackMessage
      */
     public function toSlack($notifiable)
     {

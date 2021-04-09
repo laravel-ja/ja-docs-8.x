@@ -86,7 +86,7 @@ S3ドライバーの設定情報は、`config/filesystems.php`設定ファイル
 <a name="ftp-driver-configuration"></a>
 #### FTPドライバーの設定
 
-LaravelのFlysystem統合はFTPでうまく機能します。ただし、サンプル設定は、フレームワークのデフォルトの`filesystems.php`設定ファイルには含まれていません。FTPファイルシステムを設定する必要がある場合は、以下の設定例を参考にしてください。
+LaravelのFlysystem統合はFTPでもうまく機能します。ただし、サンプル設定がフレームワークのデフォルトの`filesystems.php`設定ファイルに含まれていません。FTPファイルシステムを設定する必要がある場合は、以下の設定例を参照してください。
 
     'ftp' => [
         'driver' => 'ftp',
@@ -105,7 +105,7 @@ LaravelのFlysystem統合はFTPでうまく機能します。ただし、サン�
 <a name="sftp-driver-configuration"></a>
 #### SFTPドライバーの設定
 
-LaravelのFlysystem統合はSFTPでうまく機能します。ただし、サンプル設定は、フレームワークのデフォルトの`filesystems.php`設定ファイルには含まれていません。SFTPファイルシステムを設定する必要がある場合は、以下の設定例を参考にしてください。
+LaravelのFlysystem統合はSFTPでも最適に機能します。ただし、サンプル設定がフレームワークのデフォルトの`fileSystems.php`設定ファイルに含まれていません。SFTPファイルシステムを設定する必要がある場合は、以下の設定例を参照してください。
 
     'sftp' => [
         'driver' => 'sftp',
@@ -166,7 +166,6 @@ LaravelのFlysystem統合はSFTPでうまく機能します。ただし、サン
         // ...
     }
 
-The `missing` method may be used to determine if a file is missing from the disk:
 `missing`メソッドを使用して、ファイルがディスク存在していないことを判定できます。
 
     if (Storage::disk('s3')->missing('file.jpg')) {
@@ -349,7 +348,7 @@ Webアプリケーションでは、ファイルを保存するための最も�
         'avatars', $request->file('avatar'), $request->user()->id
     );
 
-f> {note} 印刷できない無効なUnicode文字はファイルパスから自動的に削除されます。したがって、Laravelのファイルストレージメソッドに渡す前に、ファイルパスをサニタイズすることをお勧めします。ファイルパスは、`League\Flysystem\Util::normalizePath`メソッドを使用して正規化されます。
+> {note} 印刷できない無効なUnicode文字はファイルパスから自動的に削除されます。したがって、Laravelのファイルストレージメソッドに渡す前に、ファイルパスをサニタイズすることをお勧めします。ファイルパスは、`League\Flysystem\Util::normalizePath`メソッドを使用して正規化されます。
 
 <a name="specifying-a-disk"></a>
 #### ディスクの指定

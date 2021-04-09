@@ -73,6 +73,7 @@
     - [データベーステスト](/docs/{{version}}/database-testing)
     - [モック](/docs/{{version}}/mocking)
 - ## パッケージ
+    - [Breeze](/docs/{{version}}/starter-kits#laravel-breeze)
     - [Cashier (Stripe)](/docs/{{version}}/billing)
     - [Cashier (Paddle)](/docs/{{version}}/cashier-paddle)
     - [Dusk](/docs/{{version}}/dusk)

@@ -96,7 +96,7 @@ Laravel includes a `cache.headers` middleware, which may be used to quickly set 
 <a name="attaching-cookies-to-responses"></a>
 ### Attaching Cookies To Responses
 
-You may attach a cookie to an outgoing `Illuminate\Http\Response` instance using the `cookie` method. You should pass the name, value, and number of minutes the cookie should be considered valid to this method:
+You may attach a cookie to an outgoing `Illuminate\Http\Response` instance using the `cookie` method. You should pass the name, value, and the number of minutes the cookie should be considered valid to this method:
 
     return response('Hello World')->cookie(
         'name', 'value', $minutes
@@ -315,7 +315,7 @@ The `file` method may be used to display a file, such as an image or PDF, direct
 <a name="response-macros"></a>
 ## Response Macros
 
-If you would like to define a custom response that you can re-use in a variety of your routes and controllers, you may use the `macro` method on the `Response` facade. Typically, you should call this method from the `boot` method of one of your application's [service providers](/docs/{{version}}/providers), such as the `App\Providers\AppProvider` service provider:
+If you would like to define a custom response that you can re-use in a variety of your routes and controllers, you may use the `macro` method on the `Response` facade. Typically, you should call this method from the `boot` method of one of your application's [service providers](/docs/{{version}}/providers), such as the `App\Providers\AppServiceProvider` service provider:
 
     <?php
 

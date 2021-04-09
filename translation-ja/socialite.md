@@ -146,4 +146,4 @@ OAuthプロバイダを使用してユーザーを認証するには、２つの
 
     return Socialite::driver('google')->stateless()->user();
 
->{note}ステートレス認証は、認証にOAuth1.0を使用するTwitterドライバでは使用できません。
+> {note} ステートレス認証は、認証にOAuth1.0を使用するTwitterドライバでは使用できません。

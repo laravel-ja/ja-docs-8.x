@@ -6,6 +6,7 @@
     - [Getting Started On macOS](#getting-started-on-macos)
     - [Getting Started On Windows](#getting-started-on-windows)
     - [Getting Started On Linux](#getting-started-on-linux)
+    - [Choosing Your Sail Services](#choosing-your-sail-services)
     - [Installation Via Composer](#installation-via-composer)
 - [Initial Configuration](#initial-configuration)
 - [Next Steps](#next-steps)
@@ -59,7 +60,7 @@ Laravel Sail is a light-weight command-line interface for interacting with Larav
 If you're developing on a Mac and [Docker Desktop](https://www.docker.com/products/docker-desktop) is already installed, you can use a simple terminal command to create a new Laravel project. For example, to create a new Laravel application in a directory named "example-app", you may run the following command in your terminal:
 
 ```nothing
-curl -s https://laravel.build/example-app | bash
+curl -s "https://laravel.build/example-app" | bash
 ```
 
 Of course, you can change "example-app" in this URL to anything you like. The Laravel application's directory will be created within the directory you execute the command from.
@@ -138,6 +139,17 @@ Once the application's Docker containers have been started, you can access the a
 
 > {tip} To continue learning more about Laravel Sail, review its [complete documentation](/docs/{{version}}/sail).
 
+<a name="choosing-your-sail-services"></a>
+### Choosing Your Sail Services
+
+When creating a new Laravel application via Sail, you may use the `with` query string variable to choose which services should be configured in your new application's `docker-compose.yml` file. Available services include `mysql`, `pgsql`, `redis`, `memcached`, `meilisearch`, `selenium`, and `mailhog`:
+
+```nothing
+curl -s "https://laravel.build/example-app?with=mysql,redis" | bash
+```
+
+If you do not specify which services you would like configured, a default stack of `mysql`, `redis`, `meilisearch`, `mailhog`, and `selenium` will be configured.
+
 <a name="installation-via-composer"></a>
 ### Installation Via Composer
 
@@ -158,6 +170,8 @@ Or, you may install the Laravel Installer as a global Composer dependency:
 composer global require laravel/installer
 
 laravel new example-app
+
+cd example-app
 
 php artisan serve
 ```
@@ -218,4 +232,3 @@ If you are using Laravel as a full stack framework, we also strongly encourage y
 Laravel may also serve as an API backend to a JavaScript single-page application or mobile application. For example, you might use Laravel as an API backend for your [Next.js](https://nextjs.org) application. In this context, you may use Laravel to provide [authentication](/docs/{{version}}/sanctum) and data storage / retrieval for your application, while also taking advantage of Laravel's powerful services such as queues, emails, notifications, and more.
 
 If this is how you plan to use Laravel, you may want to check out our documentation on [routing](/docs/{{version}}/routing), [Laravel Sanctum](/docs/{{version}}/sanctum), and the [Eloquent ORM](/docs/{{version}}/eloquent).
-

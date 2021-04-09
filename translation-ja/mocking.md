@@ -69,7 +69,7 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
 
     // …
 
-    $spy->shouldHaveReceived('process')
+    $spy->shouldHaveReceived('process');
 
 <a name="mocking-facades"></a>
 ## ファサードのモック
@@ -123,7 +123,7 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
         }
     }
 
->{note}`Request`ファサードをモックしないでください。代わりに、テストの実行時に、`get`や`post`などの[HTTPテストメソッド](/docs/{{version}}/http-tests)に必要な入力を渡します。同様に、`Config`ファサードをモックする代わりに、テストでは`Config::set`メソッドを呼び出してください。
+> {note} `Request`ファサードをモックしないでください。代わりに、テストの実行時に、`get`や`post`などの[HTTPテストメソッド](/docs/{{version}}/http-tests)に必要な入力を渡します。同様に、`Config`ファサードをモックする代わりに、テストでは`Config::set`メソッドを呼び出してください。
 
 <a name="facade-spies"></a>
 ### ファサードのスパイ
@@ -222,7 +222,7 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
 <a name="event-fake"></a>
 ## Event Fake
 
-イベントをディスパッチするコードをテストするときは、イベントのリスナを実際に実行しないようにLaravelに指示することを推奨します。`Event`ファサードの`fake`メソッドを使用すると、リスナの実行を阻止し、テスト対象のコードを実行してから、`assertDispatched`メソッドと`assertNotDispatched`メソッドを使用してアプリケーションによってディスパッチされたイベントをアサートできます。
+イベントをディスパッチするコードをテストするときは、イベントのリスナを実際に実行しないようにLaravelに指示することを推奨します。`Event`ファサードの`fake`メソッドを使用すると、リスナの実行を阻止し、テスト対象のコードを実行してから、`assertDispatched`、`assertNotDispatched`、`assertNothingDispatched`メソッドを使用してアプリケーションがディスパッチするイベントをアサートできます。
 
     <?php
 
@@ -254,6 +254,9 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
 
             // イベントがディスパッチされないことをアサート
             Event::assertNotDispatched(OrderFailedToShip::class);
+
+            // イベントがディスパッチされなかったことをアサート
+            Event::assertNothingDispatched();
         }
     }
 
@@ -333,7 +336,7 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
 
 `Mail`ファサードの`fake`メソッドを使用して、メールが送信されないようにすることができます。通常、メールの送信は、実際にテストするコードとは関係ありません。ほとんどの場合、Laravelが特定のメールを送信するよう指示されたとアサートするだけで十分です。
 
-`Mail`ファサードの`fake`メソッドを呼び出した後、[mailables](/docs/{{version}}/mail)がユーザーに送信されるように指示されたことを宣言し、mailablesが受信したデータを検査することもできます。
+`Mail`ファサードの`fake`メソッドを呼び出した後、[mailables](/docs/{{version}}/mail)がユーザーに送信されるように指示されたことをアサートし、Mailablesが受信したデータを検査することもできます。
 
     <?php
 
@@ -367,19 +370,21 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
         }
     }
 
-バックグラウンドで配信するためにmailableをキュー投入する場合は、`assertSent`の代わりに`assertQueued`メソッドを使用する必要があります。
+バックグラウンドで配信するためにMailableをキュー投入する場合は、`assertSent`の代わりに`assertQueued`メソッドを使用する必要があります。
 
     Mail::assertQueued(OrderShipped::class);
 
     Mail::assertNotQueued(OrderShipped::class);
 
-特定の「論理テスト」に合格したメーラブルが送信されたことを宣言するために、`assertSent`または`assertNotSent`メソッドにクロージャを渡すこともできます。指定する論理テストに合格する郵送物が少なくとも１つ送信された場合、アサーションは成功します。
+    Mail::assertNothingQueued();
+
+特定の「論理テスト」に合格したMailableが送信されたことをアサートするために、`assertSent`または`assertNotSent`メソッドにクロージャを渡すこともできます。指定する論理テストに合格するMailableが少なくとも１つ送信された場合、アサーションは成功します。
 
     Mail::assertSent(function (OrderShipped $mail) use ($order) {
         return $mail->order->id === $order->id;
     });
 
-`Mail`ファサードのアサートメソッドを呼び出すと、引数中のクロージャが受け取るmailableインスタンスは、mailableの受信者を調べる便利なメソッドを提供しています。
+`Mail`ファサードのアサートメソッドを呼び出すと、引数中のクロージャが受け取るMailableインスタンスは、Mailableの受信者を調べる便利なメソッドを提供しています。
 
     Mail::assertSent(OrderShipped::class, function ($mail) use ($user) {
         return $mail->hasTo($user->email) &&
@@ -439,7 +444,7 @@ Laravelの[サービスコンテナ](/docs/{{version}}/container)を介してア
 <a name="on-demand-notifications"></a>
 #### オンデマンド通知
 
-テストしているコードが[オンデマンド通知](/docs/{{version}}/notifys#on-demand-notifications)を送信する場合は、通知が`Illuminate\Notifications\AnonymousNotifiable`インスタンスへ送信されたことを宣言する必要があります。
+テストしているコードが[オンデマンド通知](/docs/{{version}}/notifys#on-demand-notifications)を送信する場合は、通知が`Illuminate\Notifications\AnonymousNotifiable`インスタンスへ送信されたことをアサートする必要があります。
 
     use Illuminate\Notifications\AnonymousNotifiable;
 

@@ -47,7 +47,7 @@
          *
          * @return void
          */
-        public function testBasicExample()
+        public function test_basic_example()
         {
             $response = $this->get('/');
 
@@ -277,6 +277,15 @@
                     ->create();
 
 この例では、`admin`値が`Y`のユーザーが５人作成され、`admin`値が`N`のユーザーが５人作成されます。
+
+必要に応じて、シーケンス値としてクロージャを含めることができます。新しい値をそのシーケンスが必要とするたびにクロージャを呼び出します。
+
+    $users = User::factory()
+                    ->count(10)
+                    ->state(new Sequence(
+                        fn () => ['role' => UserRoles::all()->random()],
+                    ))
+                    ->create();
 
 <a name="factory-relationships"></a>
 ## リレーションのファクトリ
@@ -520,9 +529,9 @@
 
     namespace Tests\Feature;
 
+    use Database\Seeders\OrderStatusSeeder;
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Illuminate\Foundation\Testing\WithoutMiddleware;
-    use OrderStatusSeeder;
     use Tests\TestCase;
 
     class ExampleTest extends TestCase
@@ -558,7 +567,7 @@
     class ExampleTest extends TestCase
     {
         /**
-         * 各テストの前にデータベースをシードする必要があるかどうかを示す
+         * デフォルトのシーダーが各テストの前に実行するかを示す
          *
          * @var bool
          */
@@ -566,6 +575,17 @@
 
         // ...
     }
+
+`$seed`プロパティが`true`の場合、テストは各テストの前に`Database\Seeders\DatabaseSeeder`クラスを実行します。ただし、テストクラスに`$seeder`プロパティを定義して、実行する必要がある特定のシーダーを指定できます。
+
+    use Database\Seeders\OrderStatusSeeder;
+
+    /**
+     * 各テストの前に特定のシーダーを実行
+     *
+     * @var string
+     */
+    protected $seeder = OrderStatusSeeder::class;
 
 <a name="available-assertions"></a>
 ## 利用可能なアサート

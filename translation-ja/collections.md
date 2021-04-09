@@ -66,7 +66,7 @@
 
     Collection::macro('toLocale', function ($locale) {
         return $this->map(function ($value) use ($locale) {
-            return Lang::get($value, $locale);
+            return Lang::get($value, [], $locale);
         });
     });
 
@@ -1705,6 +1705,26 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
     // 10
 
+また、`reduce`メソッドは、配列のキーを連想コレクションにして、与えられたコールバックに渡します。
+
+    $collection = collect([
+        'usd' => 1400,
+        'gbp' => 1200,
+        'eur' => 1000,
+    ]);
+
+    $ratio = [
+        'usd' => 1,
+        'gbp' => 1.37,
+        'eur' => 1.22,
+    ];
+
+    $collection->reduceWithKeys(function ($carry, $value, $key) use ($ratio) {
+        return $carry + ($value * $ratio[$key]);
+    });
+
+    // 4264
+
 <a name="method-reject"></a>
 #### `reject()` {#collection-method}
 
@@ -2770,7 +2790,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherenotnull"></a>
 #### `whereNotNull()` {#collection-method}
 
-`whereNotNull`メソッドは、指定したキーがNULL値のアイテムをコレクションから削除します。
+`wherenotnull`メソッドは、与えられたキーが`null`ではないアイテムをコレクションから返します。
 
     $collection = collect([
         ['name' => 'Desk'],
@@ -2792,7 +2812,7 @@ staticの`unwrap`メソッドは適用可能な場合、指定値からコレク
 <a name="method-wherenull"></a>
 #### `whereNull()` {#collection-method}
 
-`whereNull`メソッドは、指定したキーがNULL値のアイテムをコレクションから抜き出します。
+`whernull`メソッドは、与えられたキーが`null`のアイテムをコレクションから返します。
 
     $collection = collect([
         ['name' => 'Desk'],

@@ -25,6 +25,7 @@
     - [バッチの検査](#inspecting-batches)
     - [バッチのキャンセル](#cancelling-batches)
     - [バッチの失敗](#batch-failures)
+    - [バッチの整理](#pruning-batches)
 - [クロージャのキュー投入](#queueing-closures)
 - [キューワーカの実行](#running-the-queue-worker)
     - [`queue:work`コマンド](#the-queue-work-command)
@@ -229,7 +230,7 @@ Redisキューを使用する場合は、`block_for`設定オプションを使�
 <a name="unique-jobs"></a>
 ### 一意なジョブ
 
-> {note} 一意なジョブには、[ロック](/docs/{{version}}/cache#atomic-locks)をサポートするキャッシュドライバが必要です。現在、`memcached`、`redis`、`dynamodb`、`database`、`file`、`array`キャッシュドライバはアトミックロックをサポートしています。
+> {note} 一意なジョブには、[ロック](/docs/{{version}}/cache#atomic-locks)をサポートするキャッシュドライバが必要です。現在、`memcached`、`redis`、`dynamodb`、`database`、`file`、`array`キャッシュドライバはアトミックロックをサポートしています。また、一意なジョブの制約は、バッチ内のジョブには適用されません。
 
 特定のジョブの１つのインスタンスのみを確実にキューで常に存在させたい場合があります。これを行うには、ジョブクラスに`ShouldBeUnique`インターフェイスを実装します。このインターフェイスでは、クラスへ追加のメソッドを定義する必要はありません。
 
@@ -401,7 +402,7 @@ handleメソッドでレート制限を行う代わりに、レート制限を�
 <a name="rate-limiting"></a>
 ### レート制限
 
-独自のレート制限ジョブミドルウェアを作成する方法を示したばかりですが、実際には、Laravelはレート制限ジョブに利用できるレート制限ミドルウェアが含まれています。[ルートのレートリミッタ](/docs/{{version}}/routing#defining-rate-limiter)と同様に、ジョブのレートリミッタは`RateLimiter`ファサードの`for`メソッドを使用して定義します。
+独自のレート制限ジョブミドルウェアを作成する方法を示したばかりですが、実際には、Laravelはレート制限ジョブに利用できるレート制限ミドルウェアが含まれています。[ルートのレートリミッタ](/docs/{{version}}/routing#defining-rate-limiters)と同様に、ジョブのレートリミッタは`RateLimiter`ファサードの`for`メソッドを使用して定義します。
 
 たとえば、プレミアム顧客には制限を課さずに、一般ユーザーには１時間に１回データをバックアップできるようにしたい場合があると思います。これを実現するには、`AppServiceProvider`の`boot`メソッドで`RateLimiter`を定義します。
 
@@ -551,7 +552,7 @@ Laravelには、任意のキーに基づいてジョブの重複を防ぐこと�
          */
         public function store(Request $request)
         {
-            Podcast::create(...);
+            $podcast = Podcast::create(...);
 
             // ...
 
@@ -629,7 +630,7 @@ Laravelには、任意のキーに基づいてジョブの重複を防ぐこと�
 
 トランザクション中に発生した例外のためにトランザクションがロールバックされた場合、そのトランザクション中にディスパッチされたディスパッチされたジョブは破棄されます。
 
->{tip}`after_commit`設定オプションを`true`に設定すると、開いているすべてのデータベーストランザクションがコミットされた後、キュー投入したイベントリスナ、メーラブル、通知、およびブロードキャストイベントもディスパッチされます。
+> {tip} `after_commit`設定オプションを`true`に設定すると、開いているすべてのデータベーストランザクションがコミットされた後、キュー投入したイベントリスナ、メーラブル、通知、およびブロードキャストイベントもディスパッチされます。
 
 <a name="specifying-commit-dispatch-behavior-inline"></a>
 #### コミットディスパッチ動作をインラインで指定
@@ -871,7 +872,7 @@ Laravelには、任意のキーに基づいてジョブの重複を防ぐこと�
         return now()->addMinutes(10);
     }
 
->{tip}[キュー投入済みイベントリスナ](/docs/{{version}}/events#queued-event-listeners)で`tries`プロパティまたは`retryUntil`メソッドを定義することもできます。
+> {tip} [キュー投入済みイベントリスナ](/docs/{{version}}/events#queued-event-listeners)で`tries`プロパティまたは`retryUntil`メソッドを定義することもできます。
 
 <a name="max-exceptions"></a>
 #### 最大例外数
@@ -1264,6 +1265,17 @@ IDでバッチを取得するには、`Bus`ファサードの`findBatch`メソ�
 php artisan queue:retry-batch 32dbc76c-4f82-4749-b610-a639fe0099b5
 ```
 
+<a name="pruning-batches"></a>
+### バッチの整理
+
+整理しないと、`job_batches`テーブルにレコードがあっという間に蓄積されます。これを軽減するには、`queue:prune-batches` Artisanコマンドを毎日実行するように[スケジュール](/docs/{{version}}/scheduling)する必要があります。
+
+    $schedule->command('queue:prune-batches')->daily();
+
+デフォルトでは、完了してから２４時間以上経過したすべてのバッチが整理されます。バッチデータを保持する時間を決定するためにコマンド呼び出し時に`hours`オプションを使用できます。たとえば、次のコマンドは４８時間以上前に終了したすべてのバッチを削除します。
+
+    $schedule->command('queue:prune-batches --hours=48')->daily();
+
 <a name="queueing-closures"></a>
 ## クロージャのキュー投入
 
@@ -1295,7 +1307,7 @@ Laravelは、キューワーカを開始し、キューに投入された新し�
 
     php artisan queue:work
 
->{tip}`queue:work`プロセスをバックグラウンドで永続的に実行し続けるには、[Supervisor](#supervisor-configuration)などのプロセスモニタを使用して、キューワーカの実行が停止しないようにする必要があります。
+> {tip} `queue:work`プロセスをバックグラウンドで永続的に実行し続けるには、[Supervisor](#supervisor-configuration)などのプロセスモニタを使用して、キューワーカの実行が停止しないようにする必要があります。
 
 キューワーカは長期間有効なプロセスであり、起動した時点のアプリケーションの状態をメモリに保存することを忘れないでください。その結果、起動後にコードベースの変更に気付くことはありません。したがって、デプロイメントプロセス中で、必ず[キューワーカを再起動](#queue-workers-and-deployment)してください。さらに、アプリケーションによって作成または変更された静的状態は、ジョブ間で自動的にリセットされないことに注意してください。
 
@@ -1605,7 +1617,7 @@ Supervisorの詳細は、[Supervisorのドキュメント](http://supervisord.or
 
 Eloquentモデルをジョブに挿入すると、モデルは自動的にシリアル化されてからキューに配置され、ジョブの処理時にデータベースから再取得されます。ただし、ジョブがワーカによる処理を待機している間にモデルが削除された場合、ジョブは`ModelNotFoundException`で失敗する可能性があります。
 
-利便性のため、ジョブの`deleteWhenMissingModels`プロパティを`true`に設定することで、モデルが見つからないジョブを自動的に削除できます。このモデルが`true`に設定されている場合、Laravelは例外を発生させることなく静かにジョブを破棄します。
+利便性のため、ジョブの`deleteWhenMissingModels`プロパティを`true`に設定することで、モデルが見つからないジョブを自動的に削除できます。このプロパティが`true`に設定されている場合、Laravelは例外を発生させることなく静かにジョブを破棄します。
 
     /**
      * モデルが存在しなくなった場合は、ジョブを削除
@@ -1667,7 +1679,7 @@ Eloquentモデルをジョブに挿入すると、モデルは自動的にシリ
 
     php artisan queue:clear redis --queue=emails
 
->{note}キューからのジョブのクリアは、SQS、Redis、およびデータベースキュードライバでのみ使用できます。さらに、SQSメッセージの削除プロセスには最長６０秒かかるため、キューをクリアしてから最長６０秒後にSQSキューに送信されたジョブも削除される可能性があります。
+> {note} キューからのジョブのクリアは、SQS、Redis、およびデータベースキュードライバでのみ使用できます。さらに、SQSメッセージの削除プロセスには最長６０秒かかるため、キューをクリアしてから最長６０秒後にSQSキューに送信されたジョブも削除される可能性があります。
 
 <a name="job-events"></a>
 ## ジョブイベント

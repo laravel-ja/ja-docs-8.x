@@ -105,11 +105,13 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [Str::length](#method-str-length)
 [Str::limit](#method-str-limit)
 [Str::lower](#method-str-lower)
+[Str::markdown](#method-str-markdown)
 [Str::orderedUuid](#method-str-ordered-uuid)
 [Str::padBoth](#method-str-padboth)
 [Str::padLeft](#method-str-padleft)
 [Str::padRight](#method-str-padright)
 [Str::plural](#method-str-plural)
+[Str::pluralStudly](#method-str-plural-studly)
 [Str::random](#method-str-random)
 [Str::replaceArray](#method-str-replace-array)
 [Str::replaceFirst](#method-str-replace-first)
@@ -121,6 +123,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [Str::startsWith](#method-starts-with)
 [Str::studly](#method-studly-case)
 [Str::substr](#method-str-substr)
+[Str::substrCount](#method-str-substrcount)
 [Str::title](#method-title-case)
 [Str::ucfirst](#method-str-ucfirst)
 [Str::upper](#method-str-upper)
@@ -160,11 +163,13 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [limit](#method-fluent-str-limit)
 [lower](#method-fluent-str-lower)
 [ltrim](#method-fluent-str-ltrim)
+[markdown](#method-fluent-str-markdown)
 [match](#method-fluent-str-match)
 [matchAll](#method-fluent-str-match-all)
 [padBoth](#method-fluent-str-padboth)
 [padLeft](#method-fluent-str-padleft)
 [padRight](#method-fluent-str-padright)
+[pipe](#method-fluent-str-pipe)
 [plural](#method-fluent-str-plural)
 [prepend](#method-fluent-str-prepend)
 [replace](#method-fluent-str-replace)
@@ -181,6 +186,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [startsWith](#method-fluent-str-starts-with)
 [studly](#method-fluent-str-studly)
 [substr](#method-fluent-str-substr)
+[tap](#method-fluent-str-tap)
 [title](#method-fluent-str-title)
 [trim](#method-fluent-str-trim)
 [ucfirst](#method-fluent-str-ucfirst)
@@ -1281,6 +1287,23 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     // laravel
 
+<a name="method-str-markdown"></a>
+#### `Str::markdown()` {#collection-method}
+
+`Str::markdown`メソッドは、GitHub風なマークダウンをHTMLに変換します。
+
+    use Illuminate\Support\Str;
+
+    $html = Str::markdown('# Laravel');
+
+    // <h1>Laravel</h1>
+
+    $html = Str::markdown('# Taylor <b>Otwell</b>', [
+        'html_input' => 'strip',
+    ]);
+
+    // <h1>Taylor Otwell</h1>
+
 <a name="method-str-ordered-uuid"></a>
 #### `Str::orderedUuid()` {#collection-method}
 
@@ -1358,9 +1381,36 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     // children
 
-    $plural = Str::plural('child', 1);
+    $singular = Str::plural('child', 1);
 
     // child
+
+<a name="method-str-plural-studly"></a>
+#### `Str::pluralStudly()` {#collection-method}
+
+`Str::pluralStudly`メソッドは、アッパーキャメルケースでフォーマットされた文字列の単語を複数形に変換します。この機能は現在英語のみサポートしています。
+
+    use Illuminate\Support\Str;
+
+    $plural = Str::pluralStudly('VerifiedHuman');
+
+    // VerifiedHumans
+
+    $plural = Str::pluralStudly('UserFeedback');
+
+    // UserFeedback
+
+文字列の単数形か複数形を取得するため、関数へ２番目の引数に整数を指定できます。
+
+    use Illuminate\Support\Str;
+
+    $plural = Str::pluralStudly('VerifiedHuman', 2);
+
+    // VerifiedHumans
+
+    $singular = Str::pluralStudly('VerifiedHuman', 1);
+
+    // VerifiedHuman
 
 <a name="method-str-random"></a>
 #### `Str::random()` {#collection-method}
@@ -1490,6 +1540,17 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
     $converted = Str::substr('The Laravel Framework', 4, 7);
 
     // Laravel
+
+<a name="method-str-substrcount"></a>
+#### `Str::substrCount()` {#collection-method}
+
+`Str::substrCount`メソッドは、指定する文字列内に指定値がいくつ存在しているか返します。
+
+    use Illuminate\Support\Str;
+
+    $count = Str::substrCount('If you like ice cream, you will like snow cones.', 'like');
+
+    // 2
 
 <a name="method-title-case"></a>
 #### `Str::title()` {#collection-method}
@@ -1900,6 +1961,23 @@ Fluent文字列は読み書きしやすい（fluent）、オブジェクト指�
 
     // 'Laravel/'
 
+<a name="method-fluent-str-markdown"></a>
+#### `markdown` {#collection-method}
+
+`markdown`メソッドはGitHub風マークダウンをHTMLに変換します。
+
+    use Illuminate\Support\Str;
+
+    $html = Str::of('# Laravel')->markdown();
+
+    // <h1>Laravel</h1>
+
+    $html = Str::of('# Taylor <b>Otwell</b>')->markdown([
+        'html_input' => 'strip',
+    ]);
+
+    // <h1>Taylor Otwell</h1>
+
 <a name="method-fluent-str-match"></a>
 #### `match` {#collection-method}
 
@@ -1980,6 +2058,23 @@ Fluent文字列は読み書きしやすい（fluent）、オブジェクト指�
     $padded = Str::of('James')->padRight(10);
 
     // 'James     '
+
+<a name="method-fluent-str-pipe"></a>
+#### `pipe` {#collection-method}
+
+`pipe`メソッドは、現在の値を指定Callableへ渡すことで、文字列を変換します。
+
+    use Illuminate\Support\Str;
+
+    $hash = Str::of('Laravel')->pipe('md5')->prepend('Checksum: ');
+
+    // 'Checksum: a5c95b86291ea299fcbe64458ed12702'
+
+    $closure = Str::of('foo')->pipe(function ($str) {
+        return 'bar';
+    });
+
+    // 'bar'
 
 <a name="method-fluent-str-plural"></a>
 #### `plural` {#collection-method}
@@ -2200,6 +2295,22 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
     $string = Str::of('Laravel Framework')->substr(8, 5);
 
     // Frame
+
+<a name="method-fluent-str-tap"></a>
+#### `tap` {#collection-method}
+
+`tap`メソッドは文字列を指定クロージャへ渡し、その文字列自体に影響を与えずに文字列を調べ操作することができます。クロージャが返す値に関係なく、`tap`メソッドはオリジナルの文字列を返します。
+
+    use Illuminate\Support\Str;
+
+    $string = Str::of('Laravel')
+        ->append(' Framework')
+        ->tap(function ($string) {
+            dump('String after append: ' . $string);
+        })
+        ->upper();
+
+    // LARAVEL FRAMEWORK
 
 <a name="method-fluent-str-title"></a>
 #### `title` {#collection-method}
@@ -2692,6 +2803,10 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
 `report`関数は[例外ハンドラ](/docs/{{version}}/errors#the-exception-handler)を使用して例外をレポートします。
 
     report($e);
+
+`report`関数は文字列を引数に取ります。関数に文字列が与えられると、関数は指定する文字列をメッセージとする例外を作成します。
+
+    report('Something went wrong.');
 
 <a name="method-request"></a>
 #### `request()` {#collection-method}

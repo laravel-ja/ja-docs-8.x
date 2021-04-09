@@ -73,11 +73,11 @@
 
     return response($content)
                 ->withHeaders([
-        Route::get('/privacy', function () {
+                    'Content-Type' => $type,
                     'X-Header-One' => 'Header Value',
                     'X-Header-Two' => 'Header Value',
                 ]);
-        Route::get('/terms', function () {
+
 <a name="cache-control-middleware"></a>
 #### キャッシュコントロール・ミドルウェア
 
@@ -315,7 +315,7 @@ JSONPレスポンスを生成したい場合は、`json`メソッドと`withCall
 <a name="response-macros"></a>
 ## レスポンスマクロ
 
-さまざまなルートやコントローラで再利用できるカスタムレスポンスを定義する場合は、`Response`ファサードで`macro`メソッドを使用してください。通常、このメソッドは、`App\Providers\AppProvider`サービスプロバイダなど、アプリケーションの[サービスプロバイダ](/docs/{{version}}/provider)の１つの`boot`メソッドから呼び出す必要があります。
+さまざまなルートやコントローラで再利用できるカスタムレスポンスを定義する場合は、`Response`ファサードで`macro`メソッドを使用してください。通常、このメソッドは、`App\Providers\AppServiceProvider`サービスプロバイダなど、アプリケーションの[サービスプロバイダ](/docs/{{version}}/providers)の１つの`boot`メソッドから呼び出す必要があります。
 
     <?php
 

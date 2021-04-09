@@ -56,7 +56,7 @@
         return false;
     });
 
-> {tip} 特定の例外の例外レポートをカスタマイズするには、[レポート可能な例外](/docs/{{version}}/errors#renderable-exceptions)の使用も検討できます。
+> {tip} 特定の例外のレポートをカスタマイズするには、[レポート可能な例外](/docs/{{version}}/errors#renderable-exceptions)を利用することもできます。
 
 <a name="global-log-context"></a>
 #### グローバルログコンテキスト
@@ -73,6 +73,32 @@
         return array_merge(parent::context(), [
             'foo' => 'bar',
         ]);
+    }
+
+<a name="exception-log-context"></a>
+#### 例外ログコンテキスト
+
+すべてのログメッセージにコンテキストを追加することは便利ですが、特定の例外にはログに含めたい固有のコンテキストがある場合もあります。アプリケーションのカスタム例外に`context`メソッドを定義することで、例外のログエントリに追加すべき、その例外に関連するデータを指定することができます。
+
+    <?php
+
+    namespace App\Exceptions;
+
+    use Exception;
+
+    class InvalidOrderException extends Exception
+    {
+        // ...
+
+        /**
+         * 例外のコンテキスト情報を取得
+         *
+         * @return array
+         */
+        public function context()
+        {
+            return ['order_id' => $this->orderId];
+        }
     }
 
 <a name="the-report-helper"></a>
@@ -146,7 +172,7 @@
         /**
          * 例外を報告
          *
-         * @return void
+         * @return bool|null
          */
         public function report()
         {
@@ -170,7 +196,7 @@
     /**
      * 例外を報告
      *
-     * @return bool|void
+     * @return bool|null
      */
     public function report()
     {

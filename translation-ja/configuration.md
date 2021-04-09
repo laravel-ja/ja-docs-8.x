@@ -5,7 +5,6 @@
     - [環境変数タイプ](#environment-variable-types)
     - [環境設定の取得](#retrieving-environment-configuration)
     - [現在環境の決定](#determining-the-current-environment)
-    - [デバッグページの環境変数非表示](#hiding-environment-variables-from-debug)
 - [設定値へのアクセス](#accessing-configuration-values)
 - [設定キャッシュ](#configuration-caching)
 - [デバッグモード](#debug-mode)
@@ -107,7 +106,7 @@ null | (null) null
 
 通常、本番デプロイメントプロセスの一部として`php artisan config:cache`コマンドを実行する必要があります。アプリケーションの開発中は設定オプションを頻繁に変更する必要があるため、ローカル開発中はコマンドを実行しないでください。
 
-> {note} 開発過程の一環として`config:cache`コマンド実行を採用する場合は、必ず`env`関数を設定ファイルの中だけで使用してください。設定ファイルがキャッシュされると、`.env`ファイルはロードされなくなり、`env`関数の呼び出しはすべて`null`を返します。
+> {note} 開発過程の一環として`config:cache`コマンド実行を採用する場合は、必ず`env`関数を設定ファイルの中だけで使用してください。設定ファイルがキャッシュされると、`.env`ファイルはロードされません。したがって、`env`関数は外部システムレベルの環境変数のみを返すだけです。
 
 <a name="debug-mode"></a>
 ## デバッグモード

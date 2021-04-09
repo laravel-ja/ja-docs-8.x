@@ -167,7 +167,7 @@ Laravelサービスコンテナを深く理解することは、強力で大規�
 
 サービスコンテナの非常に強力な機能は、インターフェイスを特定の実装に結合する機能です。たとえば、`EventPusher`インターフェイスと`RedisEventPusher`実装があると仮定しましょう。このインターフェイスの`RedisEventPusher`実装をコーディングしたら、次のようにサービスコンテナーに登録できます。
 
-    use App\Contrats\EventPusher;
+    use App\Contracts\EventPusher;
     use App\Services\RedisEventPusher;
 
     $this->app->bind(EventPusher::class, RedisEventPusher::class);
@@ -224,6 +224,12 @@ Laravelサービスコンテナを深く理解することは、強力で大規�
     $this->app->when(ReportAggregator::class)
         ->needs('$reports')
         ->giveTagged('reports');
+
+アプリケーションの設定ファイルの１つから値を注入する必要がある場合は、`giveConfig`メソッドを使用します。
+
+    $this->app->when(ReportAggregator::class)
+        ->needs('$timezone')
+        ->giveConfig('app.timezone');
 
 <a name="binding-typed-variadics"></a>
 ### 型指定した可変引数の結合
@@ -336,20 +342,20 @@ Laravelサービスコンテナを深く理解することは、強力で大規�
 
     use App\Services\Transistor;
 
-    $api = $this->app->make(Transistor::class);
+    $transistor = $this->app->make(Transistor::class);
 
-クラスの依存関係の一部がコンテナを介して解決できない場合は、それらを連想配列として`makeWith`メソッドに渡すことでそれらを依存注入できます。たとえば、`HelpSpot\API`サービスに必要な`$id`コンストラクタ引数を手動で渡すことができます。
+クラスの依存関係の一部がコンテナを介して解決できない場合は、それらを連想配列として`makeWith`メソッドに渡すことでそれらを依存注入できます。たとえば、`Transistor`サービスに必要な`$id`コンストラクタ引数を手動で渡すことができます。
 
     use App\Services\Transistor;
 
-    $api = $this->app->makeWith(Transistor::class, ['id' => 1]);
+    $transistor = $this->app->makeWith(Transistor::class, ['id' => 1]);
 
 サービスプロバイダの外部で、`$app`変数にアクセスできないコードの場所では、`App`　[ファサード](/docs/{{version}}/facades)を使用してコンテナからクラスインスタンスを依存解決します。
 
     use App\Services\Transistor;
     use Illuminate\Support\Facades\App;
 
-    $api = App::make(Transistor::class);
+    $transistor = App::make(Transistor::class);
 
 Laravelコンテナインスタンス自体をコンテナにより解決中のクラスへ依存注入したい場合は、クラスのコンストラクタで`Illuminate\Container\Container`クラスを入力してください。
 
@@ -418,8 +424,8 @@ Laravelコンテナインスタンス自体をコンテナにより解決中の�
 
     use App\Services\Transistor;
 
-    $this->app->resolving(Transistor::class, function ($api, $app) {
-        // コンテナが"HelpSpot\API"タイプのオブジェクトを解決するときに呼び出される
+    $this->app->resolving(Transistor::class, function ($transistor, $app) {
+        // コンテナがTransistorタイプのオブジェクトを解決するときに呼び出される
     });
 
     $this->app->resolving(function ($object, $app) {

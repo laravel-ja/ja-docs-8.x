@@ -66,7 +66,7 @@ If necessary, you may define macros that accept additional arguments:
 
     Collection::macro('toLocale', function ($locale) {
         return $this->map(function ($value) use ($locale) {
-            return Lang::get($value, $locale);
+            return Lang::get($value, [], $locale);
         });
     });
 
@@ -1705,6 +1705,26 @@ The value for `$carry` on the first iteration is `null`; however, you may specif
 
     // 10
 
+The `reduce` method also passes array keys in associative collections to the given callback:
+
+    $collection = collect([
+        'usd' => 1400,
+        'gbp' => 1200,
+        'eur' => 1000,
+    ]);
+
+    $ratio = [
+        'usd' => 1,
+        'gbp' => 1.37,
+        'eur' => 1.22,
+    ];
+
+    $collection->reduceWithKeys(function ($carry, $value, $key) use ($ratio) {
+        return $carry + ($value * $ratio[$key]);
+    });
+
+    // 4264
+
 <a name="method-reject"></a>
 #### `reject()` {#collection-method}
 
@@ -2770,7 +2790,7 @@ This method has the same signature as the [`whereNotIn`](#method-wherenotin) met
 <a name="method-wherenotnull"></a>
 #### `whereNotNull()` {#collection-method}
 
-The `whereNotNull` method removes items from the collection where the given key is not `null`:
+The `whereNotNull` method returns items from the collection where the given key is not `null`:
 
     $collection = collect([
         ['name' => 'Desk'],
@@ -2792,7 +2812,7 @@ The `whereNotNull` method removes items from the collection where the given key 
 <a name="method-wherenull"></a>
 #### `whereNull()` {#collection-method}
 
-The `whereNull` method removes items from the collection where the given key is `null`:
+The `whereNull` method returns items from the collection where the given key is `null`:
 
     $collection = collect([
         ['name' => 'Desk'],

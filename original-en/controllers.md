@@ -78,7 +78,6 @@ If a controller action is particularly complex, you might find it convenient to 
         /**
          * Provision a new web server.
          *
-         * @param  int  $id
          * @return \Illuminate\Http\Response
          */
         public function __invoke()
@@ -144,7 +143,7 @@ This command will generate a controller at `app/Http/Controllers/PhotoController
 
     Route::resource('photos', PhotoController::class);
 
-This single route declaration creates multiple routes to handle a variety of actions on the resource. The generated controller will already have methods stubbed for each of these actions. Remember, you can always get a quick overview of your application's by running the `route:list` Artisan command.
+This single route declaration creates multiple routes to handle a variety of actions on the resource. The generated controller will already have methods stubbed for each of these actions. Remember, you can always get a quick overview of your application's routes by running the `route:list` Artisan command.
 
 You may even register many resource controllers at once by passing an array to the `resources` method:
 
@@ -209,7 +208,7 @@ You may register many API resource controllers at once by passing an array to th
 
 To quickly generate an API resource controller that does not include the `create` or `edit` methods, use the `--api` switch when executing the `make:controller` command:
 
-    php artisan make:controller API/PhotoController --api
+    php artisan make:controller PhotoController --api
 
 <a name="restful-nested-resources"></a>
 ### Nested Resources
@@ -380,8 +379,8 @@ In addition to constructor injection, you may also type-hint dependencies on you
         /**
          * Store a new user.
          *
-         * @param  Request  $request
-         * @return Response
+         * @param  \Illuminate\Http\Request  $request
+         * @return \Illuminate\Http\Response
          */
         public function store(Request $request)
         {

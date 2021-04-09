@@ -90,7 +90,7 @@ Webpackは、特定のローカル開発環境でファイルの変更を検出�
 
     npm install
 
-    npm install -D tailwindcss@npm:@tailwindcss/postcss7-compat @tailwindcss/postcss7-compat postcss@^7
+    npm install -D tailwindcss
 
     npx tailwindcss init
 
@@ -176,7 +176,7 @@ LaravelMixはwebpackの上に構築されているため、いくつかのwebpac
         background: url(/images/example.png?d41d8cd98f00b204e9800998ecf8427e);
     }
 
-この機能は便利かもしれませんが、フォルダ構造が既にお好みの方法で構成されているかもしれません。この場合、次のように`url()`の書き換えを無効にすることができます。
+この機能は便利かもしれませんが、皆さん既にお好みの方法でフォルダ構造を構成しているでしょう。この場合、次のように`url()`の書き換えを無効にすることができます。
 
     mix.sass('resources/sass/app.scss', 'public/css').options({
         processCssUrls: false
@@ -209,14 +209,14 @@ Webpackは、さまざまな[ソースマッピングスタイル](https://webpa
 <a name="working-with-scripts"></a>
 ## JavaScriptの操作
 
-Mixは、ECMAScript2015のコンパイル、モジュールのバンドル、圧縮、プレーンなJavaScriptファイルの連結など、JavaScriptファイルの操作に役立ついくつかの機能を提供します。さらに良いことに、これはすべてシームレスに機能し、大量のカスタム設定を必要としません。
+Mixは、現代的なECMAScriptのコンパイル、モジュールのバンドル、圧縮、プレーンなJavaScriptファイルの連結など、JavaScriptファイルの操作に役立つの機能をいくつか提供します。さらに良いことに、これはすべてシームレスに機能し、大量のカスタム設定を必要としません。
 
     mix.js('resources/js/app.js', 'public/js');
 
 この１行のコードで、次の利点を活用できます。
 
 <div class="content-list" markdown="1">
-- ES2015文法
+- 最新のEcmaScript文法.
 - モジュール
 - 本番環境での圧縮
 </div>
@@ -224,9 +224,10 @@ Mixは、ECMAScript2015のコンパイル、モジュールのバンドル、圧
 <a name="vue"></a>
 ### Vue
 
-Mixは、`js`メソッドを使用するときに、Vue単一ファイルコンポーネントのコンパイルサポートに必要なBabelプラグインを自動的にインストールします。これ以上の設定は必要ありません。
+Mixは、`vue`メソッドを使用するときに、Vue単一ファイルコンポーネントのコンパイルサポートに必要なBabelプラグインを自動的にインストールします。これ以上の設定は必要ありません。
 
-    mix.js('resources/js/app.js', 'public/js');
+    mix.js('resources/js/app.js', 'public/js')
+       .vue();
 
 JavaScriptがコンパイルされたら、アプリケーションから参照できます。
 
@@ -241,9 +242,10 @@ JavaScriptがコンパイルされたら、アプリケーションから参照�
 <a name="react"></a>
 ### React
 
-Mixは、Reactのサポートに必要なBabelプラグインを自動的にインストールします。利用開始するには、Mixの`js`メソッドの呼び出しを`react`メソッドの呼び出しに置き換えます。
+MixはReactサポートに必要なBabelプラグインを自動的にインストールします。利用開始するには、`react`メソッドの呼び出しを追加してください。
 
-    mix.react('resources/js/app.jsx', 'public/js');
+    mix.js('resources/js/app.jsx', 'public/js')
+       .react();
 
 裏でMixは適切な`babel-preset-react` Babelプラグインをダウンロードして取り込みます。JavaScriptをコンパイルしたら、アプリケーションから参照できます。
 
@@ -282,12 +284,9 @@ JavaScriptエラーを回避するため、以下のファイルを正しい順�
 <a name="custom-webpack-configuration"></a>
 ### Webpackカスタム設定
 
-Laravel Mixは裏で事前設定した`webpack.config.js`ファイルを参照して、可能な限り早く起動して実行できるようにします。場合によっては、このファイルを手動で変更する必要があります。たとえば、参照する必要のある特別なローダーまたはプラグインがあるとします。このような場合、２つの選択肢があります。
+時折、ベースとなるWebpack設定を手動で変更する必要が起きるでしょう。たとえば、参照する必要がある特別なローダーまたはプラグインがある可能性があります。
 
-<a name="merging-custom-configuration"></a>
-#### カスタム設定のマージ
-
-Mixは、短いWebpack設定オーバーライドをマージできる便利な`webpackConfig`メソッドを提供します。これは、`webpack.config.js`ファイルの独自のコピーをコピーして維持する必要がないため、特に魅力的な選択肢です。`webpackConfig`メソッドはオブジェクトを受け入れます。オブジェクトには、適用する[Webpack固有の設定](https://webpack.js.org/configuration/)が含まれている必要があります。
+Mixは、短いWebpack設定オーバーライドをマージできる便利な`webpackConfig`メソッドを提供します。これは、`webpack.config.js`ファイルの独自のコピーをコピーして維持する必要がないため、特に魅力的です。`webpackConfig`メソッドはオブジェクトを受け入れます。オブジェクトには、適用する[Webpack固有の設定](https://webpack.js.org/configuration/)が含まれている必要があります。
 
     mix.webpackConfig({
         resolve: {
@@ -296,11 +295,6 @@ Mixは、短いWebpack設定オーバーライドをマージできる便利な`
             ]
         }
     });
-
-<a name="custom-configuration-files"></a>
-#### カスタム設定ファイル
-
-Webpack設定を完全にカスタマイズする場合は、`node_modules/laravel-mix/setup/webpack.config.js`ファイルをプロジェクトのルートディレクトリにコピーします。次に、`package.json`ファイル内のすべての`--config`参照が新しくコピーした設定ファイルを指すようにします。このアプローチをカスタマイズに採用する場合は、Mixの`webpack.config.js`に対する今後のアップストリーム更新を、カスタマイズしたファイルに手動でマージする必要があります。
 
 <a name="versioning-and-cache-busting"></a>
 ## バージョニング／キャッシュの破棄

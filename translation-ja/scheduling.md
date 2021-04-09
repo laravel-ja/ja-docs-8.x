@@ -78,11 +78,11 @@ php artisan schedule:list
 
 コマンドのクラス名を使用してArtisanコマンドをスケジュールする場合、コマンドが呼び出されたときにコマンドに提供する必要がある追加のコマンドライン引数の配列を渡せます。
 
-    use App\Console\Commands\SendEmailCommand;
+    use App\Console\Commands\SendEmailsCommand;
 
     $schedule->command('emails:send Taylor --force')->daily();
 
-    $schedule->command(EmailsCommand::class, ['Taylor', '--force'])->daily();
+    $schedule->command(SendEmailsCommand::class, ['Taylor', '--force'])->daily();
 
 <a name="scheduling-queued-jobs"></a>
 ### キュー投入するジョブのスケジュール

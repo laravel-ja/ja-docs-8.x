@@ -17,6 +17,7 @@
     - [コンポーネントのレンダー](#rendering-components)
     - [コンポーネントへのデータ渡し](#passing-data-to-components)
     - [コンポーネント属性](#component-attributes)
+    - [予約語](#reserved-keywords)
     - [スロット](#slots)
     - [インラインコンポーネントビュー](#inline-component-views)
     - [匿名コンポーネント](#anonymous-components)
@@ -397,7 +398,6 @@ Bladeの`@include`ディレクティブを使用すると、別のビュー内�
 
     @includeUnless($boolean, 'view.name', ['status' => 'complete'])
 
-To include the first view that exists from a given array of views, you may use the `includeFirst` directive:
 指定するビュー配列中、存在する最初のビューを含めるには、`includeFirst`ディレクティブを使用します。
 
     @includeFirst(['custom.admin', 'admin'], ['status' => 'complete'])
@@ -431,197 +431,6 @@ To include the first view that exists from a given array of views, you may use t
             </script>
         @endpush
     @endonce
-
-<a name="building-layouts"></a>
-## レイアウト構築
-
-<a name="layouts-using-components"></a>
-### コンポーネントを使用したレイアウト
-
-ほとんどのWebアプリケーションは、さまざまなページで同じ共通のレイアウトを使用します。作成するすべてのビューでレイアウトHTML全体を繰り返し定義する必要があると、アプリケーションを維持するのは非常に面倒で困難です。こうしたレイアウトを単一の[Bladeコンポーネント](#components)として定義し、アプリケーション全体で使用すると便利です。
-
-<a name="defining-the-layout-component"></a>
-#### レイアウトコンポーネントの定義
-
-たとえば、「todo」リストアプリケーションを構築していると想像してください。次のような`layout`コンポーネントを定義する場合があります。
-
-```html
-<!-- resources/views/components/layout.blade.php -->
-
-<html>
-    <head>
-        <title>{{ $title ?? 'Todo Manager' }}
-    </head>
-    <body>
-        <h1>Todos</h1>
-        <hr/>
-        {{ $slot }}
-    </body>
-</html>
-```
-
-<a name="applying-the-layout-component"></a>
-#### レイアウトコンポーネントの適用
-
-`layout`コンポーネントを定義したら、そのコンポーネントを利用するBladeビューを作成できます。この例では、タスクリストを表示する単純なビューを定義してみます。
-
-```html
-<!-- resources/views/tasks.blade.php -->
-
-<x-layout>
-    @foreach ($tasks as $task)
-        {{ $task }}
-    @endforeach
-</x-layout>
-```
-
-コンポーネントに挿入するコンテンツは、`layout`コンポーネント内のデフォルトの`$slot`変数へ提供されることを覚えておいてください。お気づきかもしれませんが、`layout`は`$title`スロットが提供されている場合はそれも尊重し利用できます。それ以外の場合は、デフォルトのタイトルが表示されます。[コンポーネントドキュメント](#components)で説明している標準のスロット構文を使用して、タスクリストビューからカスタムタイトルを挿入できます。
-
-```html
-<!-- resources/views/tasks.blade.php -->
-
-<x-layout>
-    <x-slot name="title">
-        Custom Title
-    </x-slot>
-
-    @foreach ($tasks as $task)
-        {{ $task }}
-    @endforeach
-</x-layout>
-```
-
-これで、レイアウトビューとタスクリストビューを定義できたので、あとはルートから`task`ビューを返すだけです。
-
-    use App\Models\Task;
-
-    Route::get('/tasks', function () {
-        return view('tasks', ['tasks' => Task::all()]);
-    });
-
-<a name="layouts-using-template-inheritance"></a>
-### テンプレートの継承を使用したレイアウト
-
-<a name="defining-a-layout"></a>
-#### レイアウトの定義
-
-レイアウトは、「テンプレートの継承」を介して作成することもできます。これは、[components](#components)が導入される前のアプリケーションを構築する主要な方法でした。
-
-はじめに、簡単な例を見てみましょう。まず、ページレイアウトを検討します。ほとんどのWebアプリケーションは、さまざまなページで同じ一般的なレイアウトを維持しているため、このレイアウトを単一のBladeビューとして定義すると便利です。
-
-```html
-<!-- resources/views/layouts/app.blade.php -->
-
-<html>
-    <head>
-        <title>App Name - @yield('title')</title>
-    </head>
-    <body>
-        @section('sidebar')
-            This is the master sidebar.
-        @show
-
-        <div class="container">
-            @yield('content')
-        </div>
-    </body>
-</html>
-```
-
-ご覧のとおり、このファイルには一般的なHTMLマークアップが含まれています。ただし、`@section`および`@yield`ディレクティブに注意してください。`@section`ディレクティブは、その名前が示すように、コンテンツのセクションを定義し、`@yield`ディレクティブは特定のセクションのコンテンツを表示するために使用します。
-
-アプリケーションのレイアウトを定義したので、レイアウトを継承する子ページを定義しましょう。
-
-<a name="extending-a-layout"></a>
-#### レイアウトの拡張
-
-子ビューを定義するときは、`@extends`Bladeディレクティブを使用して、子ビューが「継承」するレイアウトを指定します。Bladeレイアウトを拡張するビューは、`@section`ディレクティブを使用してレイアウトのセクションへコンテンツを挿入できます。上記の例に見られるように、これらのセクションの内容は`@yield`を使用してレイアウトへ表示させることに注意してください。
-
-```html
-<!-- resources/views/child.blade.php -->
-
-@extends('layouts.app')
-
-@section('title', 'Page Title')
-
-@section('sidebar')
-    @@parent
-
-    <p>ここはマスターサイドバーに追加されます。</p>
-@endsection
-
-@section('content')
-    <p>これが本文の内容です。</p>
-@endsection
-```
-
-この例では、`sidebar`セクションは`@parent`ディレクティブを利用して、コンテンツを(上書きするのではなく)レイアウトのサイドバーに追加しています。`@parent`ディレクティブは、ビューがレンダリングされるときにレイアウトのコンテンツに置き換えられます。
-
-> {tip} 前例とは異なり、この`sidebar`セクションは`@show`ではなく`@endsection`で終わります。`@endsection`ディレクティブはセクションのみを定義し、`@show`はセクションを定義して**すぐに生成**します。
-
-`@yield`ディレクティブは、２番目のパラメーターとしてデフォルト値も取ります。この値は、生成するセクションが未定義の場合にレンダーされます。
-
-    @yield('content', 'Default content')
-
-<a name="forms"></a>
-## フォーム
-
-<a name="csrf-field"></a>
-### CSRFフィールド
-
-アプリケーションでHTMLフォームを定義するときはいつでも、[CSRF保護](https://laravel.com/docs/{{version}}/csrf)ミドルウェアがリクエストを検証できるように、フォームへ非表示のCSRFトークンフィールドを含める必要があります。`@csrf` Bladeディレクティブを使用して、トークンフィールドを生成できます。
-
-```html
-<form method="POST" action="/profile">
-    @csrf
-
-    ...
-</form>
-```
-
-<a name="method-field"></a>
-### メソッドフィールド
-
-HTMLフォームは`PUT`、`PATCH`、`DELETE`リクエストを作成できないため、これらのHTTP動詞へ見せかけるために、非表示の`_method`フィールドを追加する必要があります。`@method` Bladeディレクティブは、次のフィールドを作成します。
-
-```html
-<form action="/foo/bar" method="POST">
-    @method('PUT')
-
-    ...
-</form>
-```
-
-<a name="validation-errors"></a>
-### バリデーションエラー
-
-`@error`ディレクティブを使用すると、特定の属性に[バリデーションエラーメッセージ](/docs/{{version}}/validation#quick-displaying-the-validation-errors)が存在するかどうかを簡単に確認できます。`@error`ディレクティブ内で、`$message`変数をエコーし​​てエラーメッセージを表示できます。
-
-```html
-<!-- /resources/views/post/create.blade.php -->
-
-<label for="title">Post Title</label>
-
-<input id="title" type="text" class="@error('title') is-invalid @enderror">
-
-@error('title')
-    <div class="alert alert-danger">{{ $message }}</div>
-@enderror
-```
-
-[特定のエラーバッグの名前](/docs/{{version}}/validation#named-error-bags)を２番目のパラメータとして`@error`ディレクティブに渡し、複数のフォームを含むページのバリデーションエラーメッセージが取得できます。
-
-```html
-<!-- /resources/views/auth.blade.php -->
-
-<label for="email">Email address</label>
-
-<input id="email" type="email" class="@error('email', 'login') is-invalid @enderror">
-
-@error('email', 'login')
-    <div class="alert alert-danger">{{ $message }}</div>
-@enderror
-```
 
 <a name="raw-php"></a>
 ### 生PHP
@@ -663,7 +472,7 @@ HTMLフォームは`PUT`、`PATCH`、`DELETE`リクエストを作成できな�
      */
     public function boot()
     {
-        Blade::component('package-alert', AlertComponent::class);
+        Blade::component('package-alert', Alert::class);
     }
 
 コンポーネントを登録すると、タグエイリアスを使用してレンダリングできます。
@@ -787,6 +596,21 @@ HTML属性を使用してBladeコンポーネントへデータを渡せます�
 
     <x-alert alert-type="danger" />
 
+<a name="escaping-attribute-rendering"></a>
+#### 属性レンダーのエスケープ
+
+alpine.jsなどのJavaScriptフレームワークもコロンプレフィックスで属性を指定するため、属性がPHP式ではないことをBladeへ知らせるために二重のコロン(`::`)プレフィックスを使用してください。たとえば、以下のコンポーネントが存在しているとしましょう。
+
+    <x-button ::class="{ danger: isDeleting }">
+        Submit
+    </x-button>
+
+Bladeにより、以下のHTMLとしてレンダーされます。
+
+    <button :class="{ danger: isDeleting }">
+        Submit
+    </button>
+
 <a name="component-methods"></a>
 #### コンポーネントメソッド
 
@@ -809,7 +633,7 @@ HTML属性を使用してBladeコンポーネントへデータを渡せます�
         {{ $label }}
     </option>
 
-<a name="using-attributes-slots-wthin-component-class"></a>
+<a name="using-attributes-slots-within-component-class"></a>
 #### コンポーネントクラス内の属性とスロットへのアクセス
 
 Bladeコンポーネントを使用すると、クラスのrenderメソッド内のコンポーネント名、属性、およびスロットにアクセスすることもできます。ただし、このデータにアクセスするには、コンポーネントの`render`メソッドからクロージャを返す必要があります。クロージャは、唯一の引数として`$data`配列を取ります。この配列はコンポーネントに関する情報を提供するいくつかの要素が含んでいます。
@@ -856,6 +680,34 @@ Bladeコンポーネントを使用すると、クラスのrenderメソッド内
         $this->message = $message;
     }
 
+<a name="hiding-attributes-and-methods"></a>
+#### 非表示属性/メソッド
+
+パブリックメソッドまたはプロパティがコンポーネントテンプレートへ変数として公開されないようにする場合は、コンポーネントの`$except`配列プロパティへ追加してください。
+
+    <?php
+
+    namespace App\View\Components;
+
+    use Illuminate\View\Component;
+
+    class Alert extends Component
+    {
+        /**
+         * alertタイプ
+         *
+         * @var string
+         */
+        public $type;
+
+        /**
+         * コンポーネントテンプレートに公開してはいけないプロパティ／メソッド。
+         *
+         * @var array
+         */
+        protected $except = ['type'];
+    }
+
 <a name="component-attributes"></a>
 ### コンポーネント属性
 
@@ -874,7 +726,7 @@ Bladeコンポーネントを使用すると、クラスのrenderメソッド内
 <a name="default-merged-attributes"></a>
 #### デフォルト/マージした属性
 
-属性のデフォルト値を指定したり、コンポーネントの属性の一部へ追加の値をマージしたりする必要のある場合があります。これを実現するには、属性バッグの`merge`メソッドを使用できます。このメソッドは、コンポーネントに常に適用する必要のあるデフォルトのCSSクラスのセットを定義する場合でとくに便利です。
+属性のデフォルト値を指定したり、コンポーネントの属性の一部へ追加の値をマージしたりする必要のある場合があります。これを実現するには、属性バッグの`merge`メソッドを使用できます。このメソッドは、コンポーネントに常に適用する必要のあるデフォルトのCSSクラスのセットを定義する場合、特に便利です。
 
     <div {{ $attributes->merge(['class' => 'alert alert-'.$type]) }}>
         {{ $message }}
@@ -891,6 +743,21 @@ Bladeコンポーネントを使用すると、クラスのrenderメソッド内
     <!-- $message変数の中身 -->
 </div>
 ```
+
+<a name="conditionally-merge-classes"></a>
+#### 条件付きマージクラス
+
+特定の条件が`true`である場合に、クラスをマージしたい場合があります。これは`class`メソッドで実行でき、クラスの配列を引数に取ります。配列のキーには追加したいクラスを含み、値に論理式を指定します。配列要素に数字キーがある場合は、レンダーするクラスリストへ常に含まれます。
+
+    <div {{ $attributes->class(['p-4', 'bg-red' => $hasError]) }}>
+        {{ $message }}
+    </div>
+
+他の属性をコンポーネントにマージする必要がある場合は、`merge`メソッドを`class`メソッドへチェーンできます。
+
+    <button {{ $attributes->class(['p-4'])->merge(['type' => 'button']) }}>
+        {{ $slot }}
+    </button>
 
 <a name="non-class-attribute-merging"></a>
 #### 非クラス属性のマージ
@@ -920,7 +787,7 @@ Bladeコンポーネントを使用すると、クラスのrenderメソッド内
     </div>
 
 <a name="filtering-attributes"></a>
-#### 属性のフィルタリング
+#### 属性の取得とフィルタリング
 
 `filter`メソッドを使用して属性をフィルタリングできます。このメソッドは、属性を属性バッグへ保持する場合に`true`を返す必要があるクロージャを引数に取ります。
 
@@ -933,6 +800,31 @@ Bladeコンポーネントを使用すると、クラスのrenderメソッド内
 `first`メソッドを使用して、特定の属性バッグの最初の属性をレンダーできます。
 
     {{ $attributes->whereStartsWith('wire:model')->first() }}
+
+属性がコンポーネントに存在するか確認する場合は、`has`メソッドを使用できます。このメソッドは、属性名をその唯一の引数に取り、属性が存在していることを示す論理値を返します。
+
+    @if ($attributes->has('class'))
+        <div>Class attribute is present</div>
+    @endif
+
+`get`メソッドを使用して特定の属性の値を取得できます。
+
+    {{ $attributes->get('class') }}
+
+<a name="reserved-keywords"></a>
+### 予約語
+
+コンポーネントをレンダーするBladeの内部使用のため、いくつかのキーワードを予約しています。以下のキーワードは、コンポーネント内のパブリックプロパティまたはメソッド名として定できません。
+
+<div class="content-list" markdown="1">
+- `data`
+- `render`
+- `resolveView`
+- `shouldRender`
+- `view`
+- `withAttributes`
+- `withName`
+</div>
 
 <a name="slots"></a>
 ### スロット
@@ -1105,6 +997,197 @@ VueのようなJavaScriptフレームワークを使用している方は「ス�
     <x-nightshade::color-picker />
 
 Bladeは、コンポーネント名のパスカルケースを使い、コンポーネントにリンクしているクラスを自動的に検出します。サブディレクトリもサポートしており、「ドット」表記を使用します
+
+<a name="building-layouts"></a>
+## レイアウト構築
+
+<a name="layouts-using-components"></a>
+### コンポーネント使用の構築
+
+ほとんどのWebアプリケーションは、さまざまなページ間で同じ一般的なレイアウトを共有しています。私たちが作成するすべてのビューでレイアウト全体のHTMLを繰り返さなければならない場合、アプリケーションを維持するのは非常に面倒になると懸念できるでしょう。幸いに、このレイアウトを単一の[Bladeコンポーネント](#コンポーネント)として定義し、アプリケーション全体で使用できるため、便利です。
+
+<a name="defining-the-layout-component"></a>
+#### レイアウトコンポーネントの定義
+
+例として、「TODO」リストアプリケーションを構築していると想像してください。次のような`layout`コンポーネントを定義できるでしょう。
+
+```html
+<!-- resources/views/components/layout.blade.php -->
+
+<html>
+    <head>
+        <title>{{ $title ?? 'Todo Manager' }}</title>
+    </head>
+    <body>
+        <h1>Todos</h1>
+        <hr/>
+        {{ $slot }}
+    </body>
+</html>
+```
+
+<a name="applying-the-layout-component"></a>
+#### レイアウトコンポーネントの適用
+
+`layout`コンポーネントを定義したら、コンポーネントを利用するBladeビューを作成できます。この例では、タスクリストを表示する簡単なビューを定義します。
+
+```html
+<!-- resources/views/tasks.blade.php -->
+
+<x-layout>
+    @foreach ($tasks as $task)
+        {{ $task }}
+    @endforeach
+</x-layout>
+```
+
+コンポーネントへ挿入されるコンテンツは、`layout`コンポーネント内のデフォルト`$slot`変数として提供されることを覚えてください。お気づきかもしれませんが、`layout`も提供されるのであれば、`$title`スロットを尊重します。それ以外の場合は、デフォルトのタイトルが表示されます。[コンポーネントのドキュメント](#components)で説明している標準スロット構文を使用して、タスクリストビューからカスタムタイトルを挿入できます。
+
+```html
+<!-- resources/views/tasks.blade.php -->
+
+<x-layout>
+    <x-slot name="title">
+        カスタムタイトル
+    </x-slot>
+
+    @foreach ($tasks as $task)
+        {{ $task }}
+    @endforeach
+</x-layout>
+```
+
+レイアウトとタスクリストのビューを定義したので、ルートから`task`ビューを返す必要があります。
+
+    use App\Models\Task;
+
+    Route::get('/tasks', function () {
+        return view('tasks', ['tasks' => Task::all()]);
+    });
+
+<a name="layouts-using-template-inheritance"></a>
+### テンプレート継承を使用するレイアウト
+
+<a name="defining-a-layout"></a>
+#### レイアウトの定義
+
+レイアウトは、「テンプレート継承」を介して作成することもできます。これは、[コンポーネント](#components)の導入前にアプリケーションを構築するための主な方法でした。
+
+始めるにあたり、簡単な例を見てみましょう。まず、ページレイアウトを調べます。ほとんどのWebアプリケーションはさまざまなページ間で同じ一般的なレイアウトを共有するため、このレイアウトを単一のBladeビューとして定義でき、便利です。
+
+```html
+<!-- resources/views/layouts/app.blade.php -->
+
+<html>
+    <head>
+        <title>App Name - @yield('title')</title>
+    </head>
+    <body>
+        @section('sidebar')
+            This is the master sidebar.
+        @show
+
+        <div class="container">
+            @yield('content')
+        </div>
+    </body>
+</html>
+```
+
+ご覧のとおり、このファイルには典型的なHTMLマークアップが含まれています。ただし、`@section`と`@yield`ディレクティブに注意してください。名前が暗示するように、`@section`ディレクティブは、コンテンツのセクションを定義しますが、`@yield`ディレクティブは指定するセクションの内容を表示するために使用します。
+
+アプリケーションのレイアウトを定義したので、レイアウトを継承する子ページを定義しましょう。
+
+<a name="extending-a-layout"></a>
+#### レイアウトの拡張
+
+子ビューを定義するときは、`@extends` Bladeディレクティブを使用して、子ビューが「継承する」のレイアウトを指定します。Bladeレイアウトを拡張するビューは、`@section`ディレクティブを使用してレイアウトのセクションにコンテンツを挿入できます。上記の例で見たように、これらのセクションの内容は`@yield`を使用してレイアウトへ表示できます。
+
+```html
+<!-- resources/views/child.blade.php -->
+
+@extends('layouts.app')
+
+@section('title', 'Page Title')
+
+@section('sidebar')
+    @@parent
+
+    <p>これはマスターサイドバーに追加される</p>
+@endsection
+
+@section('content')
+    <p>これは本文の内容</p>
+@endsection
+```
+
+この例では、`sidebar`のセクションは、`@parent`ディレクティブを利用して、(上書きするのではなく)、レイアウトのサイドバーにコンテンツを追加しています。`@parent`ディレクティブは、ビューをレンダーするときにレイアウトの内容へ置き換えられます。
+
+> {tip} 前の例とは反対に、この「サイドバー」のセクションは`@show`の代わりに`@endection`で終わります。`@endection`ディレクティブはセクションを定義するだけですが、一方の`@show`は定義し、そのセクションを**すぐに挿入**します。
+
+`@yield`ディレクティブは、デフォルト値を２番目の引数に取ります。この値は、生成するセクションが未定義の場合にレンダーされます。
+
+    @yield('content', 'Default content')
+
+<a name="forms"></a>
+## フォーム
+
+<a name="csrf-field"></a>
+### CSRFフィールド
+
+アプリケーションでHTMLフォームを定義したときは、[CSRF保護](https://laravel.com/docs/{{version}}/csrf)ミドルウェアがリクエストをバリデートできるように、フォームへ隠しCSRFトークンフィールドを含める必要があります。`@csrf` Bladeディレクティブを使用してトークンフィールドを生成できます。
+
+```html
+<form method="POST" action="/profile">
+    @csrf
+
+    ...
+</form>
+```
+
+<a name="method-field"></a>
+### Methodフィールド
+
+HTMLフォームは`put`、`patch`、または`delete`リクエストを作ることができないので、これらのHTTP動詞を偽装するために`_Method`隠しフィールドを追加する必要があります。`@method`Bladeディレクティブは、皆さんのためこのフィールドを作成します。
+
+```html
+<form action="/foo/bar" method="POST">
+    @method('PUT')
+
+    ...
+</form>
+```
+
+<a name="validation-errors"></a>
+### バリデーションエラー
+
+指定する属性に[バリデーションエラーメッセージ](/docs/{{version}}/validation#quick-displaying-the-validation-errors)が存在するかをすばやく確認するために`@error`ディレクティブを使用できます。`@error`ディレクティブ内では、エラーメッセージを表示するため、`$message`変数をエコーできます。
+
+```html
+<!-- /resources/views/post/create.blade.php -->
+
+<label for="title">Post Title</label>
+
+<input id="title" type="text" class="@error('title') is-invalid @enderror">
+
+@error('title')
+    <div class="alert alert-danger">{{ $message }}</div>
+@enderror
+```
+
+ページが複数のフォームを含んでいる場合にエラーメッセージを取得するため、[特定のエラーバッグの名前](/docs/{{version}}/validation#named-error-bags)を第２引数へ渡せます。
+
+```html
+<!-- /resources/views/auth.blade.php -->
+
+<label for="email">Email address</label>
+
+<input id="email" type="email" class="@error('email', 'login') is-invalid @enderror">
+
+@error('email', 'login')
+    <div class="alert alert-danger">{{ $message }}</div>
+@enderror
+```
 
 <a name="stacks"></a>
 ## スタック

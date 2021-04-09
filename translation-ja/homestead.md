@@ -57,8 +57,7 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 </style>
 
 <div id="software-list" markdown="1">
-- Ubuntu 18.04 (`master`ブランチ)
-- Ubuntu 20.04 (`20.04`ブランチ)
+- Ubuntu 20.04
 - Git
 - PHP 8.0
 - PHP 7.4
@@ -71,7 +70,7 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 - MySQL
 - lmm
 - Sqlite3
-- PostgreSQL (9.6, 10, 11, 12)
+- PostgreSQL (9.6, 10, 11, 12, 13)
 - Composer
 - Node (Yarn、Bower、Bower、Grunt、Gulpを含む)
 - Redis
@@ -112,7 +111,6 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 - MariaDB
 - MinIO
 - MongoDB
-- MySQL 8
 - Neo4j
 - Oh My Zsh
 - Open Resty
@@ -132,28 +130,11 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 Homestead環境を起動する前に、[Vagrant](https://www.vagrantup.com/downloads.html)と、サポートいている以下のプロバイダのいずれかをインストールする必要があります。
 
 - [VirtualBox 6.1.x](https://www.virtualbox.org/wiki/Downloads)
-- [VMWare](https://www.vmware.com)
 - [Parallels](https://www.parallels.com/products/desktop/)
-- [Hyper-V](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
 
 これらすべてのソフトウェアパッケージは、人気のあるすべてのオペレーティングシステムへ使いやすいビジュアルインストーラを提供します。
 
-VMwareプロバイダを使用するには、VMware Fusion/Workstationと[VMware Vagrantプラグイン](https://www.vagrantup.com/vmware)を購入する必要があります。無料ではありませんが、VMwareが提供する共有フォルダは最初からよりスピーディーです。
-
 Parallelsプロバイダを使用するには、[Parallels Vagrantプラグイン](https://github.com/Parallels/vagrant-parallels)をインストールする必要があります。これは無料です。
-
-[Vagrantの制限](https://www.vagrantup.com/docs/hyperv/limitations.html)のため、Hyper-Vプロバイダはすべてのネットワーク設定を無視します。
-
-<a name="installing-the-homestead-vagrant-box"></a>
-#### Homestead Vagrant Boxのインストール
-
-VirtualBox/VMwareとVagrantをインストールし終えたら、`laravel/homestead` boxをVagrantへ追加するため次のコマンドを端末で実行する必要があります。boxをダウンロードし終えるまで、接続速度にもよりますが数分かかるでしょう。
-
-    vagrant box add laravel/homestead
-
-このコマンドが失敗する場合、Vagrantを更新する必要があります。
-
-> {note} Homesteadは定期的に「アルファ版／ベータ版」Boxをテストのためリリースしています。これは`vagrant box add`コマンドと干渉してしまいます。`vagrant box add`の実行で問題が起きたら、`vagrant up`コマンドを実行し、Vagrantが仮想マシンを開始する時点で正しいBoxをダウンロードしてください。
 
 <a name="installing-homestead"></a>
 #### Homesteadのインストール
@@ -184,7 +165,7 @@ Laravel Homesteadリポジトリのクローンを作成したら、`release`ブ
 <a name="setting-your-provider"></a>
 #### プロバイダの設定
 
-`Homestead.yaml`ファイル中の`provider`キーは、Vagrantのプロバイダとして、`virtualbox`、`vmware_fusion`、`vmware_workstation`、`parallels`、`hyperv`のどれを使用するかを指定します。
+`Homestead.yaml`ファイル中の`provider`キーは、Vagrantのプロバイダとして、`virtualbox`、`parallels`のどちらを使用するかを指定します。
 
     provider: virtualbox
 
@@ -280,7 +261,7 @@ services:
 
 `Homestead.yaml`のリンクを編集終えたら、Homesteadディレクトリで`vagrant up`コマンドを実行してください。Vagrantは仮想マシンを起動し、共有フォルダとNginxサイトを自動的に設定します。
 
-仮想マシンを破壊するには、`vagrant destroy --force`コマンドを使用します。
+仮想マシンを破壊するには、`vagrant destroy`コマンドを使用します。
 
 <a name="per-project-installation"></a>
 ### プロジェクトごとにインストール
@@ -328,7 +309,6 @@ Homesteadをインストールしたら、Homesteadの`make`コマンドを呼�
         - mariadb: true
         - minio: true
         - mongodb: true
-        - mysql8: true
         - neo4j: true
         - ohmyzsh: true
         - openresty: true
@@ -385,7 +365,7 @@ Homesteadのアップデートを開始する前に、Homesteadディレクト�
 
 これらのコマンドは、GitHubリポジトリから最新のHomesteadコードをプルし、最新のタグをフェッチしてから、最新のタグ付きリリースをチェックアウトします。最新の安定版リリースバージョンは、Homesteadの[GitHubリリースページ](https://github.com/laravel/homestead/releases)にあります。
 
-プロジェクトの`composer.json`ファイルを介してHomesteadをインストールした場合は、`composer.json`ファイルに`"laravel/homestead" : "^11"`が含まれていることを確認し、依存関係を更新する必要があります。
+プロジェクトの`composer.json`ファイルを介してHomesteadをインストールした場合は、`composer.json`ファイルに`"laravel/homestead" : "^12"`が含まれていることを確認し、依存関係を更新する必要があります。
 
     composer update
 
@@ -504,7 +484,7 @@ sites:
 <a name="php-versions"></a>
 ### PHPバージョン
 
-Homestead6では、同じ仮想マシンで複数のバージョンのPHPを実行するためのサポートが導入されました。`Homestead.yaml`ファイル内の特定のサイトに使用するPHPのバージョンを指定できます。使用可能なPHPバージョンは、"5.6", "7.0", "7.1", "7.2", "7.3", "7.4"(デフォルト)です。
+Homestead6では、同じ仮想マシンで複数のバージョンのPHPを実行するためのサポートが導入されました。`Homestead.yaml`ファイル内の特定のサイトに使用するPHPのバージョンを指定できます。使用可能なPHPバージョンは、"5.6", "7.0", "7.1", "7.2", "7.3", "7.4"、"8.0"(デフォルト)です。
 
     sites:
         - map: homestead.test
@@ -519,6 +499,7 @@ Homestead6では、同じ仮想マシンで複数のバージョンのPHPを実�
     php7.2 artisan list
     php7.3 artisan list
     php7.4 artisan list
+    php8.0 artisan list
 
 Homestead仮想マシン内から以下のコマンドを実行すれば、CLIで使用するPHPのデフォルトバージョンを変更できます。
 
@@ -528,6 +509,7 @@ Homestead仮想マシン内から以下のコマンドを実行すれば、CLI�
     php72
     php73
     php74
+    php80
 
 <a name="connecting-to-databases"></a>
 ### データベースへの接続

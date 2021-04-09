@@ -9,6 +9,7 @@
     - [ＡＰＩキー](#api-keys)
     - [通貨設定](#currency-configuration)
     - [ログ](#logging)
+    - [カスタムモデルの使用](#using-custom-models)
 - [顧客](#customers)
     - [顧客の取得](#retrieving-customers)
     - [顧客の作成](#creating-customers)
@@ -27,8 +28,9 @@
     - [プランの変更](#changing-plans)
     - [サブスクリプション数](#subscription-quantity)
     - [マルチプランサブスクリプション](#multiplan-subscriptions)
+    - [従量制課金](#metered-billing)
     - [サブスクリプションの税率](#subscription-taxes)
-    - [Subscription Anchor Date](#subscription-anchor-date)
+    - [サブスクリプション基準日](#subscription-anchor-date)
     - [サブスクリプションの取り消し](#cancelling-subscriptions)
     - [サブスクリプションの再開](#resuming-subscriptions)
 - [サブスクリプションの試用期間](#subscription-trials)
@@ -42,7 +44,12 @@
       - [シンプルな支払い](#simple-charge)
     - [インボイス付きの支払い](#charge-with-invoice)
     - [支払いの払い戻し](#refunding-charges)
-- [Invoices](#invoices)
+- [支払い](#checkout)
+    - [商品の支払い](#product-checkouts)
+    - [一回限りの支払い](#single-charge-checkouts)
+    - [サブスクリプションの支払い](#subscription-checkouts)
+    - [支払いボタンのスタイル](#styling-the-checkout-button)
+- [インボイス](#invoices)
     - [インボイスの取得](#retrieving-invoices)
     - [インボイスＰＤＦの生成](#generating-invoice-pdfs)
 - [支払い失敗の処理](#handling-failed-payments)
@@ -148,6 +155,34 @@ Cashierの通貨の設定に加え、請求書に表示するの金額の値を�
 Cashierを使用すると、Stripe関連のすべての例外をログに記録するときに使用するログチャネルを指定できます。アプリケーションの`.env`ファイル内で`CASHIER_LOGGER`環境変数を定義することにより、ログチャネルを指定できます。
 
     CASHIER_LOGGER=stack
+
+<a name="using-custom-models"></a>
+### カスタムモデルの使用
+
+独自のモデルを定義し対応するCashierモデルを拡張することにより、Cashierが内部で使用するモデルを自由に拡張できます。
+
+    use Laravel\Cashier\Subscription as CashierSubscription;
+
+    class Subscription extends CashierSubscription
+    {
+        // ...
+    }
+
+モデルを定義した後、`Laravel\Cashier\Cashier`クラスを介してカスタムモデルを使用するようにCashierへ指示します。通常、アプリケーションの`App\Providers\AppServiceProvider`クラスの`boot`メソッドで、カスタムモデルをキャッシャーへ通知する必要があります。
+
+    use App\Models\Cashier\Subscription;
+    use App\Models\Cashier\SubscriptionItem;
+
+    /**
+     * 全アプリケーションサービスの初期起動処理
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Cashier::useSubscriptionModel(Subscription::class);
+        Cashier::useSubscriptionItemModel(SubscriptionItem::class);
+    }
 
 <a name="customers"></a>
 ## 顧客
@@ -388,7 +423,7 @@ Billableなモデルのアカウントにデフォルトの支払い方法が関
 
     $user->addPaymentMethod($paymentMethod);
 
->　{tip}　支払い方法の識別子を取得する方法については、[支払い方法の保存に関するドキュメント](#storing-payment-methods)を確認してください。
+> {tip} 支払い方法の識別子を取得する方法については、[支払い方法の保存に関するドキュメント](#storing-payment-methods)を確認してください。
 
 <a name="deleting-payment-methods"></a>
 ### 支払い方法の削除
@@ -474,6 +509,15 @@ Stripeがサポートしている[顧客](https://stripe.com/docs/api/customers/
     $user = User::find(1);
 
     $user->newSubscription('default', 'price_premium')->add();
+
+<a name="creating-subscriptions-from-the-stripe-dashboard"></a>
+#### Stripeダッシュボードからのサブスクリプション作成
+
+Stripeダッシュボード自体からも、サブスクリプションを作成できます。その際、Cashierは新しく追加したサブスクリプションを同期し、それらに`default`の名前を割り当てます。ダッシュボードから作成するサブスクリプションに割り当てるサブスクリプション名をカスタマイズするには、[`WebhookController`を拡張](/docs/{{version}}/billing#defining-webhook-event-handlers)し、`newSubscriptionName`メソッドを上書きします。
+
+また、Stripeダッシュボードから作成できるサブスクリプションのタイプは１つだけです。アプリケーションが異なる名前を使用する複数のサブスクリプションを提供している場合でも、Stripeダッシュボードから追加できるサブスクリプションのタイプは１つのみです。
+
+最後に、アプリケーションが提供するサブスクリプションのタイプごとに、アクティブなサブスクリプションを１つだけ追加するようにしてください。顧客が２つの`default`サブスクリプションを持っている場合、たとえ両方がアプリケーションのデータベースと同期されていても、最後に追加したサブスクリプションのみ、Cashierは使用します。
 
 <a name="checking-subscription-status"></a>
 ### サブスクリプション状態のチェック
@@ -634,7 +678,7 @@ Stripeがサポートしている[顧客](https://stripe.com/docs/api/customers/
 
     $user->subscription('default')->swap('price_id');
 
-その顧客が試用中の場合、試用期間は維持されます。また、サブスクリプションに「数量」が存在する場合、その数量も維持されます。
+その顧客が試用中の場合、試用期間は維持されます。さらに、サブスクリプションに「数量」が存在する場合、その数量も維持されます。
 
 プランを交換して、顧客が現在行っている試用期間をキャンセルしたい場合は、`skipTrial`メソッドを呼び出してください。
 
@@ -816,6 +860,86 @@ Stripeがサポートしている[顧客](https://stripe.com/docs/api/customers/
 
     $subscriptionItem = $user->subscription('default')->findItemOrFail('chat-plan');
 
+<a name="metered-billing"></a>
+### 従量制課金
+
+[従量制課金](https://stripe.com/docs/billing/subscriptions/metered-billing)を使用すると、課金サイクル中の製品の使用状況に基づき顧客へ請求できます。たとえば、顧客が１か月に送信するテキストメッセージまたは電子メールの数に基づいて顧客に請求するケースが考えられます。
+
+従量制課金を使用開始するには、最初に、Stripeダッシュボードの従量制価格（metered price）で新しい製品を作成する必要があります。次に、`meteredPlan`を使用して、従量制の価格IDを顧客のサブスクリプションに追加します。
+
+    use Illuminate\Http\Request;
+
+    Route::post('/user/subscribe', function (Request $request) {
+        $request->user()->newSubscription('default', [])
+            ->meteredPlan('price_metered')
+            ->create($request->paymentMethodId);
+
+        // ...
+    });
+
+[Stripeの支払い](#checkout)から従量制サブスクリプションを開始することもできます。
+
+    $checkout = Auth::user()
+            ->newSubscription('default', [])
+            ->meteredPlan('price_metered')
+            ->checkout();
+
+    return view('your-checkout-view', [
+        'checkout' => $checkout,
+    ]);
+
+<a name="reporting-usage"></a>
+#### 資料状況の報告
+
+顧客がアプリケーションを使用しているとき、正確な請求ができるように、使用状況をStripeへ報告します。従量制サブスクリプションの使用量を増やすには、`reportUsage`メソッドを使用します。
+
+    $user = User::find(1);
+
+    $user->subscription('default')->reportUsage();
+
+デフォルトでは、「使用量」１が請求期間に追加されます。または、指定の「使用量」を渡して、請求期間中の顧客の使用量に追加することもできます。
+
+    $user = User::find(1);
+
+    $user->subscription('default')->reportUsage(15);
+
+アプリケーションが単一のサブスクリプションで複数のプランを提供している場合は、`reportUsageFor`メソッドを使用して、使用状況を報告する従量制プラン／価格を指定する必要があります。
+
+    $user = User::find(1);
+
+    $user->subscription('default')->reportUsageFor('price_metered', 15);
+
+以前に報告した使用状況を更新する必要も起こるでしょう。これにはタイムスタンプまたは`DateTimeInterface`インスタンスを２番目のパラメータとして`reportUsage`に渡します。その際、Stripeはその時点で報告された使用状況を更新します。指定する日時は現在の請求期間内であるため、以前の使用記録を引き続き更新できます。
+
+    $user = User::find(1);
+
+    $user->subscription('default')->reportUsage(5, $timestamp);
+
+<a name="retrieving-usage-records"></a>
+#### 使用記録の取得
+
+顧客の過去の使用状況を取得するには、サブスクリプションインスタンスの`usageRecords`メソッドを使用します。
+
+    $user = User::find(1);
+
+    $usageRecords = $user->subscription('default')->usageRecords();
+
+アプリケーションが１つのサブスクリプションで複数のプランを提供している場合は、`usageRecordsFor`メソッドを使用して、使用記録を取得する従量制プラン／価格を指定します。
+
+    $user = User::find(1);
+
+    $usageRecords = $user->subscription('default')->usageRecordsFor('price_metered');
+
+`usageRecords`メソッドと`usageRecordsFor`メソッドは、使用レコードの連想配列を含むCollectionインスタンスを返します。この配列を繰り返し処理して、顧客の合計使用量を表示できます。
+
+    @foreach ($usageRecords as $usageRecord)
+        - Period Starting: {{ $usageRecord['period']['start'] }}
+        - Period Ending: {{ $usageRecord['period']['end'] }}
+        - Total Usage: {{ $usageRecord['total_usage'] }}
+    @endforeach
+
+返されるすべての使用状況データの完全なリファレンスと、Stripeのカーソルベースのペジネーションの使用方法については、[Stripe公式のAPIドキュメント](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)を参照してください。
+
 <a name="subscription-taxes"></a>
 ### サブスクリプションの税率
 
@@ -913,6 +1037,10 @@ Cashierは、顧客が非課税であるかどうかを判断するために、`
 
     $user->subscription('default')->cancelNow();
 
+サブスクリプションをすぐにキャンセルし、従量制による使用量の未請求部分や、新規/保留中の請求項目を請求する場合は、ユーザーのサブスクリプションに対し`cancelNowAndInvoice`メソッドを呼び出します。
+
+    $user->subscription('default')->cancelNowAndInvoice();
+
 <a name="resuming-subscriptions"></a>
 ### サブスクリプションの再開
 
@@ -961,6 +1089,10 @@ Cashierは、顧客が非課税であるかどうかを判断するために、`
     if ($user->subscription('default')->onTrial()) {
         //
     }
+
+`endTrial`メソッドを使用して、サブスクリプションの試用期間を即時終了できます。
+
+    $user->subscription('default')->endTrial();
 
 <a name="defining-trial-days-in-stripe-cashier"></a>
 #### ストライプ／Cashierでの試用期間日数の定義
@@ -1035,6 +1167,7 @@ Stripeは、Webフックを介してさまざまなイベントをアプリケ�
 
 アプリケーションがStripe Webフックを処理できるようにするには、StripeコントロールパネルでWebフックURLを設定してください。デフォルトでは、CashierのWebフックコントローラは`/stripe/webhook`URLパスに応答します。Stripeコントロールパネルで有効にする必要があるすべてのWebフックの完全なリストは次のとおりです。
 
+- `customer.subscription.created`
 - `customer.subscription.updated`
 - `customer.subscription.deleted`
 - `customer.updated`
@@ -1123,7 +1256,7 @@ Webフックの検証を有効にするには、`STRIPE_WEBHOOK_SECRET`環境変
         'custom_option' => $value,
     ]);
 
-基礎となる顧客やユーザーなしでも`charge`メソッドを使用きます。これには、アプリケーションのBillableモデルの新しいインスタンスで`charge`メソッドを呼び出します。
+また、基礎となる顧客やユーザーなしに`charge`メソッドを使用することもできます。そのためには、アプリケーションのBillableなモデルの新しいインスタンスで`charge`メソッドを呼び出します。
 
     use App\Models\User;
 
@@ -1210,12 +1343,130 @@ Stripeの料金を払い戻す必要がある場合は、`refund`メソッドを
         ]);
     });
 
-`downloadInvoice`メソッドは３番目の引数により、カスタムファイル名を使用できます。このファイル名には、自動的に「.pdf」という拡張子が付けられます。
+`downloadInvoice`メソッドは３番目の引数により、カスタムファイル名を使用できます。このファイル名には、自動的に".pdf"という拡張子が付けられます。
 
     return $request->user()->downloadInvoice($invoiceId, [
         'vendor' => 'Your Company',
         'product' => 'Your Product',
     ], 'my-invoice');
+
+<a name="checkout"></a>
+## チェックアウト
+
+Cashier Stripeは、[Stripe Checkout](https://stripe.com/en-be/payments/checkout)もサポートしています。Stripe Checkoutは、チェックアウトページを事前に構築しホストするという、支払いを受け入れるためカスタムページを実装する手間を省きます。
+
+以下のドキュメントで、Stripe Checkoutをどのように利用開始するのかに関する情報を説明します。Stripe Checkoutの詳細は、[StrepeのCheckoutに関するドキュメント](https://stripe.com/docs/payments/checkout)を確認する必要があるでしょう
+
+<a name="product-checkouts"></a>
+### 商品の支払い
+
+Billableなモデル上の`checkout`メソッドを使用して、Stripeダッシュボード内に作成した既存の製品のチェックアウトを実行できます。`checkout`メソッドは新しいStripeチェックアウトセッションを開始します。デフォルトで、Stripe価格IDを渡す必要があります。
+
+    $checkout = $user->checkout('price_12345');
+
+    return view('your-checkout-view', [
+        'checkout' => $checkout,
+    ]);
+
+必要に応じて、製品数量を指定することもできます。
+
+    $checkout = $user->checkout('price_12345', 15);
+
+チェックアウトセッションインスタンスをビューに渡し、ユーザーをStripeチェックアウトに向かわせるボタンを`button`メソッドを使用してレンダーできます。
+
+    {{ $checkout->button('Buy') }}
+
+顧客がこのボタンをクリックすると、Stripeのチェックアウトページにリダイレクトされます。デフォルトでは、ユーザーが購入を正常に完了した場合、または購入をキャンセルすると、`Home`ルートへリダイレクトされますが、`success_url`と`cancel_url`オプションを使ってカスタムコールバックURLを指定できます。
+
+    $checkout = $user->checkout('price_12345', 1, [
+        'success_url' => route('your-success-route'),
+        'cancel_url' => route('your-cancel-route'),
+    ]);
+
+<a name="checkout-promotion-codes"></a>
+#### プロモーションコード
+
+Stripe Checkoutはデフォルトで、[ユーザーが商品に使用できるプロモーションコード](https://stripe.com/docs/billing/subscriptions/discounts/code)を許可していません。幸いわいに、チェックアウトページでこれを有効にする簡単な方法があります。そのためには、`allowPromotionCodes`メソッドを呼び出します。
+
+    $checkout = $user->allowPromotionCodes()->checkout('price_12345');
+
+<a name="single-charge-checkouts"></a>
+### 一回限りの支払い
+
+ストライプダッシュボードに作成していない、アドホックな商品をシンプルに課金することもできます。これには、Billableなモデルで`checkoutCharge`メソッドを使用し、課金可能な料金、製品名、およびオプションの数量を渡たします。
+
+    $checkout = $user->checkoutCharge(1200, 'T-Shirt', 5);
+
+    return view('your-checkout-view', [
+        'checkout' => $checkout,
+    ]);
+
+チェックアウトセッションインスタンスをビューに渡し、ユーザーをStripeチェックアウトへ向かわせるボタンを`button`メソッドでレンダーできます。
+
+    {{ $checkout->button('Buy') }}
+
+顧客がこのボタンをクリックすると、Stripeのチェックアウトページにリダイレクトされます。
+
+> {note}`checkoutCharge`メソッドを使用する場合、Stripeは常にStripeダッシュボードに新しい製品と価格を作成します。したがって、代わりにStripeダッシュボードで事前に商品を作成し、`checkout`メソッドを使用することを推奨します。
+
+<a name="subscription-checkouts"></a>
+### サブスクリプションの支払い
+
+> {note} Stripe Checkoutのサブスクリプションを使用するには、Stripeダッシュボードで`customer.subscription.created` Webフックを有効にする必要があります。このWebフックは、データベースにサブスクリプションレコードを作成し、すべてのサブスクリプション関連アイテムを保存します。
+
+サブスクリプションを開始するには、Stripe Checkoutを使用することもできます。Cashierのサブスクリプションビルダメソッドを使用してサブスクリプションを定義した後に、`checkout`メソッドを呼び出せます。
+
+    $checkout = Auth::user()
+            ->newSubscription('default', 'price_xxx')
+            ->checkout();
+
+    return view('your-checkout-view', [
+        'checkout' => $checkout,
+    ]);
+
+製品のチェックアウトと同様に、成功およびキャンセルのURLをカスタマイズできます。
+
+    $checkout = Auth::user()->newSubscription('default', 'price_xxx')->checkout([
+        'success_url' => route('your-success-route'),
+        'cancel_url' => route('your-cancel-route'),
+    ]);
+
+もちろん、サブスクリプションチェックアウトのプロモーションコードを有効にすることもできます。
+
+    $checkout = Auth::user()->newSubscription('default', 'price_xxx')
+        ->allowPromotionCodes()
+        ->checkout();
+
+チェックアウトセッションインスタンスをビューへ渡し、ユーザーをStripeチェックアウトに向かわせるボタンを`button`メソッドを使用してレンダーできます。
+
+    {{ $checkout->button('Subscribe') }}
+
+顧客がこのボタンをクリックすると、Stripeのチェックアウトページにリダイレクトされます。
+
+> {note} 残念ながらStripe Checkoutはサブスクリプションを開始するとき、すべてのサブスクリプション請求オプションをサポートしていません。サブスクリプションビルダの`anchorBillingCycleOn`メソッドを使用して、プロレーション動作の設定、または支払い動作の設定は、Stripeチェックアウトセッション中に全く効果はありません。どのパラメータが利用可能であるかを確認するには、[Stripe CheckoutセッションAPIのドキュメント](https://stripe.com/docs/api/checkout/sessions/create)を参照してください。
+
+<a name="stripe-checkout-trial-periods"></a>
+#### Stripeの支払と試用期間
+
+もちろん、Stripe Checkoutを使用して購読を作成する際、試用期間の完了時間を定義できます。
+
+    $checkout = Auth::user()->newSubscription('default', 'price_xxx')
+        ->trialDays(3)
+        ->checkout();
+
+ただし、試用期間は最低４８時間でなければならず、これはStripe Checkoutでサポートされている試行時間の最短時間です。
+
+<a name="stripe-checkout-subscriptions-and-webhooks"></a>
+#### サブスクリプションとWebフック
+
+StripeとCashierはWebフックを使いサブスクリプションの状態を更新することを覚えておいてください。そのため、顧客が支払い情報を入力した後でアプリケーションに戻った時点で、サブスクリプションが有効になっていない可能性があります。このシナリオを処理するには、ユーザーに支払いやサブスクリプションが保留中であることをユーザーに知らせるメッセージを表示することを推奨します。
+
+<a name="styling-the-checkout-button"></a>
+### 支払いボタンのスタイル
+
+チェックアウトボタンをレンダーするときは、`class`と`style`オプションを使ってボタンスタイルをカスタマイズできます。これらのオプションは、連想配列として`button`メソッドへの第２引数に渡す必要があります。
+
+    {{ $checkout->button('Buy', ['class' => 'p-4 bg-blue-500 text-white']) }}
 
 <a name="handling-failed-payments"></a>
 ## 支払い失敗の処理

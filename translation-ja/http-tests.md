@@ -192,7 +192,7 @@ Laravelのセッションは通常、現在認証しているユーザーの状�
          *
          * @return void
          */
-        public function testBasicTest()
+        public function test_basic_test()
         {
             $response = $this->get('/');
 
@@ -444,6 +444,7 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 [assertHeaderMissing](#assert-header-missing)
 [assertJson](#assert-json)
 [assertJsonCount](#assert-json-count)
+[assertJsonFragment](#assert-json-fragment)
 [assertJsonMissing](#assert-json-missing)
 [assertJsonMissingExact](#assert-json-missing-exact)
 [assertJsonMissingValidationErrors](#assert-json-missing-validation-errors)
@@ -571,6 +572,23 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 
     $response->assertJsonCount($count, $key = null);
 
+<a name="assert-json-fragment"></a>
+#### assertJsonFragment
+
+レスポンス中のどこかに指定JSONデータが含まれていることを宣言します。
+
+    Route::get('/users', function () {
+        return [
+            'users' => [
+                [
+                    'name' => 'Taylor Otwell',
+                ],
+            ],
+        ];
+    });
+
+    $response->assertJsonFragment(['name' => 'Taylor Otwell']);
+
 <a name="assert-json-missing"></a>
 #### assertJsonMissing
 
@@ -597,7 +615,7 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 
 レスポンスに、指定するパスの指定するデータが含まれていることを宣言します。
 
-    $response->assertJsonPath($path, array $data, $strict = true);
+    $response->assertJsonPath($path, $expectedValue);
 
 たとえば、アプリケーションが返すJSONレスポンスに次のデータが含まれている場合:
 
@@ -831,14 +849,14 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 
 このメソッドは、ビューに指定するキーに一致するデータが含まれていることを宣言するために使用できます。
 
-    $rseponse->assertViewHasAll([
+    $response->assertViewHasAll([
         'name',
         'email',
     ]);
 
 または、ビューデータが存在し、特定の値を持っていると宣言することもできます。
 
-    $rseponse->assertViewHasAll([
+    $response->assertViewHasAll([
         'name' => 'Taylor Otwell',
         'email' => 'taylor@example.com,',
     ]);

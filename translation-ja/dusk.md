@@ -68,7 +68,7 @@ Duskパッケージをインストールし終えたら、`dusk:install` Artisan
 
 次に、アプリケーションの`.env`ファイルに`APP_URL`環境変数を設定します。この値は、ブラウザでアプリケーションにアクセスするために使用するURLと一致させる必要があります。
 
-> {tip} [Laravel Sail](/docs/{{version}}/sale)を使用してローカル開発環境を管理している場合は、[Duskテストの設定と実行](/docs/{{version}}/installation#laravel-dusk)に関するSailのドキュメントも参照してください。
+> {tip} [Laravel Sail](/docs/{{version}}/sale)を使用してローカル開発環境を管理している場合は、[Duskテストの設定と実行](/docs/{{version}}/sail#laravel-dusk)に関するSailのドキュメントも参照してください。
 
 <a name="managing-chromedriver-installations"></a>
 ### ChromeDriverインストールの管理
@@ -167,7 +167,7 @@ Duskのテストを生成するには、`dusk:make` Artisanコマンドを使い
 
     php artisan dusk --group=foo
 
-> {tip} [Laravel Sail](/docs/{{version}}/sale)を使用してローカル開発環境を管理している場合は、[Duskテストの設定と実行](/docs/{{version}}/installation#laravel-dusk)に関するSailのドキュメントを参照してください。
+> {tip} [Laravel Sail](/docs/{{version}}/sale)を使用してローカル開発環境を管理している場合は、[Duskテストの設定と実行](/docs/{{version}}/sail#laravel-dusk)に関するSailのドキュメントを参照してください。
 
 <a name="manually-starting-chromedriver"></a>
 #### ChromeDriverの手動起動
@@ -232,7 +232,7 @@ Duskのテストを生成するには、`dusk:make` Artisanコマンドを使い
          *
          * @return void
          */
-        public function testBasicExample()
+        public function test_basic_example()
         {
             $user = User::factory()->create([
                 'email' => 'taylor@laravel.com',
@@ -292,7 +292,7 @@ Duskのテストを生成するには、`dusk:make` Artisanコマンドを使い
     $browser->refresh();
 
 <a name="resizing-browser-windows"></a>
-#### ブラウザウィンドウのリサイズ
+### ブラウザウィンドウのリサイズ
 
 ブラウザウインドウのサイズを調整するため、`resize`メソッドを使用できます。
 
@@ -364,7 +364,7 @@ Duskのテストを生成するには、`dusk:make` Artisanコマンドを使い
     });
 
 > {note} `loginAs`メソッドを使用した後、ファイル内のすべてのテストでユーザーセッションを維持します。
->
+
 <a name="cookies"></a>
 ### クッキー
 
@@ -449,7 +449,7 @@ Duskセレクタを使用すると、CSSセレクタを覚えるよりも、効�
 <a name="retrieving-setting-values"></a>
 #### 値の取得／設定
 
-Duskは、ページ上の要素の現在の表示テキスト、値、および属性を操作するための方法をいくつか提供します。たとえば、特定のCSSまたはDuskセレクタに一致する要素の「値」を取得するには、`value`メソッドを使用します。
+Duskは、ページ上の要素の現在の値、表示テキスト、属性を操作するための方法をいくつか提供します。たとえば、特定のCSSまたはDuskセレクタに一致する要素の「値」を取得するには、`value`メソッドを使用します。
 
     // 値の取得
     $value = $browser->value('selector');
@@ -689,6 +689,11 @@ JavaScriptダイアログにプロンプ​​トが含​​まれている場�
             // 現在のスコープは`body .page-title`
             $title->assertSee('Hello World');
         });
+
+        $browser->elsewhereWhenAvailable('.page-title', function ($title) {
+            // 現在のスコープは`body. page-title`
+            $title->assertSee('Hello World');
+        });
      });
 
 <a name="waiting-for-elements"></a>
@@ -899,6 +904,7 @@ Duskはアプリケーションに対する数多くのアサートを提供し�
 [assertDataAttribute](#assert-data-attribute)
 [assertVisible](#assert-visible)
 [assertPresent](#assert-present)
+[assertNotPresent](#assert-not-present)
 [assertMissing](#assert-missing)
 [assertDialogOpened](#assert-dialog-opened)
 [assertEnabled](#assert-enabled)
@@ -1299,6 +1305,13 @@ URLの現在のハッシュフラグメントが指定するフラグメント�
 指定したセレクタに一致する要素が、存在することを宣言します。
 
     $browser->assertPresent($selector);
+
+<a name="assert-not-present"></a>
+#### assertNotPresent
+
+指定したセレクタに一致する要素が、ソースに存在しないことを宣言します。
+
+    $browser->assertNotPresent($selector);
 
 <a name="assert-missing"></a>
 #### assertMissing

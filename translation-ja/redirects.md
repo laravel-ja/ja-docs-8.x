@@ -86,10 +86,6 @@
 
     return back()->withInput();
 
-ユーザーを新しい場所にリダイレクトする前に、`RedirectResponse`インスタンスが提供する`withInput`メソッドを使用して、現在のリクエストの入力データをセッションへ一時保存できます。入力をセッションへ一時保存すると、次のリクエスト中に簡単に[取得](/docs/{{version}}/requests#retrieveing-old-input)できます。
-
-    return back()->withInput();
-
 ユーザーをリダイレクトしたあと、[セッション](/docs/{{version}}/session)の一時保持データとして保存したメッセージを表示できます。例として[Blade記法](/docs/{{version}}/blade)を使ってみます。
 
     @if (session('status'))

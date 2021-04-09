@@ -24,7 +24,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
 リソースクラスを生成するには、`make:resource` Artisanコマンドを使用します。リソースはアプリケーションの`app/Http/Resources`ディレクトリにデフォルトで配置されます。リソースは`Illuminate\Http\Resources\Json\JsonResource`クラスを拡張します。
 
-    php artisan make:resource User
+    php artisan make:resource UserResource
 
 <a name="generating-resource-collections"></a>
 #### リソースコレクション
@@ -42,7 +42,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
 > {tip} これは、リソースとリソースコレクションの概要です。リソースによって提供されるカスタマイズとパワーをより深く理解するために、このドキュメントの他のセクションも読むことを強く推奨します。
 
-リソースを作成するときに利用できるすべてのオプションに飛び込む前に、まずLaravel内でリソースがどのように使用されているかを大まかに見てみましょう。リソースクラスは、JSON構造に変換する必要がある単一のモデルを表します。たとえば、以下は単純な`User`リソースクラスです。
+リソースを作成するときに利用できるすべてのオプションに飛び込む前に、まずLaravel内でリソースがどのように使用されているかを大まかに見てみましょう。リソースクラスは、JSON構造に変換する必要がある単一のモデルを表します。たとえば、以下は単純な`UserResource`リソースクラスです。
 
     <?php
 
@@ -50,7 +50,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
     use Illuminate\Http\Resources\Json\JsonResource;
 
-    class User extends JsonResource
+    class UserResource extends JsonResource
     {
         /**
          * リソースを配列に変換
@@ -74,7 +74,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
 `$this`変数からモデルのプロパティに直接アクセスできることに注意してください。これは、リソースクラスがプロパティとメソッドのアクセスを基になるモデルに自動的にプロキシしており、アクセスを便利にしているためです。リソースを定義したら、ルートまたはコントローラから返せます。リソースは、コンストラクターを介して基になるモデルインスタンスを受け入れます。
 
-    use App\Http\Resources\User as UserResource;
+    use App\Http\Resources\UserResource;
     use App\Models\User;
 
     Route::get('/user/{id}', function ($id) {
@@ -86,7 +86,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
 リソースのコレクションまたはページ分割されたレスポンスを返す場合は、ルートまたはコントローラでリソースインスタンスを作成するときに、リソースクラスによって提供される`collection`メソッドを使用する必要があります。
 
-    use App\Http\Resources\User as UserResource;
+    use App\Http\Resources\UserResource;
     use App\Models\User;
 
     Route::get('/users', function () {
@@ -144,7 +144,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
     use Illuminate\Http\Resources\Json\JsonResource;
 
-    class User extends JsonResource
+    class UserResource extends JsonResource
     {
         /**
          * リソースのコレクションキーを保持する必要がある事を示す
@@ -156,7 +156,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
 `preserveKeys`プロパティが`true`に設定されている場合、コレクションをルートまたはコントローラから返すとき、コレクションのキーが保持されます。
 
-    use App\Http\Resources\User as UserResource;
+    use App\Http\Resources\UserResource;
     use App\Models\User;
 
     Route::get('/users', function () {
@@ -166,9 +166,9 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 <a name="customizing-the-underlying-resource-class"></a>
 #### 基礎となるリソースクラスのカスタマイズ
 
-通常、リソースコレクションの`$this->collection`プロパティへは、コレクションの各アイテムをその単一のリソースクラスにマッピングした結果を自動的に代入します。単一のリソースクラスは、クラス名の末尾から`Collection`部分除いたコレクションのクラス名であると想定します。
+通常、リソースコレクションの`$this->collection`プロパティへは、コレクションの各アイテムをその単一のリソースクラスにマッピングした結果を自動的に代入します。単一のリソースクラスは、クラス名の末尾から`Collection`部分除いたコレクションのクラス名であると想定します。さらに、個人的な好みにもよりますが、単数形のリソースクラスには、`Resource`というサフィックスが付いていてもいなくてもかまいません。
 
-たとえば、`UserCollection`は指定ユーザーインスタンスを`User`リソースにマップしようとします。この動作をカスタマイズするには、リソースコレクションの`$collects`プロパティをオーバーライドします。
+たとえば、`UserCollection`は指定ユーザーインスタンスを`UserResource`リソースにマップしようとします。この動作をカスタマイズするには、リソースコレクションの`$collects`プロパティをオーバーライドします。
 
     <?php
 
@@ -199,7 +199,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
     use Illuminate\Http\Resources\Json\JsonResource;
 
-    class User extends JsonResource
+    class UserResource extends JsonResource
     {
         /**
          * リソースを配列に変換
@@ -221,7 +221,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
 リソースを定義したら、ルートまたはコントローラから直接返せます。
 
-    use App\Http\Resources\User as UserResource;
+    use App\Http\Resources\UserResource;
     use App\Models\User;
 
     Route::get('/user/{id}', function ($id) {
@@ -231,9 +231,9 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 <a name="relationships"></a>
 #### リレーション
 
-リレーションをレスポンスへ含めたい場合は、リソースの`toArray`メソッドから返す配列にそれらを追加できます。この例では、`Post`リソースの`collection`メソッドを使用して、ユーザーのブログ投稿をリソースレスポンスへ追加しています。
+リレーションをレスポンスへ含めたい場合は、リソースの`toArray`メソッドから返す配列にそれらを追加できます。この例では、`PostResource`リソースの`collection`メソッドを使用して、ユーザーのブログ投稿をリソースレスポンスへ追加しています。
 
-    use App\Http\Resources\Post;
+    use App\Http\Resources\PostResource;
 
     /**
      * リソースを配列に変換
@@ -247,7 +247,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'posts' => Post::collection($this->posts),
+            'posts' => PostResource::collection($this->posts),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
@@ -260,7 +260,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
 リソースは単一のモデルを配列に変換しますが、リソースコレクションはモデルのコレクションを配列に変換します。ただし、すべてのリソースが「アドホック」リソースコレクションを簡単に生成するために`collection`メソッドを提供しているため、モデルごとにリソースコレクションクラスを定義する必要はありません。
 
-    use App\Http\Resources\User as UserResource;
+    use App\Http\Resources\UserResource;
     use App\Models\User;
 
     Route::get('/users', function () {
@@ -331,7 +331,7 @@ APIを構築する場合、Eloquentモデルと実際にアプリケーション
 
     use Illuminate\Http\Resources\Json\JsonResource;
 
-    class User extends JsonResource
+    class UserResource extends JsonResource
     {
         /**
          * 適用する「データ」ラッパー
@@ -551,7 +551,7 @@ Laravel ペジネータインスタンスをリソースの`collection`メソッ
 
 `whenLoaded`メソッドを使用して、リレーションを条件付きでロードできます。リレーションを不必要にロードすることを避けるために、このメソッドはリレーション自体ではなくリレーション名を引数に取ります。
 
-    use App\Http\Resources\Post;
+    use App\Http\Resources\PostResource;
 
     /**
      * リソースを配列に変換
@@ -565,7 +565,7 @@ Laravel ペジネータインスタンスをリソースの`collection`メソッ
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'posts' => Post::collection($this->whenLoaded('posts')),
+            'posts' => PostResource::collection($this->whenLoaded('posts')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
@@ -698,7 +698,7 @@ Laravel ペジネータインスタンスをリソースの`collection`メソッ
 
 すでにお読みになったように、リソースはルートとコントローラから直接返します。
 
-    use App\Http\Resources\User as UserResource;
+    use App\Http\Resources\UserResource;
     use App\Models\User;
 
     Route::get('/user/{id}', function ($id) {
@@ -707,7 +707,7 @@ Laravel ペジネータインスタンスをリソースの`collection`メソッ
 
 しかし、クライアントに送信する前に、送信HTTPレスポンスをカスタマイズする必要が起きる場合があります。これを実現するには２つの方法があります。最初の方法は、`response`メソッドをリソースにチェーンすることです。このメソッドは`Illuminate\Http\JsonResponse`インスタンスを返し、皆さんがレスポンスのヘッダを完全にコントロールできるようにします。
 
-    use App\Http\Resources\User as UserResource;
+    use App\Http\Resources\UserResource;
     use App\Models\User;
 
     Route::get('/user', function () {
@@ -724,7 +724,7 @@ Laravel ペジネータインスタンスをリソースの`collection`メソッ
 
     use Illuminate\Http\Resources\Json\JsonResource;
 
-    class User extends JsonResource
+    class UserResource extends JsonResource
     {
         /**
          * リソースを配列に変換
