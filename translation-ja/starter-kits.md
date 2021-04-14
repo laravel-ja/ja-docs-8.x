@@ -72,6 +72,6 @@ php artisan migrate
 
 Laravel Breezeは、Laravelアプリケーションを構築するためのシンプルで最小限の開始点を提供しますが、Jetstreamはより堅牢な機能と、追加のフロントエンドテクノロジースタックで、その機能を強化します。**Laravelを初めて使用する場合は、Laravel Jetstreamへ進む前に、Laravel Breezeで勘所を掴むことをおすめします。**
 
-Jetstreamは、Laravelに美しく設計されたアプリケーションのスカフォールドを提供し、ログイン、ユーザー登録、メール検証、２要素認証、セッション管理、Laravel Sanctumを介したAPIサポート、およびオプションとしてチーム管理機能を含みます。Jetstreamは[TailwindCSS](https://tailwindcss.com)を使用して設計されており、[Livewire](https://laravel-livewire.com)（[日本語](/livewire/2.x/ja/quickstart.html)）もしくは[Inertia.js](https://inertiajs.com)または[Inertia.js]（https://inertiajs.com)駆動のフロントエンドスカフォールドから選択できます。
+Jetstreamは、Laravelに美しく設計されたアプリケーションのスカフォールドを提供し、ログイン、ユーザー登録、メール検証、２要素認証、セッション管理、Laravel Sanctumを介したAPIサポート、およびオプションとしてチーム管理機能を含みます。Jetstreamは[TailwindCSS](https://tailwindcss.com)を使用して設計されており、[Livewire](https://laravel-livewire.com)（[日本語](/livewire/2.x/ja/quickstart.html)）もしくは[Inertia.js]https://inertiajs.com)駆動のフロントエンドスカフォールドから選択できます。
 
 Laravel Jetstreamをインストールするための完全なドキュメントは、[公式Jetstreamドキュメント](https://jetstream.laravel.com/2.x/introduction.html)にあります。
