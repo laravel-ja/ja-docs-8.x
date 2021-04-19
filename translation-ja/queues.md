@@ -1664,6 +1664,10 @@ Supervisorの詳細は、[Supervisorのドキュメント](http://supervisord.or
 
     php artisan queue:retry --range=5-10
 
+指定するキューの失敗したジョブをすべて再試行することもできます。
+
+    php artisan:retry --queue=name
+
 失敗したすべてのジョブを再試行するには、`queue:retry`コマンドを実行し、IDとして`all`を渡します。
 
     php artisan queue:retry all

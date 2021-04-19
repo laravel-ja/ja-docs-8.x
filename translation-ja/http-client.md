@@ -9,6 +9,7 @@
     - [再試行](#retries)
     - [エラー処理](#error-handling)
     - [Guzzleオプション](#guzzle-options)
+- [同時リクエスト](#concurrent-requests)
 - [テスト](#testing)
     - [レスポンスのfake](#faking-responses)
     - [レスポンスの検査](#inspecting-requests)
@@ -211,6 +212,39 @@ Guzzleのデフォルト動作とは異なり、LaravelのHTTPクライアント
     $response = Http::withOptions([
         'debug' => true,
     ])->get('http://example.com/users');
+
+<a name="concurrent-requests"></a>
+## 同時リクエスト
+
+複数のHTTPリクエストを同時に実行したい場合があります。言い換えれば、複数のリクエストを順番に発行するのではなく、同時にディスパッチしたい状況です。これにより、低速なHTTP APIを操作する際のパフォーマンスが大幅に向上します。
+
+さいわいに、`pool`メソッドを使い、これを実現できます。`pool`メソッドは、`Illuminate\Http\Client\Pool`インスタンスを受け取るクロージャを引数に取り、簡単にリクエストプールにリクエストを追加してディスパッチできます。
+
+    use Illuminate\Http\Client\Pool;
+    use Illuminate\Support\Facades\Http;
+
+    $responses = Http::pool(fn (Pool $pool) => [
+        $pool->get('http://localhost/first'),
+        $pool->get('http://localhost/second'),
+        $pool->get('http://localhost/third'),
+    ]);
+
+    return $responses[0]->ok() &&
+           $responses[1]->ok() &&
+           $responses[2]->ok();
+
+ご覧のように、各レスポンスインスタンスは、プールに追加した順でアクセスできます。必要に応じ`as`メソッドを使い、リクエストに名前を付けると、対応するレスポンスへ名前でアクセスできるようになります。
+
+    use Illuminate\Http\Client\Pool;
+    use Illuminate\Support\Facades\Http;
+
+    $responses = Http::pool(fn (Pool $pool) => [
+        $pool->as('first')->get('http://localhost/first'),
+        $pool->as('second')->get('http://localhost/second'),
+        $pool->as('third')->get('http://localhost/third'),
+    ]);
+
+    return $responses['first']->ok();
 
 <a name="testing"></a>
 ## テスト

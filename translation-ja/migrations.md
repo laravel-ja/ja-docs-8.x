@@ -99,6 +99,20 @@ Laravelは、マイグレーションの名前からテーブル名と新しい�
         }
     }
 
+<a name="anonymous-migrations"></a>
+#### 無名マイグレーション
+
+上記の例で気付いたかもしれませんが、Laravelは`make:migration`コマンドで生成した全てのマイグレーションへ自動的にクラス名を割り当てます。しかし、必要であれば、マイグレーションファイルから無名のクラスを返すこともできます。これは主に、アプリケーションが多くのマイグレーションを蓄積し、そのうち2つのマイグレーションでクラス名が衝突している場合に便利です。
+
+    <?php
+
+    use Illuminate\Database\Migrations\Migration;
+
+    return new class extends Migration
+    {
+        //
+    };
+
 <a name="setting-the-migration-connection"></a>
 #### マイグレーション接続の設定
 
@@ -362,6 +376,7 @@ Laravelは、マイグレーションの名前からテーブル名と新しい�
 [timestamps](#column-method-timestamps)
 [tinyIncrements](#column-method-tinyIncrements)
 [tinyInteger](#column-method-tinyInteger)
+[tinyText](#column-method-tinyText)
 [unsignedBigInteger](#column-method-unsignedBigInteger)
 [unsignedDecimal](#column-method-unsignedDecimal)
 [unsignedInteger](#column-method-unsignedInteger)
@@ -738,6 +753,13 @@ Laravelは、マイグレーションの名前からテーブル名と新しい�
 `tinyInteger`メソッドは`TINYINT`カラムを作成します。
 
     $table->tinyInteger('votes');
+
+<a name="column-method-tinyText"></a>
+#### `tinyText()` {#collection-method}
+
+`TinyText`メソッドは`TINYTEXT`カラムを作成します。
+
+    $table->tinyText('notes');
 
 <a name="column-method-unsignedBigInteger"></a>
 #### `unsignedBigInteger()` {#collection-method}
