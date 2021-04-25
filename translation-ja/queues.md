@@ -489,6 +489,18 @@ Laravelには、任意のキーに基づいてジョブの重複を防ぐこと�
         return [(new WithoutOverlapping($this->order->id))->dontRelease()];
     }
 
+`WithoutOverlapping`ミドルウェアはLaravelのアトミックロック機能により動作します。時々、ジョブは予期せずに失敗したり、ロックが解放されないような原因でタイムアウトしたりすることがあります。そのため、`expireAfter`メソッドを使用して、ロックの有効期限を明示的に定義することができます。たとえば、以下の例では、ジョブが処理を開始してから３分後に`WithoutOverlapping`ロックを解除するようにLaravelへ指示します。
+
+    /**
+     * このジョブが通過するミドルウェアを取得
+     *
+     * @return array
+     */
+    public function middleware()
+    {
+        return [(new WithoutOverlapping($this->order->id))->expireAfter(180)];
+    }
+
 > {note} `WithoutOverlapping`ミドルウェアには、[ロック](/docs/{{version}}/cache#atomic-locks)をサポートするキャッシュドライバが必要です。現在、`memcached`、`redis`、`dynamodb`、`database`、`file`、`array`キャッシュドライバはアトミックロックをサポートしています。
 
 <a name="throttling-exceptions"></a>
@@ -1036,7 +1048,7 @@ Laravelは、例外をスロットルすることができる`Illuminate\Queue\M
 
 デフォルトでは、`release`メソッドはジョブをキューへ戻し、すぐに処理します。ただし、整数を`release`メソッドに渡すことで、その指定する秒数が経過するまでジョブを処理しないようにキューへ指示できます。
 
-    $this->release(10)
+    $this->release(10);
 
 <a name="manually-failing-a-job"></a>
 #### 手動でジョブを失敗させる

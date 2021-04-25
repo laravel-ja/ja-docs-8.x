@@ -1533,7 +1533,7 @@ Eloquentは、リレーションへ新しいモデルを追加する便利な手
         new Comment(['message' => 'Another new comment.']),
     ]);
 
-`save`メソッドと`saveMany`メソッドは、親モデルへすでにロードしているメモリ内のリレーションには新しいモデルを追加しません。`save`と`saveMany`メソッドを使用した後にリレーションへアクセスしようと考えている場合は、`refresh`メソッドを使用してモデルとそのリレーションを再ロードするのを推奨します。
+`save`メソッドと`saveMany`メソッドは、指定したモデルインスタンスを保存しますが、親モデルへすでにロードしているメモリ内のリレーションには新しいモデルを追加保存しません。`save`と`saveMany`メソッドを使用した後にリレーションへアクセスしようと考えている場合は、`refresh`メソッドを使用してモデルとそのリレーションを再ロードするのを推奨します。
 
     $post->comments()->save($comment);
 
@@ -1576,7 +1576,7 @@ Eloquentは、リレーションへ新しいモデルを追加する便利な手
         ['message' => 'Another new comment.'],
     ]);
 
-`findOrNew`、`firstOrNew`、`firstOrCreate`、`updateOrCreate`メソッドを使用して[関係のモデルを作成および更新](https://laravel.com/docs/{{version}}/eloquent#upserts)することもできます。
+`findOrNew`、`firstOrNew`、`firstOrCreate`、`updateOrCreate`メソッドを使用して[関係のモデルを作成および更新](/docs/{{version}}/eloquent#upserts)することもできます。
 
 > {tip} `create`メソッドを使用する前に、必ず[複数代入](/docs/{{version}}/eloquent#mass-assignment)のドキュメントを確認してください。
 

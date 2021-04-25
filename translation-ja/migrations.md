@@ -503,7 +503,7 @@ Laravelは、マイグレーションの名前からテーブル名と新しい�
 <a name="column-method-increments"></a>
 #### `increments()` {#collection-method}
 
-`increments`メソッドは、主キーとして自動増分の`UNSIGNEDINTEGER`カラムを作成します。
+`increments`メソッドは、主キーとして自動増分の`UNSIGNED INTEGER`カラムを作成します。
 
     $table->increments('id');
 
@@ -517,7 +517,7 @@ Laravelは、マイグレーションの名前からテーブル名と新しい�
 <a name="column-method-ipAddress"></a>
 #### `ipAddress()` {#collection-method}
 
-`ipAddress`メソッドは`INTEGER`カラムを作成します。
+`ipAddress`メソッドは`VARCHAR`カラムを作成します。
 
     $table->ipAddress('visitor');
 

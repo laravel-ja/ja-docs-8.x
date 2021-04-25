@@ -1528,6 +1528,8 @@ StripeとCashierはWebフックを使いサブスクリプションの状態を�
 
 ＳＣＡ法令では支払いを確認し処理するため、追加の検証が頻繁に必要になります。これが起きると、Cashierは追加の検証が必要であることを通知する`Laravel\Cashier\Exceptions\PaymentActionRequired`例外を投げます。こうした例外の処理方法の詳細は、[失敗した支払いの処理](#handling-failed-payments)のドキュメントを参照してください。
 
+StripeとCashierが提供する支払い確認画面は、特定の銀行またはカード発行者の支払いフローに合わせて調整することができ、追加のカード確認、一時的な少額の支払い、個別のデバイス認証、その他の形式の検証を含むことができます。
+
 <a name="incomplete-and-past-due-state"></a>
 #### 不完了と期限超過の状態
 

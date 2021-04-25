@@ -129,6 +129,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [Str::ucfirst](#method-str-ucfirst)
 [Str::upper](#method-str-upper)
 [Str::uuid](#method-str-uuid)
+[Str::wordCount](#method-str-word-count)
 [Str::words](#method-str-words)
 [trans](#method-trans)
 [trans_choice](#method-trans-choice)
@@ -196,6 +197,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [upper](#method-fluent-str-upper)
 [when](#method-fluent-str-when)
 [whenEmpty](#method-fluent-str-when-empty)
+[wordCount](#method-fluent-str-word-count)
 [words](#method-fluent-str-words)
 
 </div>
@@ -1617,6 +1619,17 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     return (string) Str::uuid();
 
+<a name="method-str-word-count"></a>
+### `wordCount`
+
+`wordcount`関数は、文字列に含まれる単語の数を返します。
+
+```php
+use Illuminate\Support\Str;
+
+Str::wordCount('Hello, world!'); // 2
+```
+
 <a name="method-str-words"></a>
 #### `Str::words()` {#collection-method}
 
@@ -2435,6 +2448,17 @@ The `snake` method converts the given string to `snake`メソッドは、文字�
     });
 
     // 'Laravel'
+
+<a name="method-fluent-str-word-count"></a>
+### `wordCount`
+
+`wordcount`関数は、文字列に含まれる単語の数を返します。
+
+```php
+use Illuminate\Support\Str;
+
+Str::of('Hello, world!')->wordCount(); // 2
+```
 
 <a name="method-fluent-str-words"></a>
 #### `words` {#collection-method}

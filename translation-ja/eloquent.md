@@ -1155,7 +1155,7 @@ Eloquentモデルはいくつかのイベントをディスパッチし、モデ
         ];
     }
 
-Eloquentイベントを定義してマッピングした後は、そのイベントを処理するために[イベントリスナ](https://laravel.com/docs/{{version}}/events#defining-listeners)を使用します。
+Eloquentイベントを定義してマッピングした後は、そのイベントを処理するために[イベントリスナ](/docs/{{version}}/events#defining-listeners)を使用します。
 
 > {note} Eloquentを介して一括更新または削除クエリを発行する場合、影響を受けるモデルに対して、`saved`、`updated`、`deleting`、`deleted`モデルイベントをディスパッチしません。これは、一括更新または一括削除を実行するときにモデルを実際に取得しないためです。
 

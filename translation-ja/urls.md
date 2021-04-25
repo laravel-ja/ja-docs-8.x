@@ -192,7 +192,7 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
 <a name="url-defaults-middleware-priority"></a>
 #### URLのデフォルトとミドルウェアの優先度
 
-URLのデフォルト値を設定すると、Laravelの暗黙的なモデルバインディングの処理を妨げる可能性があります。したがって、URLのデフォルトをLaravel自身の`SubstituteBindings`ミドルウェアの前に実行するよう設定するため、[ミドルウェアの優先度を設定する](https://laravel.com/docs/{{version}}/middleware#sorting-middleware)必要があります。それには、アプリケーションのHTTPカーネルの`$middlewarePriority`プロパティ内にある`SubstituteBindings`ミドルウェアの前にミドルウェアを確実に設置してください。
+URLのデフォルト値を設定すると、Laravelの暗黙的なモデルバインディングの処理を妨げる可能性があります。したがって、URLのデフォルトをLaravel自身の`SubstituteBindings`ミドルウェアの前に実行するよう設定するため、[ミドルウェアの優先度を設定する](/docs/{{version}}/middleware#sorting-middleware)必要があります。それには、アプリケーションのHTTPカーネルの`$middlewarePriority`プロパティ内にある`SubstituteBindings`ミドルウェアの前にミドルウェアを確実に設置してください。
 
 `$middlewarePriority`プロパティは`Illuminate\Foundation\Http\Kernel`ベースクラスで定義されています。変更するにはその定義をこのクラスからコピーし、アプリケーションのHTTPカーネルでオーバーライトしてください。
 

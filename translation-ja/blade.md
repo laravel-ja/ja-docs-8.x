@@ -1139,7 +1139,7 @@ Bladeは、コンポーネント名のパスカルケースを使い、コンポ
 <a name="csrf-field"></a>
 ### CSRFフィールド
 
-アプリケーションでHTMLフォームを定義したときは、[CSRF保護](https://laravel.com/docs/{{version}}/csrf)ミドルウェアがリクエストをバリデートできるように、フォームへ隠しCSRFトークンフィールドを含める必要があります。`@csrf` Bladeディレクティブを使用してトークンフィールドを生成できます。
+アプリケーションでHTMLフォームを定義したときは、[CSRF保護]((/docs/{{version}}/csrf))ミドルウェアがリクエストをバリデートできるように、フォームへ隠しCSRFトークンフィールドを含める必要があります。`@csrf` Bladeディレクティブを使用してトークンフィールドを生成できます。
 
 ```html
 <form method="POST" action="/profile">

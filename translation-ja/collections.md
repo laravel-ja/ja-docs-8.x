@@ -1723,7 +1723,7 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
         'eur' => 1.22,
     ];
 
-    $collection->reduceWithKeys(function ($carry, $value, $key) use ($ratio) {
+    $collection->reduce(function ($carry, $value, $key) use ($ratio) {
         return $carry + ($value * $ratio[$key]);
     });
 

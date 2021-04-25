@@ -439,6 +439,8 @@ Mailableクラスの`build`メソッド内で、`view`メソッドを使用し�
                 'Custom-Header', 'Header Value'
             );
         });
+        
+        return $this;
     }
 
 <a name="markdown-mailables"></a>

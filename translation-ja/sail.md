@@ -253,6 +253,8 @@ Sailの実行中に、`http://localhost:8025`でMailHog Webインターフェイ
 
 ```nothing
 sail shell
+
+sail root-shell
 ```
 
 新しい[LaravelTinker](https://github.com/laravel/tinker)セッションを開始するには、`tinker`コマンドを実行します。
@@ -292,6 +294,15 @@ image: sail-8.0/app
 同僚のためにサイトをプレビューしたり、アプリケーションとのWebhook統合をテストしたりするために、サイトを公開して共有する必要がある場合があります。サイトを共有するには、 `share`コマンドを使用します。このコマンドを実行すると、アプリケーションへのアクセスに使用するランダムな`laravel-sail.site` URLが発行されます。
 
     sail share
+
+`share`コマンドでサイトを共有するときは、`TrustProxies`ミドルウェア内でアプリケーションの信頼できるプロキシを設定する必要があります。これを行わないと、`url`や`route`などのURL生成ヘルパは、URL生成時に使用するべき正しいHTTPホストを決定できません。
+
+    /**
+     * アプリケーションで信頼するプロキシ
+     *
+     * @var array|string|null
+     */
+    protected $proxies = '*';
 
 共有サイトでサブドメインを選択する場合は、`share`コマンドを実行するときに`subdomain`オプションを指定します。
 

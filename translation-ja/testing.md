@@ -89,7 +89,7 @@ Laravelには、アプリケーションのベース`TestCase`クラスに適用
 <a name="running-tests-in-parallel"></a>
 ### テストを並列で実行
 
-LaravelとPhpUnitはデフォルトで、単一のプロセス内でテストを順番に実行します。しかし、複数のプロセス間で同時にテストを実行し、テスト時間を大幅に削減できます。これを利用開始するには`test` Artisanコマンドを実行するときに、`--parallel`オプションを指定します。
+LaravelとPhpUnitはデフォルトで、単一のプロセス内でテストを順番に実行します。しかし、複数のプロセス間で同時にテストを実行し、テスト時間を大幅に削減できます。これを利用開始するには、最初にアプリケーションの依存パッケージへバージョン`^5.3`以上の`nunomaduro/collision`を確実に含めてください。それから、`test` Artisanコマンドを実行するときに、`--parallel`オプションを指定します。
 
     php artisan test --parallel
 

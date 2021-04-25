@@ -144,7 +144,7 @@ Sailの`up`コマンドをはじめて実行すると、Sailのアプリケー�
 <a name="choosing-your-sail-services"></a>
 ### Sailサービスの選択
 
-Sailで新しいLaravelアプリケーションを作成する際に、`with`というクエリ文字列変数を使って、新しいアプリケーションの`docker-compose.yml`ファイルで設定するサービスを選択することができます。利用可能なサービスは、`mysql`、`pgsql`、`redis`、`memcached`、`meilisearch`、`selenium`、`mailhog`です。
+Sailで新しいLaravelアプリケーションを作成する際に、`with`というクエリ文字列変数を使って、新しいアプリケーションの`docker-compose.yml`ファイルで設定するサービスを選択することができます。利用可能なサービスは、`mysql`、`pgsql`、`mariadb`、`redis`、`memcached`、`meilisearch`、`selenium`、`mailhog`です。
 
 ```nothing
 curl -s "https://laravel.build/example-app?with=mysql,redis" | bash
@@ -269,4 +269,3 @@ Laravelをフルスタックフレームワークとして使用する場合は�
 Laravelは、JavaScriptシングルページアプリケーションまたはモバイルアプリケーションへのAPIバックエンドとしても機能させることもあります。たとえば、[Next.js](https://nextjs.org)アプリケーションのAPIバックエンドとしてLaravelを使用できます。こうした使い方では、Laravelでアプリケーションに[認証](/docs/{{version}}/sanctum)とデータの保存/取得を提供すると同時に、キュー、メール、通知などのLaravelの強力なサービスを利用できます。
 
 この方法でLaravelの使用を計画している場合は、[ルーティング](/docs/{{version}}/routing)、[Laravel Sanctum](/docs/{{version}}/sanctum)、[Eloquent ORM](/docs/{{version}}/eloquent)に関するドキュメントを確認することをお勧めします。
-

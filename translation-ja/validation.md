@@ -524,7 +524,7 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 <a name="specifying-custom-attribute-values"></a>
 #### カスタム属性値の指定
 
-Laravelの組み込みエラーメッセージの多くには、バリデーション中のフィールドや属性の名前に置き換えられる`:attribute:`プレースホルダーが含まれています。特定のフィールドでこれらのプレースホルダーを置き換える値をカスタマイズするには、カスタム属性表示名の配列を4番目の引数として`Validator::make`メソッドに渡します。
+Laravelの組み込みエラーメッセージの多くには、バリデーション中のフィールドや属性の名前に置き換えられる`:attribute`プレースホルダーが含まれています。特定のフィールドでこれらのプレースホルダーを置き換える値をカスタマイズするには、カスタム属性表示名の配列を4番目の引数として`Validator::make`メソッドに渡します。
 
     $validator = Validator::make($input, $rules, $messages, [
         'email' => 'email address',
@@ -618,7 +618,7 @@ Laravelの各組み込みバリデーションルールには、アプリケー�
 <a name="specifying-attribute-in-language-files"></a>
 ### 言語ファイルでの属性の指定
 
-Laravelの組み込みエラーメッセージの多くには、バリデーション中のフィールドまたは属性の名前に置き換えられる`:attribute:`プレースホルダーが含まれています。バリデーションメッセージの`:attribute`部分をカスタム値に置き換えたい場合は、`resources/lang/xx/validation.php`言語ファイルの`attributes`配列でカスタム属性名を指定してください。
+Laravelの組み込みエラーメッセージの多くには、バリデーション中のフィールドまたは属性の名前に置き換えられる`:attribute`プレースホルダーが含まれています。バリデーションメッセージの`:attribute`部分をカスタム値に置き換えたい場合は、`resources/lang/xx/validation.php`言語ファイルの`attributes`配列でカスタム属性名を指定してください。
 
     'attributes' => [
         'email' => 'email address',
