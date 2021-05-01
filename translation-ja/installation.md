@@ -31,13 +31,13 @@ Webアプリケーションを構築するときに利用できるさまざま�
 
 #### 前進するフレームワーク
 
-私たちはLaravelを「前進する」フレームワークと呼んでいます。つまり、Laravelはあなたと一緒に成長するという意味です。Web開発の最初の一歩を踏み出したばかりの場合は、Laravelの膨大なドキュメント、ガイド、および[ビデオチュートリアル](https://laracasts.com)のライブラリで、圧倒されずにコツを学ぶのに役立ちます。
+私たちはLaravelを「進歩的な」フレームワークと呼んでいます。つまり、Laravelはあなたと一緒に成長するという意味です。もしあなたが、Web開発の最初の一歩を踏み出したばかりの方であれば、Laravelの膨大なドキュメント、ガイド、および[ビデオチュートリアル](https://laracasts.com)のライブラリが、圧倒されず骨子を学ぶのに役立つでしょう。
 
-上級開発者でしたら、Laravelの[依存注入](/docs/{{version}}/container)、[単体テスト](/docs/{{version}}/testing)、[キュー](/docs/{{version}}/queues)、[リアルタイムイベント](/docs/{{version}}/broadcasting)などへの堅牢なツールが役立つでしょいう。Laravelは、プロフェッショナルなWebアプリケーションを構築するために調整されており、エンタープライズにおける作業負荷を処理する準備ができています。
+開発の上級者でしたら、Laravelの[依存注入](/docs/{{version}}/container)、[単体テスト](/docs/{{version}}/testing)、[キュー](/docs/{{version}}/queues)、[リアルタイムイベント](/docs/{{version}}/broadcasting)など堅牢なツールが役立つでしょう。Laravelは、プロフェッショナルなWebアプリケーションを構築するため調整してあり、エンタープライズにおける作業負荷を処理する準備ができています。
 
 #### スケーラブルなフレームワーク
 
-Laravelは素晴らしくスケーラブルです。PHPのスケーリングに適した性質と、Redisのような高速な分散キャッシュシステムに対するLaravelの組み込み済みサポートにより、Laravelを使用した水平スケーリングは簡単です。実際、Laravelアプリケーションは、月あたり数億のリクエストを処理するよう簡単に拡張できます。
+Laravelは素晴らしくスケーラブルです。PHPのスケーリングに適した基本の性質と、Redisなど高速な分散キャッシュシステムに対するLaravelの組み込み済みサポートにより、Laravelを使用した水平スケーリングは簡単です。実際、Laravelアプリケーションは、月あたり数億のリクエストを処理するよう簡単に拡張できます。
 
 極端なスケーリングが必要ですか？ [Laravel Vapor](https://vapor.laravel.com)のようなプラットフォームを使用すると、AWSの最新のサーバレステクノロジーでほぼ無制限の規模でLaravelアプリケーションを実行できます。
 
@@ -48,13 +48,13 @@ LaravelはPHPエコシステムで最高のパッケージを組み合わせ、�
 <a name="your-first-laravel-project"></a>
 ## 最初のLaravelプロジェクト
 
-私たちはできるだけLaravelを簡単に使い始められるようにしたいと思っています。自分のコンピューター上でLaravelプロジェクトを開発して実行するためのさまざまな選択肢があります。後でこうしたオプションを検討することもできますが、Laravelは[Docker](https://www.docker.com)を利用する、Laravelプロジェクトを実行できる組み込みソルーションである[Sail](/docs/{{version}}/sail)を提供しています。
+私たちはLaravelをできるだけ簡単に使い始められるようにしたいと思っています。自分のコンピューター上でLaravelプロジェクトを開発して実行するためのさまざまな選択肢があります。後でこうしたオプションを検討することもできますが、Laravelは[Docker](https://www.docker.com)を利用する、Laravelプロジェクトを実行できる組み込みソルーションである[Sail](/docs/{{version}}/sail)を提供しています。
 
 Dockerは、ローカルコンピューターにインストールされているソフトウェアや構成に干渉しない、小型で軽量の「コンテナー」でアプリケーションとサービスを実行するためのツールです。これはつまり、パーソナルコンピュータ上のWebサーバやデータベースなどの複雑な開発ツールの構成や準備について心配する必要はないことを意味します。開発を開始するには、[Docker Desktop](https://www.docker.com/products/docker-desktop)をインストールするだけです。
 
 Laravel Sailは、LaravelのデフォルトのDocker構成と、操作するための軽量のコマンドラインインターフェイスです。 Sailは、Dockerの経験がなくても、PHP、MySQL、Redisを使用してLaravelアプリケーションを構築するために良い出発点を提供しています。
 
-> {tip} すでにDockerのエキスパートですか？心配しないでください！Laravelに含まれている `docker-compose.yml`ファイルを使用して、Sailに関するすべてをカスタマイズできます。
+> {tip} すでにDockerのエキスパートですか？ご心配なく！Laravelが提供する`docker-compose.yml`ファイルを使用して、Sailに関するすべてをカスタマイズできます。
 
 <a name="getting-started-on-macos"></a>
 ### macOSで始める
@@ -67,7 +67,7 @@ curl -s "https://laravel.build/example-app" | bash
 
 もちろん、このURLの"example-app"は好きなように変更できます。Laravelアプリケーションのディレクトリは、コマンドを実行したディレクトリ内に作成されます。
 
-プロジェクトを作成したら、アプリケーションディレクトリに移動してLaravel Sailを起動できます。Laravel Sailは、LaravelのデフォルトのDocker構成と操作するためのシンプルなコマンドラインインターフェイスを提供します。
+プロジェクトを作成したら、アプリケーションディレクトリに移動してLaravel Sailを起動してください。Laravel Sailは、LaravelのデフォルトのDocker構成を操作するためのシンプルなコマンドラインインターフェイスを提供しています。
 
 ```nothing
 cd example-app
@@ -75,7 +75,7 @@ cd example-app
 ./vendor/bin/sail up
 ```
 
-Sailの`up`コマンドをはじめて実行すると、Sailのアプリケーションコンテナがマシン上に構築されます。これには数分かかるでしょう。**心配しないでください。これ以降のSailの開始・起動は、はるかに高速になります。**
+Sailの`up`コマンドをはじめて実行すると、Sailのアプリケーションコンテナがマシン上に構築されます。これには数分かかるでしょう。**心配ありません。これ以降のSailの開始・起動は、はるかに高速になります。**
 
 アプリケーションのDockerコンテナーを開始したら、Webブラウザでアプリケーションのhttp://localhostにアクセスできます。
 
@@ -104,9 +104,9 @@ cd example-app
 ./vendor/bin/sail up
 ```
 
-Sailの`up`コマンドをはじめて実行すると、Sailのアプリケーションコンテナがマシン上に構築されます。これには数分かかるでしょう。**心配しないでください。これ以降のSailの開始・起動は、はるかに高速になります。**
+Sailの`up`コマンドをはじめて実行すると、Sailのアプリケーションコンテナがマシン上に構築されます。これには数分かかるでしょう。**心配ありません。これ以降のSailの開始・起動は、はるかに高速になります。**
 
-アプリケーションのDockerコンテナーを開始したら、Webブラウザでアプリケーションのhttp://localhostにアクセスできます。
+アプリケーションのDockerコンテナーを開始したら、Webブラウザでアプリケーションのhttp://localhostへアクセスできます。
 
 > {tip} Laravel Sailの詳細は、[完全なドキュメント](/docs/{{version}}/sail)で確認してください。
 
@@ -127,7 +127,7 @@ curl -s https://laravel.build/example-app | bash
 
 もちろん、このURL中の”example-app”は好きなものに変更できます。Laravelアプリケーションのディレクトリは、コマンドを実行したディレクトリ内に作成されます。
 
-プロジェクトを作成できたら、アプリケーションディレクトリに移動してLaravel Sailを起動できます。Laravel Sailは、LaravelのデフォルトのDocker構成と操作のためのシンプルなコマンドラインインターフェイスを提供しています。
+プロジェクトを作成したら、アプリケーションディレクトリへ移動してLaravel Sailを起動できます。Laravel Sailは、LaravelのデフォルトのDocker構成と操作のためのシンプルなコマンドラインインターフェイスを提供しています。
 
 ```nothing
 cd example-app
@@ -135,7 +135,7 @@ cd example-app
 ./vendor/bin/sail up
 ```
 
-Sailの`up`コマンドをはじめて実行すると、Sailのアプリケーションコンテナがマシン上に構築されます。これには数分かかるでしょう。**心配しないでください。これ以降のSailの開始・起動は、はるかに高速になります。**
+Sailの`up`コマンドをはじめて実行すると、Sailのアプリケーションコンテナがマシン上に構築されます。これには数分かかるでしょう。**心配ありません。これ以降のSailの開始・起動は、はるかに高速になります。**
 
 アプリケーションのDockerコンテナーを開始したら、Webブラウザでアプリケーションのhttp://localhostにアクセスできます。
 
@@ -186,7 +186,7 @@ Composerのシステム全体のvendor/binディレクトリを`$PATH`に配置�
 - GNU／Linuxディストリビューション: `$HOME/.config/composer/vendor/bin`もしくは`$HOME/.composer/vendor/bin`
 </div>
 
-利便性のため、Laravelインストーラはあなたの新しいプロジェクトのためにGitリポジトリを作成することもできます。Gitリポジトリを作成することを指示するには、新しいプロジェクトを作成するときに`--git`フラグを渡します。
+便利なように、Laravelインストーラはあなたの新しいプロジェクトのためにGitリポジトリを作成することもできます。Gitリポジトリを作成することを指示するには、新しいプロジェクトを作成するときに`--git`フラグを渡します。
 
 ```bash
 laravel new example-app --git
@@ -210,7 +210,7 @@ laravel new example-app --github
 laravel new example-app --github="--public"
 ```
 
-`--organization`フラグを使用して、特定のGitHub組織の下へリポジトリを作成できます。
+`--organization`フラグを使用して、特定のGitHubオーガニゼーションの下へリポジトリを作成できます。
 
 ```bash
 laravel new example-app --github="--public" --organization="laravel"
@@ -219,9 +219,9 @@ laravel new example-app --github="--public" --organization="laravel"
 <a name="initial-configuration"></a>
 ## 初期設定
 
-Laravelフレームワークのすべての設定ファイルは、`config`ディレクトリに保存されます。各オプションはコメントで説明してますので、ファイルを調べて使用可能なオプションをよく理解してください。
+Laravelフレームワークのすべての設定ファイルは、`config`ディレクトリに保存されます。各オプションはコメントで説明してますので、ファイルを読み、使用可能なオプションを理解してください。
 
-Laravelは最初から、追加の設定をほぼ必要としません。あなたは自由に開発を始めることができます！ただし、`config/app.php`ファイルとコメントを確認されることを推奨します。`timezone`や`locale`などのいくつかのオプションが含まれており、アプリケーションに合わせて変更したいはずです。
+Laravelは最初から、追加設定をほぼ必要としません。あなたは自由に開発を始めることができます！しかし、`config/app.php`ファイルとコメントを確認されることを推奨します。`timezone`や`locale`などのオプションが含まれており、アプリケーションに合わせて変更したいはずです。
 
 <a name="environment-based-configuration"></a>
 ### 環境ベースの設定
@@ -235,7 +235,7 @@ Laravelの設定オプション値の多くは、アプリケーションがロ�
 <a name="directory-configuration"></a>
 ### ディレクトリ設定
 
-Laravelは常に、Webサーバで設定した「Webディレクトリ」のルートから提供するべきです。WebディレクトリのサブディレクトリからLaravelアプリケーションを提供しないでください。そうしてしまうと、アプリケーション内に存在する機密ファイルが漏洩する可能性があります。
+Laravelは常に、Webサーバで設定する「Webディレクトリ」のルートから提供するべきです。WebディレクトリのサブディレクトリからLaravelアプリケーションを提供しないでください。そうしてしまうと、アプリケーション内に存在する機密ファイルが漏洩する可能性があります。
 
 <a name="next-steps"></a>
 ## 次のステップ
