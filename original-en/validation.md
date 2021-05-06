@@ -25,6 +25,7 @@
 - [Available Validation Rules](#available-validation-rules)
 - [Conditionally Adding Rules](#conditionally-adding-rules)
 - [Validating Arrays](#validating-arrays)
+- [Validating Passwords](#validating-passwords)
 - [Custom Validation Rules](#custom-validation-rules)
     - [Using Rule Objects](#using-rule-objects)
     - [Using Closures](#using-closures)
@@ -345,6 +346,10 @@ The form request class also contains an `authorize` method. Within this method, 
 Since all form requests extend the base Laravel request class, we may use the `user` method to access the currently authenticated user. Also, note the call to the `route` method in the example above. This method grants you access to the URI parameters defined on the route being called, such as the `{comment}` parameter in the example below:
 
     Route::post('/comment/{comment}');
+
+Therefore, if your application is taking advantage of [route model binding](/docs/{{version}}/routing#route-model-binding), your code may be made even more succinct by accessing the resolved model as a property of the request:
+
+    return $this->user()->can('update', $this->comment);
 
 If the `authorize` method returns `false`, an HTTP response with a 403 status code will automatically be returned and your controller method will not execute.
 
@@ -1411,6 +1416,55 @@ Likewise, you may use the `*` character when specifying [custom validation messa
             'unique' => 'Each person must have a unique email address',
         ]
     ],
+
+<a name="validating-passwords"></a>
+## Validating Passwords
+
+To ensure that passwords have an adequate level of complexity, you may use Laravel's `Password` rule object:
+
+    use Illuminate\Support\Facades\Validator;
+    use Illuminate\Validation\Rules\Password;
+
+    $validator = Validator::make($request->all(), [
+        'password' => ['required', 'confirmed', Password::min(8)],
+    ]);
+
+The `Password` rule object allows you to easily customize the password complexity requirements for your application, such as specifying that passwords require at least one letter, number, symbol, or characters with mixed casing:
+
+    // Require at least 8 characters...
+    Password::min(8)
+
+    // Require at least one letter...
+    Password::min(8)->letters()
+
+    // Require at least one uppercase and one lowercase letter...
+    Password::min(8)->mixedCase()
+
+    // Require at least one number...
+    Password::min(8)->numbers()
+
+    // Require at least one symbol...
+    Password::min(8)->symbols()
+
+In addition, you may ensure that a password has not been compromised in a public password data breach leak using the `uncompromised` method:
+
+    Password::min(8)->uncompromised()
+
+Internally, the `Password` rule object uses the [k-Anonymity](https://en.wikipedia.org/wiki/K-anonymity) model to determine if a password has been leaked via the [haveibeenpwned.com](https://haveibeenpwned.com) service without sacrificing the user's privacy or security.
+
+By default, if a password appears at least once in a data leak, it will be considered compromised. You can customize this threshold using the first argument of the `uncompromised` method:
+
+    // Ensure the password appears less than 3 times in the same data leak...
+    Password::min(8)->uncompromised(3);
+
+Of course, you may chain all the methods in the examples above:
+
+    Password::min(8)
+        ->letters()
+        ->mixedCase()
+        ->numbers()
+        ->symbols()
+        ->uncompromised()
 
 <a name="custom-validation-rules"></a>
 ## Custom Validation Rules

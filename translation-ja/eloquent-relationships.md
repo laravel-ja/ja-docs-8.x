@@ -1396,17 +1396,29 @@ select * from authors where id in (1, 2, 3, 4, 5, ...)
         protected $with = ['author'];
 
         /**
-         * この本を書いた著者を入手
+         * この本を書いた著者を取得
          */
         public function author()
         {
             return $this->belongsTo(Author::class);
+        }
+
+        /**
+         * 本のジャンルを取得
+         */
+        public function genre()
+        {
+            return $this->belongsTo(Genre::class);
         }
     }
 
 一度のクエリで`$with`プロパティからのアイテムを削除する場合は、`without`メソッドを使用します。
 
     $books = Book::without('author')->get();
+
+一度のクエリに対し、`$with`プロパティ内のすべてのアイテムをオーバーライドしたい場合は、`withOnly`メソッドが使えます。
+
+    $books = Book::withOnly('genre')->get();
 
 <a name="constraining-eager-loads"></a>
 ### Eagerロードの制約

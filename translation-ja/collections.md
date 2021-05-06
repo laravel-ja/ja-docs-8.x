@@ -175,6 +175,7 @@
 [skipUntil](#method-skipuntil)
 [skipWhile](#method-skipwhile)
 [slice](#method-slice)
+[sole](#method-sole)
 [some](#method-some)
 [sort](#method-sort)
 [sortBy](#method-sortby)
@@ -1937,6 +1938,40 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
 
 sliceメソッドはデフォルトでキー値を保持したまま返します。オリジナルのキーを保持したくない場合は、[`values`](#method-values)メソッドを使えば、インデックスし直されます。
 
+<a name="method-sole"></a>
+#### `sole()` {#collection-method}
+
+`sole`メソッドは、指定した真偽テストをパスしたアイテムが正確に１つだけの場合、コレクション内の最初の要素を返します。
+
+    collect([1, 2, 3, 4])->sole(function ($value, $key) {
+        return $value === 2;
+    });
+
+    // 3
+
+キー／値のペアを`sole`メソッドへ渡すこともできます。この場合、指定したペアに一致するコレクション内のアイテムが正確に１つだけの場合、それを返します。
+
+    $collection = collect([
+        ['product' => 'Desk', 'price' => 200],
+        ['product' => 'Chair', 'price' => 100],
+    ]);
+
+    $collection->sole('product', 'Chair');
+
+    // ['product' => 'Chair', 'price' => 100]
+
+もしくは、要素が１つしかない場合は、引数を指定せずに`sole`メソッドを呼び出すこともできます。
+
+    $collection = collect([
+        ['product' => 'Desk', 'price' => 200],
+    ]);
+
+    $collection->sole();
+
+    // ['product' => 'Desk', 'price' => 200]
+
+コレクションに`sole`メソッドが返すべきアイテムがない場合は、`\Illuminate\Collections\ItemNotFoundException`例外を投げます。返すべきアイテムが複数ある場合は、`\Illuminate\Collections\MultipleItemsFoundException`を投げます。
+
 <a name="method-some"></a>
 #### `some()` {#collection-method}
 
@@ -3142,4 +3177,3 @@ staticの`wrap`メソッドは適用可能であれば、指定値をコレク�
     // 最初の５人のユーザーはコレクションのキャッシュから取得
     // 残りはデータベースからハイドレイト
     $users->take(20)->all();
-

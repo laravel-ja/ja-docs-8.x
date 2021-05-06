@@ -29,7 +29,7 @@
 
 Laravel Scout（Scout、斥候）は、[Eloquentモデル](/docs/{{version}}/eloquent)へ、シンプルなドライバベースのフルテキストサーチを提供します。モデルオブサーバを使い、Scoutは検索インデックスを自動的にEloquentレコードと同期します。
 
-現在、Scoutは[Algolia](https://www.algolia.com/)ドライバを用意しています。カスタムドライバは簡単に書けますので、独自の検索を実装し、Scoutを拡張できます。
+現在、Scoutは[Algolia](https://www.algolia.com/)と[MeiliSearch](https://www.meilisearch.com)ドライバを用意しています。しかし、カスタムドライバは簡単に書けますので、独自の検索を実装し、Scoutを拡張できます。
 
 <a name="installation"></a>
 ## インストール
@@ -69,7 +69,19 @@ Algoliaドライバを使用する場合、Algolia `id`と`secret`接続情報�
 <a name="meilisearch"></a>
 #### MeiliSearch
 
-MeiliSearchは強力なオープンソースの検索エンジンで、[Laravel Sail](/docs/{{version}}/sail)を使い、ローカルで実行できます。MeiliSearchは、[Laravel向け公式MeiliSearchドライバ](https://github.com/meilisearch/meilisearch-laravel-scout)を提供し、メンテナンスしています。MeiliSearchをLaravel Scoutで使用する方法については、このパッケージのドキュメントを参照してください。
+Meilisearchドライバを使用する場合は、Composerパッケージマネージャを使用して、MeiliSearch PHP SDKをインストールする必要があります。
+
+    composer require meilisearch/meilisearch-php http-interop/http-factory-guzzle
+
+次に、アプリケーションの`.env`ファイル内の`SCOUT_DRIVER`環境変数とMeiliSearch`host`と`key`認証情報を設定します。
+
+    SCOUT_DRIVER=meilisearch
+    MEILISEARCH_HOST=http://127.0.0.1:7700
+    MEILISEARCH_KEY=masterKey
+
+MeiliSearchの詳細については、[MeiliSearchのドキュメント](https://docs.meilisearch.com/learn/getting_started/quick_start.html)を参照してください。
+
+> {tip} ローカルマシンにMeiliSearchをインストールする方法がわからない場合は、Laravelが正式にサポートしているDocker開発環境である、[Laravel Sail](https://laravel.com/docs/{{version}}/sail#meilisearch)が使えます。
 
 <a name="queueing"></a>
 ### キュー投入

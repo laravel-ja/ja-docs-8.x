@@ -1678,7 +1678,7 @@ Supervisorの詳細は、[Supervisorのドキュメント](http://supervisord.or
 
 指定するキューの失敗したジョブをすべて再試行することもできます。
 
-    php artisan:retry --queue=name
+    php artisan queue:retry --queue=name
 
 失敗したすべてのジョブを再試行するには、`queue:retry`コマンドを実行し、IDとして`all`を渡します。
 

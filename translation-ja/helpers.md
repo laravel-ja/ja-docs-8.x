@@ -114,6 +114,7 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 [Str::pluralStudly](#method-str-plural-studly)
 [Str::random](#method-str-random)
 [Str::remove](#method-str-remove)
+[Str::replace](#method-str-replace)
 [Str::replaceArray](#method-str-replace-array)
 [Str::replaceFirst](#method-str-replace-first)
 [Str::replaceLast](#method-str-replace-last)
@@ -1439,6 +1440,19 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
     // Ptr Pipr pickd a pck of pickld ppprs.
 
 文字列を削除するときにケースを無視するには、`remove`メソッドの３番目の引数に`false`を渡してください。
+
+<a name="method-str-replace"></a>
+#### `Str::replace()` {#collection-method}
+
+`Str::replace`メソッドは、文字列内の指定した文字列を置き換えます。
+
+    use Illuminate\Support\Str;
+
+    $string = 'Laravel 8.x';
+
+    $replaced = Str::replace('8.x', '9.x', $string);
+
+    // Laravel 9.x
 
 <a name="method-str-replace-array"></a>
 #### `Str::replaceArray()` {#collection-method}

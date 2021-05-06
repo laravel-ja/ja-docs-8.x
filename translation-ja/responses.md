@@ -130,9 +130,9 @@
 
     return response('Hello World')->withoutCookie('name');
 
-送信レスポンスのインスタンスがまだない場合は、`Cookie`ファサードの`queue`メソッドを使用してCookieを期限切れにすることができます。
+送信レスポンスのインスタンスがまだない場合は、`Cookie`ファサードの`expire`メソッドを使用してCookieを期限切れにすることができます。
 
-    Cookie::queue(Cookie::forget('name'));
+    Cookie::expire('name');
 
 <a name="cookies-and-encryption"></a>
 ### クッキーと暗号化

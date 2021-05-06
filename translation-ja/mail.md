@@ -273,7 +273,7 @@ Mailableクラスの`build`メソッド内で、`view`メソッドを使用し�
         /**
          * 新しいメッセージインスタンスの生成
          *
-         * @param  \App\Models\Order $order
+         * @param  \App\Models\Order  $order
          * @return void
          */
         public function __construct(Order $order)

@@ -693,7 +693,7 @@ Bladeテンプレートを作成するとき、ユーザーが特定のアクシ
      * 指定投稿をユーザーが更新できるか判断
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\  $post
+     * @param  \App\Models\Post  $post
      * @param  int  $category
      * @return bool
      */

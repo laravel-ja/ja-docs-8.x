@@ -71,6 +71,9 @@ php artisan make:model Flight -c
 # モデルとマイグレーション、ファクトリ、シーダ、およびコントローラを生成
 php artisan make:model Flight -mfsc
 
+# モデルとマイグレーション、ファクトリ、シーダ、およびコントローラを生成する短縮形
+php artisan make:model Flight --all
+
 # ピボットモデルを生成
 php artisan make:model Member --pivot
 ```

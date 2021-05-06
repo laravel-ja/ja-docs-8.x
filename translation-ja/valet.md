@@ -241,7 +241,11 @@ Nginx設定を更新したら、設定の変更を反映するために`valet re
 これを解決するには、`proxy`コマンドを使いプロキシを生成してください。たとえば、`http://elasticsearch.test`からのトラフィックをすべて`http://127.0.0.1:9200`へ仲介するには、以下のとおりです。
 
 ```bash
+// HTTPを使用するプロキシ
 valet proxy elasticsearch http://127.0.0.1:9200
+
+// TLS + HTTP/2を使用するプロキシ
+valet proxy elasticsearch http://127.0.0.1:9200 --secure
 ```
 
 `unproxy`コマンドでプロキシを削除できます。
