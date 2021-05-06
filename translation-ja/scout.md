@@ -81,7 +81,7 @@ Meilisearchドライバを使用する場合は、Composerパッケージマネ�
 
 MeiliSearchの詳細については、[MeiliSearchのドキュメント](https://docs.meilisearch.com/learn/getting_started/quick_start.html)を参照してください。
 
-> {tip} ローカルマシンにMeiliSearchをインストールする方法がわからない場合は、Laravelが正式にサポートしているDocker開発環境である、[Laravel Sail](https://laravel.com/docs/{{version}}/sail#meilisearch)が使えます。
+> {tip} ローカルマシンにMeiliSearchをインストールする方法がわからない場合は、Laravelが正式にサポートしているDocker開発環境である、[Laravel Sail](/docs/{{version}}/sail#meilisearch)が使えます。
 
 <a name="queueing"></a>
 ### キュー投入
