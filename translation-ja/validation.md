@@ -1457,7 +1457,7 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
     // 同一のデータリークにおいて、パスワードの出現回数が3回以下であることを確認
     Password::min(8)->uncompromised(3);
 
-Of course, you may chain all the methods in the examples above:
+もちろん、上記の例ですべてのメソッドをチェーン化することができます。
 
     Password::min(8)
         ->letters()
