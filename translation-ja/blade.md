@@ -1179,6 +1179,16 @@ HTMLフォームは`put`、`patch`、または`delete`リクエストを作る�
 @enderror
 ```
 
+`@error`ディレクティブは"if"文へコンパイルされるため、属性のエラーがない場合にコンテンツをレンダーしたい場合は、`@else`ディレクティブを使用できます。
+
+```html
+<!-- /resources/views/auth.blade.php -->
+
+<label for="email">Email address</label>
+
+<input id="email" type="email" class="@error('email') is-invalid @else is-valid @enderror">
+```
+
 ページが複数のフォームを含んでいる場合にエラーメッセージを取得するため、[特定のエラーバッグの名前](/docs/{{version}}/validation#named-error-bags)を第２引数へ渡せます。
 
 ```html

@@ -1659,6 +1659,8 @@ Supervisorの詳細は、[Supervisorのドキュメント](http://supervisord.or
         }
     }
 
+> {note} `failed`メソッドを呼び出す前に、ジョブが新しくインスタンス化されます。したがって、`handle`メソッド内で発生した可能性があるクラスプロパティの変更は失われます。
+
 <a name="retrying-failed-jobs"></a>
 ### 失敗したジョブの再試行
 

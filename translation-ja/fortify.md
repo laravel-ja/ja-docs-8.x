@@ -143,7 +143,7 @@ Fortifyのビューを無効にし、アプリケーションでパスワード�
         // ...
     }
 
-ログインテンプレートには、`/login`へのPOSTリクエストを行うフォームが含まれている必要があります。`/login`エンドポイントは、文字列のメールアドレス／ユーザー名とパスワード（`password`）を想定しています。 メールアドレス／ユーザー名フィールドの名前は、`config/fortify.php`設定ファイル内の`username`値に一致する必要があります。さらに、論理値の`remember`フィールドを提供して、Laravelの提供する継続ログイン（rememberme）機能をユーザーが使用することを指定可能にできます。
+ログインテンプレートには、`/login`へのPOSTリクエストを行うフォームが含まれている必要があります。`/login`エンドポイントは、文字列のメール／ユーザー名とパスワード（`password`）を想定しています。 メール／ユーザー名フィールドの名前は、`config/fortify.php`設定ファイル内の`username`値に一致する必要があります。さらに、論理値の`remember`フィールドを提供して、Laravelの提供する継続ログイン（rememberme）機能をユーザーが使用することを指定可能にできます。
 
 ログイン試行が成功するとFortifyは、アプリケーションの`fortify`設定ファイル内の`home`設定オプションを介して設定したURIへリダイレクトします。ログインリクエストがXHRリクエストの場合、200HTTPレスポンスを返します。
 
@@ -301,7 +301,7 @@ use Laravel\Fortify\Fortify;
 public function boot()
 {
     Fortify::registerView(function () {
-        return view('auth.register'); 
+        return view('auth.register');
     });
 
     // ...

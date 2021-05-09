@@ -139,6 +139,25 @@ Laravelでは名前付きルートに対し、簡単に「署名付きURL」を�
         // ...
     })->name('unsubscribe')->middleware('signed');
 
+<a name="responding-to-invalid-signed-routes"></a>
+#### 無効な署名付きルートのレスポンス
+
+期限切れになった署名付きURLを訪問すると、`403` HTTPステータスコードの汎用エラーページが表示されます。ただし、例外ハンドラで`InvalidSignatureException`例外のカスタム"renderable"クロージャを定義することにより、この動作をカスタマイズできます。このクロージャはHTTPレスポンスを返す必要があります。
+
+    use Illuminate\Routing\Exceptions\InvalidSignatureException;
+
+    /**
+     * アプリケーションの例外処理コールバックの登録
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->renderable(function (InvalidSignatureException $e) {
+            return response()->view('error.link-expired', [], 403);
+        });
+    }
+
 <a name="urls-for-controller-actions"></a>
 ## コントローラアクションのURL
 
