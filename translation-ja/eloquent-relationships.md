@@ -1371,7 +1371,7 @@ select * from authors where id in (1, 2, 3, 4, 5, ...)
 
 取得するリレーションのすべてのカラムが常に必要だとは限りません。このため、Eloquentはリレーションでどのカラムを取得するかを指定できます。
 
-    $books = Book::with('author:id,name')->get();
+    $books = Book::with('author:id,name,book_id')->get();
 
 > {note} この機能を使用するときは、取得するカラムのリストで常に`id`カラムと関連する外部キーカラムを含める必要があります。
 
@@ -1658,6 +1658,10 @@ Eloquentは、多対多リレーションの作業をとても便利にする方
 IDを使用して追加の中間テーブル値を渡すこともできます。
 
     $user->roles()->sync([1 => ['expires' => true], 2, 3]);
+
+同期したモデルIDごとに同じ中間テーブルの値を挿入したい場合は、`syncWithPivotValues`メソッドを使用できます。
+
+    $user->roles()->syncWithPivotValues([1, 2, 3], ['active' => true]);
 
 指定した配列から欠落している既存のIDを切り離したくない場合は、`syncWithoutDetaching`メソッドを使用します。
 

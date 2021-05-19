@@ -67,7 +67,7 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 - PHP 7.0
 - PHP 5.6
 - Nginx
-- MySQL
+- MySQL (8.0)
 - lmm
 - Sqlite3
 - PostgreSQL (9.6, 10, 11, 12, 13)
@@ -104,6 +104,7 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 - CrystalとLuckyフレームワーク
 - Docker
 - Elasticsearch
+- EventStoreDB
 - Gearman
 - Go
 - Grafana
@@ -117,8 +118,12 @@ Homesteadは、Windows、macOS、Linuxシステムで実行でき、Nginx、PHP�
 - Open Resty
 - PM2
 - Python
+- R
 - RabbitMQ
+- RVM（Rubyバージョンマネージャ）
 - Solr
+- TimescaleDB
+- Trader<small>（PHP拡張）</small>
 - WebdriverとLaravel Duskユーティリティ
 </div>
 
@@ -303,6 +308,8 @@ Homesteadをインストールしたら、Homesteadの`make`コマンドを呼�
         - docker: true
         - elasticsearch:
             version: 7.9.0
+        - eventstore: true
+            version: 21.2.0
         - gearman: true
         - golang: true
         - grafana: true
@@ -316,8 +323,12 @@ Homesteadをインストールしたら、Homesteadの`make`コマンドを呼�
         - openresty: true
         - pm2: true
         - python: true
+        - r-base: true
         - rabbitmq: true
+        - rvm: true
         - solr: true
+        - timescaledb: true
+        - trader: true
         - webdriver: true
 
 <a name="elasticsearch"></a>

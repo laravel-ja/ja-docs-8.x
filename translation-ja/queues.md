@@ -38,6 +38,7 @@
     - [ジョブ失敗の後片付け](#cleaning-up-after-failed-jobs)
     - [失敗したジョブの再試行](#retrying-failed-jobs)
     - [見つからないモデルの無視](#ignoring-missing-models)
+    - [失敗したジョブのDynamoDBへの保存](#storing-failed-jobs-in-dynamodb)
     - [失敗したジョブイベント](#failed-job-events)
 - [キューからのジョブクリア](#clearing-jobs-from-queues)
 - [ジョブイベント](#job-events)
@@ -1709,6 +1710,31 @@ Eloquentモデルをジョブに挿入すると、モデルは自動的にシリ
      * @var bool
      */
     public $deleteWhenMissingModels = true;
+
+<a name="storing-failed-jobs-in-dynamodb"></a>
+### 失敗したジョブのDynamoDBへの保存
+
+Laravelでは、失敗したジョブレコードをリレーショナルデータベースのテーブルではなく、[DynamoDB](https://aws.amazon.com/dynamodb)へ保存するサポートも提供しています。ただし、失敗したジョブの記録をすべて保存するための、DynamoDBテーブルを作成しておく必要があります。通常、このテーブルは`failed_jobs`という名前になりますが、アプリケーションの`queue`設定ファイル内の`queue.failed.table`設定値に基づいて、テーブル名を付ける必要があります。
+
+`failed_jobs`テーブルは、`application`という名前で文字列のプライマリパーティションキーと、`uuid`という名前の文字列のプライマリソートキーを持つ必要があります。キーの`application`部分には、アプリケーションの`app`設定ファイル内の`name`設定値で定義したアプリケーション名が含まれます。アプリケーション名はDynamoDBテーブルのキーの一部なので、同じテーブルを使って複数のLaravelアプリケーションの失敗したジョブを保存できます。
+
+さらに、LaravelアプリケーションがAmazon DynamoDBと通信できるように、AWS SDKを確実にインストールしてください。
+
+```nothing
+composer require aws/aws-sdk-php
+```
+
+次に、`queue.failed.driver`設定オプションの値を`dynamodb`に設定します。さらに、失敗したジョブの設定配列の中で、`key`、`secret`、`region`の構成オプションを定義します。これらのオプションはAWSとの認証に使用されます。`dynamodb`ドライバを使用する場合、`queue.failed.database`設定オプションは不要です。
+
+```php
+'failed' => [
+    'driver' => env('QUEUE_FAILED_DRIVER', 'dynamodb'),
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    'table' => 'failed_jobs',
+],
+```
 
 <a name="failed-job-events"></a>
 ### 失敗したジョブイベント

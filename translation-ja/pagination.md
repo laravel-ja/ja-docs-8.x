@@ -4,6 +4,7 @@
 - [基本的な使い方](#basic-usage)
     - [ペジネーションクエリビルダ結果](#paginating-query-builder-results)
     - [Eloquent結果のペジネーション](#paginating-eloquent-results)
+    - [カーソルページング](#cursor-pagination)
     - [ペジネータの手動生成](#manually-creating-a-paginator)
     - [ペジネーションURLのカスタマイズ](#customizing-pagination-urls)
 - [ペジネーション結果の表示](#displaying-pagination-results)
@@ -11,7 +12,8 @@
     - [結果のJSONへの変換](#converting-results-to-json)
 - [ペジネーションビューのカスタマイズ](#customizing-the-pagination-view)
     - [Using Bootstrap](#using-bootstrap)
-- [ペジネターインスタンスのメソッド](#paginator-instance-methods)
+- [Paginator／LengthAwarePaginatorインスタンスのメソッド](#paginator-instance-methods)
+- [カーソルPaginatorインスタンスのメソッド](#cursor-paginator-instance-methods)
 
 <a name="introduction"></a>
 ## イントロダクション
@@ -78,14 +80,62 @@ Eloquentモデルをペジネーションするときに`simplePaginate`メソ�
 
     $users = User::where('votes', '>', 100)->simplePaginate(15);
 
+同様に、`cursorPaginate`メソッドをEloquentモデルのカーソルページングに使用できます。
+
+    $users = User::where('votes', '>', 100)->cursorPaginate(15);
+
+<a name="cursor-pagination"></a>
+### カーソルページング
+
+`paginate`と`simplePaginate`がSQLの"offset"句を使用してクエリを作成するのに対し、カーソルペジネーションは "where"句を使い制約し、効率的なデータベースパフォーマンスを実現します。このペジネーションの方法は、特に大規模なデータセットや、「無限」にスクロールするユーザーインターフェイスに適しています。
+
+ペジネイタが生成するURLのクエリ文字列にページ番号を含めるオフセットベースのペジネーションとは異なり、カーソルベースのペジネーションでは、クエリ文字列に「カーソル」文字列を配置します。カーソルは、ページ処理した次のクエリがページ処理を開始すべき場所と、ページ処理すべき方向を示すエンコードした文字列です。
+
+```nothing
+http://localhost/users?cursor=eyJpZCI6MTUsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0
+```
+
+カーソルベースのペジネータインスタンスを作成するには，クエリビルダが提供する`cursorPaginate`メソッドを使用します。このメソッドは，`Illuminate\Pagination\CursorPaginator`インスタンスを返します。
+
+    $users = DB::table('users')->orderBy('id')->cursorPaginate(15);
+
+カーソルページネータインスタンスを取得したら、`paginate`や`simplePaginate`メソッドを使うときと同様に、[ペジネーションの結果を表示](#displaying-pagination-results)します。カーソルペジネータが提供するインスタンスメソッドの詳細は、[カーソルペジネータインスタンスのドキュメント](#cursor-paginator-instance-methods)を参照してください。
+
+> {note} カーソルのペジネーションを利用するには、クエリに "order by"句を含める必要があります。
+
+<a name="cursor-vs-offset-pagination"></a>
+#### カーソル vs. オフセットペジネーション
+
+オフセットページングとカーソルページングの違いを説明するために、いくつかのSQLクエリの例を見てみましょう。以下のクエリはどちらも、`users`テーブルの結果を`id`で並べた「２ページ目」を表示します。
+
+```sql
+# オフセットページング
+select * from users order by id asc limit 15 offset 15;
+
+# カーソルページング
+select * from users where id > 15 order by id asc limit 15;
+```
+
+カーソルページングクエリは、オフセットページングに比べて以下の利点があります。
+
+- 大規模なデータセットの場合、"order by"のカラムにインデックスが付けられている場合、カーソルページングはパフォーマンスが向上します。これは、"offset"句が以前に一致したデータをすべてスキャンするためです。
+- 頻繁な書き込みを伴うデータセットの場合、直前にレコードが追加／削除されている場合、ユーザーが現在閲覧しているページの結果からレコードが飛ばされたり、二重に表示されたりする可能性があります。
+
+ただし、カーソルペジネーションには以下の制限があります。
+
+- `simplePaginate`のように、カーソルのペジネーションは"次へ"と"前へ"のリンクを表示するためにのみ使用でき、ページ番号付きのリンクの生成をサポートしていません。
+- ソート順は少なくとも１つの一意なカラム、または一意なカラムの組み合わせに基づく必要があります。
+- 複数の"order by"句がある場合、"order by"のソート方向（降順／昇順）が同じである必要があります。
+- "order by"句のクエリ表現はエイリアス化され、"select"句にも同様に追加されている場合のみサポートします。
+
 <a name="manually-creating-a-paginator"></a>
 ### ペジネータの手動生成
 
-場合によっては、ペジネーションインスタンスを手動で作成し、メモリ内にすでにあるアイテムの配列を渡すことができます。必要に応じて、`Illuminate\Pagination\Paginator`または`Illuminate\Pagination\LengthAwarePaginator`インスタンスを生成することでこれが行えます。
+場合によっては、ペジネーションインスタンスを手動で作成し、メモリ内にすでにあるアイテムの配列を渡すことができます。必要に応じて、`Illuminate\Pagination\Paginator`、`Illuminate\Pagination\LengthAwarePaginator`、`Illuminate\Pagination\CursorPaginator`インスタンスを生成することでこれが行えます。
 
-`Paginator`クラスは、結果セット内のアイテムの総数を知る必要はありません。ただし、そのためクラスには最後のページのインデックスを取得するためのメソッドがありません。`LengthAwarePaginator`は、`Paginator`とほぼ同じ引数を受け入れます。ただし、結果セット内のアイテムの総数をカウントする必要があります。
+`Paginator`と`CursorPaginator`クラスは結果セットのアイテムの総数を知る必要はありません。しかしこのため、これらのクラスには最後のページのインデックスを取得するメソッドがありません。`LengthAwarePaginator`は`Paginator`とほぼ同じ引数を取りますが、結果セットのアイテムの総数をカウントする必要があります．
 
-つまり、`Paginator`はクエリビルダの`simplePaginate`メソッドに対応し、`LengthAwarePaginator`は`paginate`メソッドに対応します。
+つまり，`Paginator`はクエリビルダの`simplePaginate`メソッドに、`CursorPaginator`は`cursorPaginate`メソッドに，`LengthAwarePaginator`は`paginate`メソッドに、それぞれ対応しています。
 
 > {note} ペジネーションインスタンスを手動で作成する場合は、ペジネーションに渡す結果の配列を手動で「スライス」する必要があります。これを行う方法がわからない場合は、[array_slice](https://secure.php.net/manual/en/function.array-slice.php)PHP関数を確認してください。
 
@@ -133,7 +183,9 @@ paginatorによって生成されたURLに「ハッシュフラグメント」�
 <a name="displaying-pagination-results"></a>
 ## ペジネーション結果の表示
 
-`paginate`メソッドを呼び出すと、`Illuminate\Pagination\LengthAwarePaginator`のインスタンスを受け取ります。`simplePaginate`メソッドを呼び出すと、`Illuminate\Pagination\Paginator`のインスタンスを受け取ります。これらのオブジェクトは、結果セットを記述するいくつかのメソッドを提供します。これらのヘルパメソッドに加えて、paginatorインスタンスはイテレーターであり、配列としてループできます。したがって、結果を取得したら、[ブレード](/docs/{{version}}/blade)を使用して結果を表示し、ページリンクをレンダーできます。
+`paginate`メソッドを呼ぶと、`Illuminate\Pagination\LengthAwarePaginator`インスタンスが返され，`simplePaginate`メソッドを呼ぶと、`Illuminate\Pagination\Paginator`インスタンスが返されます。そして、`cursorPaginate`メソッドを呼び出すと、`Illuminate\CursorPaginator`インスタンスが返されます。
+
+これらのオブジェクトは、結果セットを表示するメソッドをいくつか提供しています。これらヘルパメソッドに加え、ペジネータインスタンスはイテレータであり、配列としてループ処理も可能です。つまり、結果を取得したら、[Blade](/docs/{{version}}/blade) を使って結果を表示したり、ページリンクをレンダーしたりできるのです。
 
 ```html
 <div class="container">
@@ -248,7 +300,7 @@ Laravelは、[Bootstrap CSS](https://getbootstrap.com/)を使用して構築し�
     }
 
 <a name="paginator-instance-methods"></a>
-## ペジネターインスタンスのメソッド
+## Paginator／LengthAwarePaginatorインスタンスのメソッド
 
 各ペジネーションインスタンスは、以下のメソッドで追加のペジネーション情報を提供します。
 
@@ -272,3 +324,26 @@ Laravelは、[Bootstrap CSS](https://getbootstrap.com/)を使用して構築し�
 `$paginator->url($page)`  |  指定するページ番号のURLを取得
 `$paginator->getPageName()`  |  ページの保存に使用するクエリ文字列変数を取得
 `$paginator->setPageName($name)`  |  ページの保存に使用するクエリ文字列変数を設定
+
+<a name="cursor-paginator-instance-methods"></a>
+## カーソルPaginatorインスタンスのメソッド
+
+各カーソルペジネータインスタンスは、以降のメソッドで追加のペジネーション情報を提供します。
+
+Method  |  Description
+-------  |  -----------
+`$paginator->count()`  |  現在のページのアイテム数を取得
+`$paginator->cursor()`  |  現在のカーソルインスタンスを取得
+`$paginator->getOptions()`  |  ペジネータオプションを取得
+`$paginator->hasPages()`  |  複数のページに分割するのに十分なアイテムがあるかどうかを判定
+`$paginator->hasMorePages()`  |  データストアにさらにアイテムがあるかどうかを判定
+`$paginator->getCursorName()`  |  カーソルの保存で使用するクエリ文字列変数を取得
+`$paginator->items()`  |  現在のページのアイテムを取得
+`$paginator->nextCursor()`  |  次のアイテムセットのカーソルインスタンスを取得
+`$paginator->nextPageUrl()`  |  次のページのURLを取得
+`$paginator->onFirstPage()`  |  ペジネータが最初のページにあるかを判定
+`$paginator->perPage()`  |  １ページ中に表示するアイテムの数
+`$paginator->previousCursor()`  |  前のアイテムセットのカーソルインスタンスを取得
+`$paginator->previousPageUrl()`  |  前のページのURLを取得
+`$paginator->setCursorName()`  |  カーソルの保存に使用するクエリ文字列変数を設定
+`$paginator->url($cursor)`  |  指定するカーソルインスタンスのURLを取得

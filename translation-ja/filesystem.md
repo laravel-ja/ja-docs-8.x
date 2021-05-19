@@ -5,6 +5,7 @@
     - [ローカルドライバ](#the-local-driver)
     - [公開ディスク](#the-public-disk)
     - [ドライバの動作要件](#driver-prerequisites)
+    - [Amazon S3コンパチファイルシステム](#amazon-s3-compatible-filesystems)
     - [キャッシュ](#caching)
 - [ディスクインスタンスの取得](#obtaining-disk-instances)
 - [ファイルの取得](#retrieving-files)
@@ -122,6 +123,15 @@ LaravelのFlysystem統合はSFTPでも最適に機能します。ただし、サ
         // 'root' => '',
         // 'timeout' => 30,
     ],
+
+<a name="amazon-s3-compatible-filesystems"></a>
+### Amazon S3コンパチファイルシステム
+
+アプリケーションの`filesystems`設定ファイルはデフォルトで、`s3`ディスクのディスク設定を含んでいます。このディスクはAmazon S3の操作に加え、[MinIO](https://github.com/minio/minio)や[DigitalOcean Spaces](https://www.digitalocean.com/products/spaces/)など、S3と互換性のあるファイルストレージサービスの操作にも使用できます。
+
+通常、ディスクの認証情報を使用予定のサービス認証情報へ合わせて更新した後に、`url`設定オプションの値を更新するだけで済みます。このオプションの値は通常、`AWS_ENDPOINT`環境変数で定義されています。
+
+    'endpoint' => env('AWS_ENDPOINT', 'https://minio:9000'),
 
 <a name="caching"></a>
 ### キャッシュ

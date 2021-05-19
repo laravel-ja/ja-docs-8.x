@@ -9,6 +9,7 @@
     - [ビューの無効化](#disabling-views)
 - [ユーザー認証](#authentication)
     - [ユーザー認証のカスタマイズ](#customizing-user-authentication)
+    - [認証パイプラインのカスタマイズ](#customizing-the-authentication-pipeline)
 - [２要素認証](#two-factor-authentication)
     - [２要素認証の有効化](#enabling-two-factor-authentication)
     - [２要素認証による認証](#authenticating-with-two-factor-authentication)
@@ -186,6 +187,33 @@ public function boot()
 #### 認証ガード
 
 アプリケーションの`fortify`設定ファイル内で、Fortifyが使用する認証ガードをカスタマイズできます。ただし、設定するガードに`Illuminate\Contracts\Auth\StatefulGuard`を確実に実装してください。Laravel Fortifyを使用してSPAを認証しようとしている場合は、Laravelのデフォルトの`web`ガードと[Laravel Sanctum](https://laravel.com/docs/sanctum)を組み合わせて使用​​する必要があります。
+
+<a name="customizing-the-authentication-pipeline"></a>
+### 認証パイプラインのカスタマイズ
+
+Laravel Fortifyは、invokableなクラスのパイプラインを通して、ログインリクエストを認証します。必要であれば、ログインリクエストを通すクラスのカスタムパイプラインを定義することができます。各クラスは受信した`Illuminate\Http\Request`インスタンスを受け取る`__invoke`メソッドを持ち、[ミドルウェア](/docs/{{version}}/middleware)のように、`$next`変数を起動して、パイプラインの次のクラスにリクエストを渡す必要があります。
+
+カスタムパイプラインを定義するには、`Fortify::authenticateThrough`メソッドを使います。このメソッドはクロージャを引数に取り、ログインリクエストを通すクラスの配列を返す必要があります。典型的に、このメソッドは`App\Providers\FortifyServiceProvider`クラスの`boot`メソッドで呼び出します。
+
+以下で、独自の変更を加える場合の参考として使用できる、デフォルトのパイプライン定義例を紹介します。
+
+```php
+use Laravel\Fortify\Actions\AttemptToAuthenticate;
+use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
+use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
+use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Fortify;
+use Illuminate\Http\Request;
+
+Fortify::authenticateThrough(function (Request $request) {
+    return array_filter([
+            config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+            Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
+            AttemptToAuthenticate::class,
+            PrepareAuthenticatedSession::class,
+    ]);
+});
+```
 
 <a name="two-factor-authentication"></a>
 ## ２要素認証

@@ -555,25 +555,24 @@
         }
     }
 
-または、各テストの前にデータベースのシーダを自動的に実行するよう、`RefreshDatabase`トレイトへ指示することもできます。これはテストクラスで`$seed`プロパティを定義することで行います。
+あるいは、各テストの前にデータベースを自動的にシードするようにLaravelへ指示できます。これは、ベーステストクラスの`$seed`プロパティを定義することで可能です。
 
     <?php
 
-    namespace Tests\Feature;
+    namespace Tests;
 
-    use Illuminate\Foundation\Testing\RefreshDatabase;
-    use Tests\TestCase;
+    use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
-    class ExampleTest extends TestCase
+    abstract class TestCase extends BaseTestCase
     {
+        use CreatesApplication;
+
         /**
          * デフォルトのシーダーが各テストの前に実行するかを示す
          *
          * @var bool
          */
         protected $seed = true;
-
-        // ...
     }
 
 `$seed`プロパティが`true`の場合、テストは各テストの前に`Database\Seeders\DatabaseSeeder`クラスを実行します。ただし、テストクラスに`$seeder`プロパティを定義して、実行する必要がある特定のシーダーを指定できます。
