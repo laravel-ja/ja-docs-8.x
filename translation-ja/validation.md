@@ -343,7 +343,7 @@ Laravelは`TrimStrings`と`ConvertEmptyStringsToNull`ミドルウェアをアプ
         return $comment && $this->user()->can('update', $comment);
     }
 
-全リフォームリクエストはLaravelのベースリクエストクラスを拡張していますので、現在認証済みユーザーへアクセスする、`user`メソッドが使えます。また、上記例中の`route`メソッドの呼び出しにも、注目してください。たとえば`{comment}`パラメーターのような、呼び出しているルートで定義してあるURIパラメータにもアクセスできます。
+全フォームリクエストはLaravelのベースリクエストクラスを拡張していますので、現在認証済みユーザーへアクセスする、`user`メソッドが使えます。また、上記例中の`route`メソッドの呼び出しにも、注目してください。たとえば`{comment}`パラメーターのような、呼び出しているルートで定義してあるURIパラメータにもアクセスできます。
 
     Route::post('/comment/{comment}');
 
