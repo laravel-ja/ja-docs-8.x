@@ -211,7 +211,7 @@ Laravelの組み込みバリデーションルールにはそれぞれエラー�
 
 <label for="title">Post Title</label>
 
-<input id="title" type="text" class="@error('title') is-invalid @enderror">
+<input id="title" type="text" name="title" class="@error('title') is-invalid @enderror">
 
 @error('title')
     <div class="alert alert-danger">{{ $message }}</div>
@@ -789,7 +789,23 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 <a name="rule-array"></a>
 #### array
 
-フィールドが配列タイプであることをバリデートします。
+フィールドがPHPの配列タイプであることをバリデートします。
+
+`array`ルールに追加の値を指定する場合、入力配列の各キーは、ルールに指定した値のリスト内に存在する必要があります。次の例では、入力配列の`admin`キーは、`array`ルールにした値のリストに含まれていないので、無効です。
+
+    use Illuminate\Support\Facades\Validator;
+
+    $input = [
+        'user' => [
+            'name' => 'Taylor Otwell',
+            'username' => 'taylorotwell',
+            'admin' => true,
+        ],
+    ];
+
+    Validator::make($input, [
+        'user' => 'array:username,locale',
+    ]);
 
 <a name="rule-bail"></a>
 #### bail
@@ -1011,6 +1027,23 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
         'zones' => [
             'required',
             Rule::in(['first-zone', 'second-zone']),
+        ],
+    ]);
+
+`in`ルールと`array`ルールを組み合わせた場合、入力配列の各値は、`in`ルールに指定した値のリスト内に存在しなければなりません。次の例では，入力配列中の`LAS`空港コードは，`in`ルールへ指定した空港のリストに含まれていないため無効です。
+
+    use Illuminate\Support\Facades\Validator;
+    use Illuminate\Validation\Rule;
+
+    $input = [
+        'airports' => ['NYC', 'LAS'],
+    ];
+
+    Validator::make($input, [
+        'airports' => [
+            'required',
+            'array',
+            Rule::in(['NYC', 'LIT']),
         ],
     ]);
 
@@ -1465,6 +1498,35 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
         ->numbers()
         ->symbols()
         ->uncompromised()
+
+<a name="defining-default-password-rules"></a>
+#### デフォルトパスワードルールの定義
+
+パスワードのデフォルトバリデーションルールをアプリケーションの一箇所で指定できると便利でしょう。クロージャを引数に取る`Password::defaults`メソッドを使用すると、これを簡単に実現できます。`defaults`メソッドへ渡すクロージャは、パスワードルールのデフォルト設定を返す必要があります。通常、`defaults`ルールはアプリケーションのサービスプロバイダの1つの`boot`メソッド内で呼び出すべきです。
+
+```php
+use Illuminate\Validation\Rules\Password;
+
+/**
+ * アプリケーションの全サービスの初期処理
+ *
+ * @return void
+ */
+public function boot()
+{
+    Password::defaults(function () {
+        $rule = Password::min(8);
+
+        return $this->app->isProduction()
+                    ? $rule->mixedCase()->uncompromised()
+                    : $rule;
+    });
+}
+```
+
+そして、バリデーションで特定のパスワードへデフォルトルールを適用したい場合に、引数なしで`defaults`メソッドを呼び出します。
+
+    'password' => ['required', Password::defaults()],
 
 <a name="custom-validation-rules"></a>
 ## カスタムバリデーションルール

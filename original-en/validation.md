@@ -211,7 +211,7 @@ You may use the `@error` [Blade](/docs/{{version}}/blade) directive to quickly d
 
 <label for="title">Post Title</label>
 
-<input id="title" type="text" class="@error('title') is-invalid @enderror">
+<input id="title" type="text" name="title" class="@error('title') is-invalid @enderror">
 
 @error('title')
     <div class="alert alert-danger">{{ $message }}</div>
@@ -791,6 +791,22 @@ The field under validation must be entirely alpha-numeric characters.
 
 The field under validation must be a PHP `array`.
 
+When additional values are provided to the `array` rule, each key in the input array must be present within the list of values provided to the rule. In the following example, the `admin` key in the input array is invalid since it is not contained in the list of values provided to the `array` rule:
+
+    use Illuminate\Support\Facades\Validator;
+
+    $input = [
+        'user' => [
+            'name' => 'Taylor Otwell',
+            'username' => 'taylorotwell',
+            'admin' => true,
+        ],
+    ];
+
+    Validator::make($input, [
+        'user' => 'array:username,locale',
+    ]);
+
 <a name="rule-bail"></a>
 #### bail
 
@@ -1011,6 +1027,23 @@ The field under validation must be included in the given list of values. Since t
         'zones' => [
             'required',
             Rule::in(['first-zone', 'second-zone']),
+        ],
+    ]);
+
+When the `in` rule is combined with the `array` rule, each value in the input array must be present within the list of values provided to the `in` rule. In the following example, the `LAS` airport code in the input array is invalid since it is not contained in the list of airports provided to the `in` rule:
+
+    use Illuminate\Support\Facades\Validator;
+    use Illuminate\Validation\Rule;
+
+    $input = [
+        'airports' => ['NYC', 'LAS'],
+    ];
+
+    Validator::make($input, [
+        'airports' => [
+            'required',
+            'array',
+            Rule::in(['NYC', 'LIT']),
         ],
     ]);
 
@@ -1465,6 +1498,35 @@ Of course, you may chain all the methods in the examples above:
         ->numbers()
         ->symbols()
         ->uncompromised()
+
+<a name="defining-default-password-rules"></a>
+#### Defining Default Password Rules
+
+You may find it convenient to specify the default validation rules for passwords in a single location of your application. You can easily accomplish this using the `Password::defaults` method, which accepts a closure. The closure given to the `defaults` method should return the default configuration of the Password rule. Typically, the `defaults` rule should be called within the `boot` method of one of your application's service providers:
+
+```php
+use Illuminate\Validation\Rules\Password;
+
+/**
+ * Bootstrap any application services.
+ *
+ * @return void
+ */
+public function boot()
+{
+    Password::defaults(function () {
+        $rule = Password::min(8);
+
+        return $this->app->isProduction()
+                    ? $rule->mixedCase()->uncompromised()
+                    : $rule;
+    });
+}
+```
+
+Then, when you would like to apply the default rules to a particular password undergoing validation, you may invoke the `defaults` method with no arguments:
+
+    'password' => ['required', Password::defaults()],
 
 <a name="custom-validation-rules"></a>
 ## Custom Validation Rules

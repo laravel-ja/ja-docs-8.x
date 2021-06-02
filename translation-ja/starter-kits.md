@@ -3,6 +3,7 @@
 - [イントロダクション](#introduction)
 - [Laravel Breeze](#laravel-breeze)
     - [インストール](#laravel-breeze-installation)
+    - [BreezeとInertia](#breeze-and-inertia)
 - [Laravel Jetstream](#laravel-jetstream)
 
 <a name="introduction"></a>
@@ -36,15 +37,13 @@ php artisan migrate
 composer require laravel/breeze --dev
 ```
 
-ComposerがLaravel　Breezeパッケージをインストールしたら、`breeze:install` Artisanコマンドを実行します。このコマンドは、認証ビュー、ルート、コントローラ、およびその他のリソースをアプリケーションにリソース公開します。Laravel Breezeは、その機能と実装を完全に制御し目に見えるようにするために、すべてのコードをアプリケーションへリソース公開します。Breezeをインストールしたら、アプリケーションのCSSファイルを使用できるようにアセットをコンパイルする必要もあります。
+ComposerでLaravel　Breezeパッケージをインストールしたら、`breeze:install` Artisanコマンドを実行します。このコマンドは、認証ビュー、ルート、コントローラ、およびその他のリソースをアプリケーションにリソース公開します。Laravel Breezeは、その機能と実装を完全に制御し目に見えるようにするために、すべてのコードをアプリケーションへリソース公開します。Breezeをインストールしたら、アプリケーションのCSSファイルを使用できるようにアセットをコンパイルする必要もあります。
 
-```bash
+```nothing
 php artisan breeze:install
 
 npm install
-
 npm run dev
-
 php artisan migrate
 ```
 
@@ -53,17 +52,19 @@ php artisan migrate
 > {tip} アプリケーションのCSSとJavaScriptのコンパイルの詳細は、[Laravel Mixドキュメント](/docs/{{version}}/mix#running-mix)をご覧ください。
 
 <a name="breeze-and-inertia"></a>
-#### BreezeとInertia
+### BreezeとInertia
 
-Laravel Breezeでは、Vueによる[Inertia.js](https://inertiajs.com)フロントエンドの実装も提供しています。Inertiaスタックを使用するには、`breeze:install` Artisanコマンドを実行する際に、`--inertia`オプションを指定します。
+Laravel Breezeでは、VueやReactを使った[Inertia.js](https://inertiajs.com)のフロントエンド実装も提供しています。Inertiaスタックを使用するには、`breeze:install` Artisanコマンドを実行する際に、希望するスタックとして`vue`または`react`を指定します。
 
-```bash
-php artisan breeze:install --inertia
+```nothing
+php artisan breeze:install vue
+
+// もしくは…
+
+php artisan breeze:install react
 
 npm install
-
 npm run dev
-
 php artisan migrate
 ```
 

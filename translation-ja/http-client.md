@@ -127,6 +127,14 @@ Laravelは、[Guzzle HTTPクライアント](http://docs.guzzlephp.org/en/stable
         'name' => 'Taylor',
     ]);
 
+`accept`メソッドを使って、アプリケーションがリクエストへのレスポンスとして期待するコンテンツタイプを指定できます。
+
+    $response = Http::accept('application/json')->get('http://example.com/users');
+
+利便性のため、`acceptJson`メソッドを使って、アプリケーションがリクエストへのレスポンスとして`application/json`コンテンツタイプを期待することを素早く指定できます。
+
+    $response = Http::acceptJson()->get('http://example.com/users');
+
 <a name="authentication"></a>
 ### 認証
 

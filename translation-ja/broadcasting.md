@@ -43,6 +43,8 @@
 
 こうしたタイプの機能の構築を支援するため、LaravelはWebSocket接続を介してサーバ側のLaravel[イベント](/docs/{{version}}/events)を簡単に「ブロードキャスト」できます。Laravelイベントをブロードキャストすると、サーバ側のLaravelアプリケーションとクライアント側のJavaScriptアプリケーション間で同じイベント名とデータを共有できます。
 
+ブロードキャストの基本的なコンセプトは簡単で、クライアントはフロントエンドで指定されたチャンネルに接続し、Laravelアプリケーションはバックエンドでこれらのチャンネルにイベントをブロードキャストします。これらのイベントには、フロントエンドで利用可能にしたい追加データを含めることができます。
+
 <a name="supported-drivers"></a>
 #### サポートしているドライバ
 
@@ -77,7 +79,7 @@ Laravelのイベントブロードキャストの使用を開始するには、L
 
 [Pusherチャンネル](https://pusher.com/channels)を使用してイベントをブロードキャストする場合は、Composerパッケージマネージャーを使用してPusher Channels PHP SDKをインストールする必要があります。
 
-    composer require pusher/pusher-php-server "^5.0"
+    composer require pusher/pusher-php-server
 
 次に、`config/broadcasting.php`設定ファイルでPusherチャンネルの利用資格情報を設定する必要があります。Pusherチャンネル設定の例はすでにこのファイルに含まれているため、キー、シークレット、およびアプリケーションIDを手軽に指定できます。通常、これらの値は、`PUSHER_APP_KEY`、`PUSHER_APP_SECRET`、`PUSHER_APP_ID`[環境変数](/docs/{{version}}/configuration#environment-configuration)を介して設定する必要があります。
 

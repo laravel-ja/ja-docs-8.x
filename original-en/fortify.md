@@ -10,6 +10,7 @@
 - [Authentication](#authentication)
     - [Customizing User Authentication](#customizing-user-authentication)
     - [Customizing The Authentication Pipeline](#customizing-the-authentication-pipeline)
+    - [Customizing Redirects](#customizing-authentication-redirects)
 - [Two Factor Authentication](#two-factor-authentication)
     - [Enabling Two Factor Authentication](#enabling-two-factor-authentication)
     - [Authenticating With Two Factor Authentication](#authenticating-with-two-factor-authentication)
@@ -110,7 +111,7 @@ The `fortify` configuration file contains a `features` configuration array. This
 <a name="disabling-views"></a>
 ### Disabling Views
 
-By default, Fortify define routes that are intended to return views, such as a login screen or registration screen. However, if you are building a JavaScript driven single-page application, you may not need these routes. For that reason, you may disable these routes entirely by setting the `views` configuration value within your application's `config/fortify.php` configuration file to `false`:
+By default, Fortify defines routes that are intended to return views, such as a login screen or registration screen. However, if you are building a JavaScript driven single-page application, you may not need these routes. For that reason, you may disable these routes entirely by setting the `views` configuration value within your application's `config/fortify.php` configuration file to `false`:
 
 ```php
 'views' => false,
@@ -213,6 +214,32 @@ Fortify::authenticateThrough(function (Request $request) {
             PrepareAuthenticatedSession::class,
     ]);
 });
+```
+
+<a name="customizing-authentication-redirects"></a>
+### Customizing Redirects
+
+If the login attempt is successful, Fortify will redirect you to the URI configured via the `home` configuration option within your application's `fortify` configuration file. If the login request was an XHR request, a 200 HTTP response will be returned. After a user logs out of the application, the user will be redirected to the `/` URI.
+
+If you need advanced customization of this behavior, you may bind implementations of the `LoginResponse` and `LogoutResponse` contracts into the Laravel [service container](/docs/{{version}}/container). Typically, this should be done within the `register` method of your application's `App\Providers\FortifyServiceProvider` class:
+
+```php
+use Laravel\Fortify\Contracts\LogoutResponse;
+
+/**
+ * Register any application services.
+ *
+ * @return void
+ */
+public function register()
+{
+    $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+        public function toResponse($request)
+        {
+            return redirect('/');
+        }
+    });
+}
 ```
 
 <a name="two-factor-authentication"></a>

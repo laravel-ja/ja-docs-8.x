@@ -14,6 +14,7 @@
     - [MySQL](#mysql)
     - [Redis](#redis)
     - [MeiliSearch](#meilisearch)
+- [ファイルストレージ](#file-storage)
 - [テスト実行](#running-tests)
     - [Laravel Dusk](#laravel-dusk)
 - [メールのプレビュー](#previewing-emails)
@@ -193,6 +194,23 @@ sail npm run prod
 Sailのインストール時に[MeiliSearch](https://www.meilisearch.com)サービスのインストールを選択した場合、アプリケーションの`docker-compose.yml`ファイルには、[Laravel Scout](/docs/{{version}}/scout)と[コンパチブル](https://github.com/meilisearch/meilisearch-laravel-scout)である、この強力な検索エンジンのエントリが含まれます。コンテナを起動したら、環境変数`MEILISEARCH_HOST`に`http://meilisearch:7700`を設定すると、アプリケーション内のMeiliSearchインスタンスに接続できます。
 
 ローカルマシンから、Webブラウザの`http://localhost:7700`に移動して、MeiliSearchのWebベース管理パネルへアクセスできます。
+
+<a name="file-storage"></a>
+## ファイルストレージ
+
+本番環境でアプリケーションを実行する際に、Amazon S3を使用してファイルを保存する予定であれば、Sailをインストールする際に[MinIO](https://min.io)サービスをインストールするとよいでしょう。MinIOはS3互換のAPIを提供しており、本番のS3環境で「テスト」ストレージバケットを作成せずに、Laravelの`s3`ファイルストレージドライバーを使ってローカルに開発するために使用できます。Sailのインストール時にMinIOのインストールを選択すると、アプリケーションの`docker-compose.yml`ファイルにMinIOの設定セクションが追加されます。
+
+アプリケーションのデフォルト`filesystems`設定ファイルには、`s3`ディスクのディスク設定がすでに含まれています。このディスクを使ってAmazon S3と連携するだけでなく、その構成を制御する関連環境変数を変更するだけで、MinIOなどのS3互換のファイルストレージサービスと連携することができます。例えば、MinIOを使用する場合、ファイルシステムの環境変数の設定は次のように定義します。
+
+```ini
+FILESYSTEM_DRIVER=s3
+AWS_ACCESS_KEY_ID=sail
+AWS_SECRET_ACCESS_KEY=password
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=local
+AWS_ENDPOINT=http://minio:9000
+AWS_USE_PATH_STYLE_ENDPOINT=true
+```
 
 <a name="running-tests"></a>
 ## テスト実行

@@ -5,6 +5,7 @@
     - [１対１](#one-to-one)
     - [１対多](#one-to-many)
     - [１対多（逆）／所属](#one-to-many-inverse)
+    - [Has One Of Many](#has-one-of-many)
     - [Has One Through](#has-one-through)
     - [Has Many Through](#has-many-through)
 - [多対多リレーション](#many-to-many)
@@ -14,6 +15,7 @@
 - [ポリモーフィックリレーション](#polymorphic-relationships)
     - [１対１](#one-to-one-polymorphic-relations)
     - [１対多](#one-to-many-polymorphic-relations)
+    - [One Of Many](#one-of-many-polymorphic-relations)
     - [多対多](#many-to-many-polymorphic-relations)
     - [カスタムポリモーフィックタイプ](#custom-polymorphic-types)
 - [動的リレーション](#dynamic-relationships)
@@ -29,6 +31,7 @@
 - [Eagerロード](#eager-loading)
     - [Eagerロードの制約](#constraining-eager-loads)
     - [遅延Eagerロード](#lazy-eager-loading)
+    - [遅延ロードの防止](#preventing-lazy-loading)
 - [関連モデルの挿入と更新](#inserting-and-updating-related-models)
     - [`save`メソッド](#the-save-method)
     - [`create`メソッド](#the-create-method)
@@ -273,6 +276,69 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
             $user->name = 'Guest Author';
         });
     }
+
+<a name="has-one-of-many"></a>
+### Has One Of Many
+
+あるモデルが多くの関連モデルを持つことがありますが、そのリレーションにおける「最新」または「最も古い」関連モデルを簡単に取得したい場合があります。たとえば、`User`モデルは多くの`Order`モデルと関連しており、ユーザーが発注した最新の注文を操作する便利な方法を定義したいとします。これの実現には、`hasOne`のリレーションタイプと`ofMany`メソッドを組み合わせて使います。
+
+```php
+/**
+ * ユーザーの最新注文の取得
+ */
+public function latestOrder()
+{
+    return $this->hasOne(Order::class)->latestOfMany();
+}
+```
+
+同様に、あるリレーションシップの「最も古い」、つまり最初の関連モデルを取得するメソッドを定義することもできます。
+
+```php
+/**
+ * ユーザーの最も古い注文を取得
+ */
+public function oldestOrder()
+{
+    return $this->hasOne(Order::class)->oldestOfMany();
+}
+```
+
+`latestOfMany`と`oldestOfMany`メソッドはデフォルトで、ソート可能なモデルの主キーに基づいて、最新または最古の関連モデルを取得します。しかし、時には、別のソート基準を使って、より大きなリレーションシップから単一モデルを取得したい場合も起きるでしょう。
+
+例えば、`ofMany`メソッドを使って、ユーザーの最も高い注文を取得することができます。`ofMany`メソッドは、ソート可能なカラムを第一引数として受け取り、関連するモデルを検索する際にどの集約関数（`min`または`max`）を適用するかを指定します。
+
+```php
+/**
+ * ユーザーの一番高い注文の取得
+ */
+public function largestOrder()
+{
+    return $this->hasOne(Order::class)->ofMany('price', 'max');
+}
+```
+
+<a name="advanced-has-one-of-many-relationships"></a>
+#### 上級Has One Of Manyリレーション
+
+より高度な"has one of many"リレーションを構築することも可能です。例えば、`Product`モデルは、新しい価格が公開された後でもシステム内で保持している、多くの関連`Price`モデルを持つことができます。さらに、製品の新しい価格データは、`published_at`カラムにより、将来の日付で有効にするように事前に予約できることにしましょう。
+
+要約すると、公開日が未来ではない最新の価格を取得する必要があるということです。さらに、２つの価格の公開日が同じであれば、より大きいIDを持つ価格を優先します。これを実現するには、最新の価格を決定するソート可能なカラムを含む配列を `ofMany` メソッドに渡す必要があります。さらに、`ofMany`メソッドの第２引数には、クロージャが渡されます。このクロージャは、リレーションシップクエリに追加の発行日制約を追加する役割を果たします。
+
+```php
+/**
+ * 製品の現在価格を取得
+ */
+public function currentPricing()
+{
+    return $this->hasOne(Price::class)->ofMany([
+        'published_at' => 'max',
+        'id' => 'max',
+    ], function ($query) {
+        $query->where('published_at', '<', now());
+    });
+}
+```
 
 <a name="has-one-through"></a>
 ### Has One Through
@@ -540,7 +606,7 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
 <a name="filtering-queries-via-intermediate-table-columns"></a>
 ### 中間テーブルのカラムを使った関係のフィルタリング
 
-リレーションを定義するときに、`wherePivot`、`wherePivotIn`、`wherePivotNotIn`メソッドを使用し、`belongsToMany`関係クエリによって返される結果をフィルタリングすることもできます。
+リレーションを定義するときに、`wherePivot`、`wherePivotIn`、`wherePivotNotIn`、`wherePivotBetween`、`wherePivotNotBetween`、`wherePivotNull`、`wherePivotNotNull`メソッドを使用し、`belongsToMany`関係クエリによって返される結果をフィルタリングすることもできます。
 
     return $this->belongsToMany(Role::class)
                     ->wherePivot('approved', 1);
@@ -550,6 +616,22 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
 
     return $this->belongsToMany(Role::class)
                     ->wherePivotNotIn('priority', [1, 2]);
+
+    return $this->belongsToMany(Podcast::class)
+                    ->as('subscriptions')
+                    ->wherePivotBetween('created_at', ['2020-01-01 00:00:00', '2020-12-31 00:00:00']);
+
+    return $this->belongsToMany(Podcast::class)
+                    ->as('subscriptions')
+                    ->wherePivotNotBetween('created_at', ['2020-01-01 00:00:00', '2020-12-31 00:00:00']);
+
+    return $this->belongsToMany(Podcast::class)
+                    ->as('subscriptions')
+                    ->wherePivotNull('expired_at');
+
+    return $this->belongsToMany(Podcast::class)
+                    ->as('subscriptions')
+                    ->wherePivotNotNull('expired_at');
 
 <a name="defining-custom-intermediate-table-models"></a>
 ### カスタム中間テーブルモデルの定義
@@ -799,6 +881,49 @@ Eloquentはリレーションメソッドの名前を調べ、メソッド名の
     $commentable = $comment->commentable;
 
 `Comment`モデルの`commentable`リレーションは、コメントの親であるモデルのタイプに応じて、`Post`または`Video`インスタンスのいずれかを返します。
+
+<a name="one-of-many-polymorphic-relations"></a>
+### One Of Many（ポリモーフィック）
+
+あるモデルが多くの関連モデルを持つことがありますが、そのリレーションの「最新」または「最も古い」関連モデルを簡単に取得したい場合があります。例えば、`User`モデルは多くの`Image`モデルと関連しており、ユーザーがアップロードした最新の画像を操作する便利な方法を定義したいとします。このような場合には、`morphOne`というリレーションタイプと`ofMany`メソッドを組み合わせることで実現できます。
+
+```php
+/**
+ * 最新のイメージを取得
+ */
+public function latestImage()
+{
+    return $this->morphOne(Image::class)->latestOfMany();
+}
+```
+
+同様に、「最も古い」、または最初のリレーションの関連モデルを取得する方法を定義することができます。
+
+```php
+/**
+ * ユーザーの最も古い画像を取得
+ */
+public function oldestImage()
+{
+    return $this->morphOne(Image::class)->oldestOfMany();
+}
+```
+
+`latestOfMany`と`oldestOfMany`メソッドはデフォルトで、モデルのソート可能な主キーに基づいて、最新または最も古い関連モデルを取得します。しかし、別のソート基準を使って、より大きなリレーションから単一のモデルを取得したい場合もあるでしょう。
+
+例えば、`ofMany`メソッドを使って、ユーザーが最も"Like"した画像を取得できます。`ofMany`メソッドは、ソート可能なカラムを第一引数に取り、関連するモデルを検索する際にどの集約関数（`min`または`max`）を適用するかを指定します。
+
+```php
+/**
+ * ユーザーの最も人気のある画像を取得
+ */
+public function bestImage()
+{
+    return $this->morphOne(Image::class)->ofMany('likes', 'max');
+}
+```
+
+> {tip} より高度な「一対多」リレーションを構築することも可能です。詳しくは、[has one of manyのドキュメント](#advanced-has-one-of-many-relationships)を参照してください。
 
 <a name="many-to-many-polymorphic-relations"></a>
 ### 多対多（ポリモーフィック）
@@ -1220,7 +1345,7 @@ Eloquentリレーションクエリへ制約を追加する必要がない場合
 <a name="other-aggregate-functions"></a>
 ### その他の集計関数
 
-Eloquentは、`withCount`メソッドに加えて、`withMin`、`withMax`、`withAvg`、`withSum`メソッドも提供しています。これらのメソッドは、結果のモデルに`{リレーション}_{集計機能}_{column}`属性を配置します。
+Eloquentは、`withCount`メソッドに加えて、`withMin`、`withMax`、`withAvg`、`withSum`、`withExists`メソッドも提供しています。これらのメソッドは、結果のモデルに`{リレーション}_{集計機能}_{column}`属性を配置します。
 
     use App\Models\Post;
 
@@ -1235,6 +1360,12 @@ Eloquentは、`withCount`メソッドに加えて、`withMin`、`withMax`、`wit
     $post = Post::first();
 
     $post->loadSum('comments', 'votes');
+
+これらの集約メソッドを`select`ステートメントと組み合わせる場合は、`select`メソッドの後に集約メソッドのメソッドを呼び出してください。
+
+    $posts = Post::select(['title', 'body'])
+                    ->withExists('comments')
+                    ->get();
 
 <a name="counting-related-models-on-morph-to-relationships"></a>
 ### Morph Toリレーションの関連モデルのカウント
@@ -1516,6 +1647,39 @@ Eagerロードクエリにクエリ制約を追加設定する必要がある場
             Photo::class => ['tags'],
             Post::class => ['author'],
         ]);
+
+<a name="preventing-lazy-loading"></a>
+### 遅延ロードの防止
+
+前述したように、リレーションのEagerロードは、しばしばアプリケーションのパフォーマンスに大きなメリットをもたらします。そのため、ご希望であれば、Laravelにリレーションの遅延ロードを常に防ぐように指示できます。そのためには、Eloquentの基本モデルクラスが提供している`preventLazyLoading`メソッドを呼び出します。一般的には、アプリケーションの `AppServiceProvider` クラスの `boot` メソッド内でこのメソッドを呼び出します。
+
+preventLazyLoading`メソッドは、遅延ロードを防止するかを示すオプションの論理値の引数を取ります。例として、運用環境以外では遅延ロードを無効にして、運用コードに遅延ロードするリレーションが誤って存在していても、運用環境では正常に機能し続けるようにしてみましょう。
+
+```php
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * アプリケーションの全サービスの初期起動処理
+ *
+ * @return void
+ */
+public function boot()
+{
+    Model::preventLazyLoading(! $this->app->isProduction());
+}
+```
+
+遅延ロードを停止したあと、アプリケーションが任意のEloquentリレーションで遅延ロードしようとすると、Eloquentは`Illuminate\Database\LazyLoadingViolationException`例外を投げます。
+
+遅延ロード違反の動作は，`handleLazyLoadingViolationsUsing`メソッドを使ってカスタマイズできます。例えば、このメソッドを使って、アプリケーションの実行を例外で中断する代わりに、遅延ロード違反をログに記録するだけにするよう指示できます。
+
+```php
+Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
+    $class = get_class($model);
+
+    info("Attempted to lazy load [{$relation}] on model [{$class}].");
+});
+```
 
 <a name="inserting-and-updating-related-models"></a>
 ## 関連モデルの挿入と更新

@@ -322,19 +322,6 @@
 
     // [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-<a name="method-combine"></a>
-#### `combine()` {#collection-method}
-
-`combine`メソッドは、コレクションの値をキーとして、他の配列かコレクションの値を結合します。
-
-    $collection = collect(['name', 'age']);
-
-    $combined = $collection->combine(['George', 29]);
-
-    $combined->all();
-
-    // ['name' => 'George', 'age' => 29]
-
 <a name="method-collect"></a>
 #### `collect()` {#collection-method}
 
@@ -368,6 +355,19 @@
 
 > {tip} `collect`メソッドは`Enumerable`のインスタンスがあり、それをレイジーコレクションでなくする必要がある場合、とくに便利です。`collect()`は`Enumerable`契約の一部であり、`Collection`インスタンスを取得するため安全に使用できます。
 
+<a name="method-combine"></a>
+#### `combine()` {#collection-method}
+
+`combine`メソッドは、コレクションの値をキーとして、他の配列かコレクションの値を結合します。
+
+    $collection = collect(['name', 'age']);
+
+    $combined = $collection->combine(['George', 29]);
+
+    $combined->all();
+
+    // ['name' => 'George', 'age' => 29]
+
 <a name="method-concat"></a>
 #### `concat()` {#collection-method}
 
@@ -384,7 +384,7 @@
 <a name="method-contains"></a>
 #### `contains()` {#collection-method}
 
-`contains`にクロージャを渡して、指定テストが真になる要素がコレクションに存在するかどうかを判断することもできます。
+`contains`メソッドは、コレクションに指定したアイテムが含まれているか判定します。指定する真偽判定にマッチする要素がコレクション内に存在するかを判定するために、`contains`メソッドにクロージャを渡します。
 
     $collection = collect([1, 2, 3, 4, 5]);
 
@@ -1947,7 +1947,7 @@ sliceメソッドはデフォルトでキー値を保持したまま返します
         return $value === 2;
     });
 
-    // 3
+    // 2
 
 キー／値のペアを`sole`メソッドへ渡すこともできます。この場合、指定したペアに一致するコレクション内のアイテムが正確に１つだけの場合、それを返します。
 

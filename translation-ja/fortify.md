@@ -10,6 +10,7 @@
 - [ユーザー認証](#authentication)
     - [ユーザー認証のカスタマイズ](#customizing-user-authentication)
     - [認証パイプラインのカスタマイズ](#customizing-the-authentication-pipeline)
+    - [リダイレクトのカスタマイズ](#customizing-authentication-redirects)
 - [２要素認証](#two-factor-authentication)
     - [２要素認証の有効化](#enabling-two-factor-authentication)
     - [２要素認証による認証](#authenticating-with-two-factor-authentication)
@@ -213,6 +214,32 @@ Fortify::authenticateThrough(function (Request $request) {
             PrepareAuthenticatedSession::class,
     ]);
 });
+```
+
+<a name="customizing-authentication-redirects"></a>
+### リダイレクトのカスタマイズ
+
+ログインが成功した場合、Fortifyアプリケーションの `fortify` 設定ファイル内の`home`設定オプションで設定されているURIへリダイレクトします。ログインリクエストがXHRリクエストだった場合は、200 HTTPレスポンスを返します。ユーザーがアプリケーションからログアウトした後は、`/`のURIへリダイレクトします。
+
+この動作を高度にカスタマイズする必要がある場合は、`LoginResponse`と`LogoutResponse`契約の実装をLaravelの[サービスコンテナ](/docs/{{version}}/container)に結合します。通常、これはアプリケーションの`App\Providers\FortifyServiceProvider`クラスの`register`メソッド内で行います。
+
+```php
+use Laravel\Fortify\Contracts\LogoutResponse;
+
+/**
+ * アプリケーションの全サービスの登録
+ *
+ * @return void
+ */
+public function register()
+{
+    $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+        public function toResponse($request)
+        {
+            return redirect('/');
+        }
+    });
+}
 ```
 
 <a name="two-factor-authentication"></a>

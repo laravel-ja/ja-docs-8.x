@@ -82,7 +82,7 @@ RoadRunnerのバイナリをインストールしたら、Sailシェルセッシ
 次に、アプリケーションの`docker/supervisord.conf`ファイルの`command`ディレクティブを更新し、SailがPHP開発サーバの代わりにオクタンを使ってアプリケーションを動かすようにします。
 
 ```ini
-command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --port=80
+command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=roadrunner --host=0.0.0.0 --rpc-port=6001 --port=8000
 ```
 
 最後に、`rr`バイナリが実行可能であることを確認し、Sailイメージを構築してください:
@@ -116,7 +116,7 @@ pecl install swoole
 次に、アプリケーションの`docker/supervisord.conf`ファイルの`command`ディレクティブを更新して、SailへPHP開発サーバの代わりにOctaneを使い、アプリケーションを使用してアプリケーションを動作させるように指定します。
 
 ```ini
-command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=swoole --host=0.0.0.0 --port=80
+command=/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=swoole --host=0.0.0.0 --port=8000
 ```
 
 最後に、Sailイメージを構築します。
