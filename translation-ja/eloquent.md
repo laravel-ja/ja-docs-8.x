@@ -802,7 +802,7 @@ Eloquentは、データベースから実際にレコードを削除するだけ
         use SoftDeletes;
     }
 
-> {tip} SoftDeletes`トレイトは、`deleted_at`属性を`DateTime`/`Carbon`インスタンスに自動的にキャストします。
+> {tip} `SoftDeletes`トレイトは、`deleted_at`属性を`DateTime`/`Carbon`インスタンスに自動的にキャストします。
 
 データベーステーブルに`deleted_at`カラムを追加する必要があります。Laravel[スキーマビルダ](/docs/{{version}}/migrations)はこのカラムを作成するためのヘルパメソッドを用意しています。
 
@@ -1128,6 +1128,8 @@ Eloquenはクロージャを使用してグローバルスコープを定義す�
 
 <a name="events"></a>
 ## イベント
+
+> {tip} Eloquentのイベントをクライアントサイドのアプリケーションへ直接ブロードキャストしたいですか？Laravelの[モデル・イベント・ブロードキャスト](/docs/{{version}}/broadcasting#model-broadcasting)をチェックしてください。
 
 Eloquentモデルはいくつかのイベントをディスパッチし、モデルのライフサイクルの以下の瞬間をフックできるようにしています。：`retrieved`、`creating`、`created`、`updating`、`updated`、`saving`、`saved`、`deleting`、`deleted`、`restoring`、`restored`、`replicating`。
 

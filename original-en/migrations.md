@@ -21,6 +21,7 @@
     - [Renaming Indexes](#renaming-indexes)
     - [Dropping Indexes](#dropping-indexes)
     - [Foreign Key Constraints](#foreign-key-constraints)
+- [Events](#events)
 
 <a name="introduction"></a>
 ## Introduction
@@ -753,7 +754,7 @@ The `tinyIncrements` method creates an auto-incrementing `UNSIGNED TINYINT` equi
 The `tinyInteger` method creates a `TINYINT` equivalent column:
 
     $table->tinyInteger('votes');
-    
+
 <a name="column-method-tinyText"></a>
 #### `tinyText()` {#collection-method}
 
@@ -1129,3 +1130,15 @@ You may enable or disable foreign key constraints within your migrations by usin
     Schema::disableForeignKeyConstraints();
 
 > {note} SQLite disables foreign key constraints by default. When using SQLite, make sure to [enable foreign key support](/docs/{{version}}/database#configuration) in your database configuration before attempting to create them in your migrations. In addition, SQLite only supports foreign keys upon creation of the table and [not when tables are altered](https://www.sqlite.org/omitted.html).
+
+<a name="events"></a>
+## Events
+
+For convenience, each migration operation will dispatch an [event](/docs/{{version}}/events). All of the following events extend the base `Illuminate\Database\Events\MigrationEvent` class:
+
+ Class | Description
+-------|-------
+| `Illuminate\Database\Events\MigrationsStarted` | A batch of migrations is about to be executed. |
+| `Illuminate\Database\Events\MigrationsEnded` | A batch of migrations has finished executing. |
+| `Illuminate\Database\Events\MigrationStarted` | A single migration is about to be executed. |
+| `Illuminate\Database\Events\MigrationEnded` | A single migration has finished executing. |

@@ -542,3 +542,4 @@ return Octane::table('example')->get('uuid');
 ```
 
 > {note} Swooleのテーブルがサポートする、カラムの型は`string`、`int`、`float`です。
+

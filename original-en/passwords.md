@@ -120,7 +120,7 @@ Of course, we need to define a route to actually handle the password reset form 
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) use ($request) {
+            function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
                 ])->setRememberToken(Str::random(60));
@@ -131,7 +131,7 @@ Of course, we need to define a route to actually handle the password reset form 
             }
         );
 
-        return $status == Password::PASSWORD_RESET
+        return $status === Password::PASSWORD_RESET
                     ? redirect()->route('login')->with('status', __($status))
                     : back()->withErrors(['email' => [__($status)]]);
     })->middleware('guest')->name('password.update');

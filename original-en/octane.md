@@ -542,3 +542,4 @@ return Octane::table('example')->get('uuid');
 ```
 
 > {note} The column types supported by Swoole tables are: `string`, `int`, and `float`.
+

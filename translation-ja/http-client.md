@@ -13,6 +13,7 @@
 - [テスト](#testing)
     - [レスポンスのfake](#faking-responses)
     - [レスポンスの検査](#inspecting-requests)
+- [イベント](#events)
 
 <a name="introduction"></a>
 ## イントロダクション
@@ -380,3 +381,24 @@ Guzzleのデフォルト動作とは異なり、LaravelのHTTPクライアント
     Http::fake();
 
     Http::assertNothingSent();
+
+<a name="events"></a>
+## イベント
+
+LaravelはHTTPリクエストを送信する過程で、２つのイベントを発行します。`RequestSending`イベントはリクエストを送信する前に発行し、`ResponseReceived`イベントは指定したリクエストに対するレスポンスを受信した後に発行します。
+
+`RequestSending`イベントはパブリックの`$request`プロパティを含んでおり、これを使って`Illuminate\Http\Client\Request`インスタンスを調べられます。同様に、`ResponseReceived`イベントは、`$request`プロパティと`$response`プロパティを含んでおり、`Illuminate\Http\Client\Response`インスタンスの検査に使用できます。このイベントのイベントリスナは、`App\Providers\EventServiceProvider`サービスプロバイダで登録します。
+
+    /**
+     * アプリケーションのイベントリスナマップ
+     *
+     * @var array
+     */
+    protected $listen = [
+        'Illuminate\Http\Client\Events\RequestSending' => [
+            'App\Listeners\LogRequestSending',
+        ],
+        'Illuminate\Http\Client\Events\ResponseReceived' => [
+            'App\Listeners\LogResponseReceived',
+        ],
+    ];

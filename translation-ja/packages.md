@@ -324,7 +324,7 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
 <a name="publishing-file-groups"></a>
 ## ファイルグループのリソース公開
 
-パッケージアセットとリソースのグループを個別にリソース公開することを推奨します。たとえば、パッケージのアセットをリソース公開することを強制されることなく、ユーザーがパッケージの設定ファイルをリソース公開できるようにしたい場合もあるでしょう。パッケージのサービスプロバイダから`publishes`メソッドを呼び出すときに、それらに「タグ付け」することでこれを行うことができます。例として、タグを使用して、パッケージのサービスプロバイダの`boot`メソッドで２つのリソース公開グループ(`config`と`migrations`)を定義してみましょう。
+パッケージアセットとリソースのグループを個別にリソース公開することを推奨します。たとえば、パッケージのアセットをリソース公開することを強制されることなく、ユーザーがパッケージの設定ファイルをリソース公開できるようにしたい場合もあるでしょう。パッケージのサービスプロバイダから`publishes`メソッドを呼び出すときに、それらに「タグ付け」することでこれを行うことができます。例として、パッケージのサービスプロバイダの`boot`メソッドで、`courier`パッケージの２公開グループ （`courier-config`と`courier-migrations`）をタグを使い定義してみましょう。
 
     /**
      * 全パッケージサービスの初期起動処理
@@ -335,13 +335,13 @@ Laravelアプリケーションの`config/app.php`設定ファイルには、Lar
     {
         $this->publishes([
             __DIR__.'/../config/package.php' => config_path('package.php')
-        ], 'config');
+        ], 'courier-config');
 
         $this->publishes([
             __DIR__.'/../database/migrations/' => database_path('migrations')
-        ], 'migrations');
+        ], 'courier-migrations');
     }
 
 これでユーザーは、`vendor::publish` Artisanコマンドを使用するときにタグ名を指定することで、グループを別々にリソース公開できます。
 
-    php artisan vendor:publish --tag=config
+    php artisan vendor:publish --tag=courier-config

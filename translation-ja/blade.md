@@ -33,6 +33,7 @@
 - [スタック](#stacks)
 - [サービス注入](#service-injection)
 - [Bladeの拡張](#extending-blade)
+    - [カスタムEchoハンドラ](#custom-echo-handlers)
     - [カスタムIf文](#custom-if-statements)
 
 <a name="introduction"></a>
@@ -1295,6 +1296,34 @@ Bladeでは、`directive`メソッドを使用して独自のカスタムディ�
     <?php echo ($var)->format('m/d/Y H:i'); ?>
 
 > {note} Bladeディレクティブのロジックを更新した後は、キャッシュ済みのBladeビューをすべて削除する必要があります。キャッシュ済みBladeビューは、`view:clear` Artisanコマンドを使用して削除できます。
+
+<a name="custom-echo-handlers"></a>
+### カスタムEchoハンドラ
+
+Bladeを使ってオブジェクトを「エコー」しようとすると、そのオブジェクトの`__toString`メソッドが呼び出されます。[`__toString`](https://www.php.net/manual/en/language.oop5.magic.php#object.tostring)メソッドは、PHPが組み込んでいる一つの「マジックメソッド」です。しかし、操作するクラスがサードパーティのライブラリへ属している場合など、特定のクラスで`__toString`メソッドを制御できない場合が起こりえます。
+
+このような場合、Bladeで、その特定のタイプのオブジェクト用に、カスタムEchoハンドラを登録できます。Bladeの`stringable`メソッドを呼び出してください。`stringable`メソッドは、クロージャを引数に取ります。このクロージャは、自分がレンダリングを担当するオブジェクトのタイプをタイプヒントで指定する必要があります。一般的には、アプリケーションの`AppServiceProvider`クラスの`boot`メソッド内で、`stringable`メソッドを呼び出します。
+
+    use Illuminate\Support\Facades\Blade;
+    use Money\Money;
+
+    /**
+     * アプリケーションの全サービスの初期起動処理
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Blade::stringable(function (Money $money) {
+            return $money->formatTo('en_GB');
+        });
+    }
+
+カスタムEchoハンドラを定義したら、Bladeテンプレート内のオブジェクトを簡単にエコーできます。
+
+```html
+Cost: {{ $money }}
+```
 
 <a name="custom-if-statements"></a>
 ### カスタムIf文

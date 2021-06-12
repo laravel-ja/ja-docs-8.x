@@ -14,6 +14,7 @@
     - [顧客の取得](#retrieving-customers)
     - [顧客の作成](#creating-customers)
     - [顧客の更新](#updating-customers)
+    - [タックスID](#tax-ids)
     - [請求ポータル](#billing-portal)
 - [Payment Methods](#payment-methods)
     - [支払い方法の保存](#storing-payment-methods)
@@ -221,6 +222,27 @@ BillableなモデルのStripe顧客オブジェクトを返す場合は、`asStr
 たまに、Stripeの顧客を追加情報と一緒に直接更新したい状況が起こるでしょう。これは、`updateStripeCustomer`メソッドを使用して実行できます。このメソッドは、[StripeAPIでサポートされている顧客更新オプション](https://stripe.com/docs/api/customers/update)の配列を引数に取ります。
 
     $stripeCustomer = $user->updateStripeCustomer($options);
+
+<a name="tax-ids"></a>
+### タックスID
+
+Cashierでは、顧客のタックスIDを簡単に管理できます。例えば、`taxIds`メソッドを使って、顧客に割り当てられている全ての[タックスID](https://stripe.com/docs/api/customer_tax_ids/object)をコレクションとして取得できます。
+
+    $taxIds = $user->taxIds();
+
+識別子により、顧客の特定のタックスIDを取得することもできます。
+
+    $taxId = $user->findTaxId('txi_belgium');
+
+有効な[タイプ](https://stripe.com/docs/api/customer_tax_ids/object#tax_id_object-type)と値を`createTaxId`メソッドへ渡し、新しいタックスIDを作成できます。
+
+    $taxId = $user->createTaxId('eu_vat', 'BE0123456789');
+
+`createTaxId`メソッドは、VAT IDを顧客のアカウントへ即座に追加します。[VAT IDの検証はStripeも行います](https://stripe.com/docs/invoicing/customer/tax-ids#validation)が、これは非同期のプロセスです。検証の更新を通知するには、`customer.tax_id.updated` Webフックイベントを購読し、[VAT IDの`verification`パラメータ](https://stripe.com/docs/api/customer_tax_ids/object#tax_id_object-verification)を検査します。Webフックの取り扱いについては、[Webフックの処理の定義に関するドキュメント](#handling-stripe-webhooks)を参照してください。
+
+`deleteTaxId`メソッドを使ってタックスIDを削除できます。
+
+    $user->deleteTaxId('txi_belgium');
 
 <a name="billing-portal"></a>
 ### 請求ポータル

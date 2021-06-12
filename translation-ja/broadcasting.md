@@ -31,6 +31,9 @@
     - [プレゼンスチャンネルの認可](#authorizing-presence-channels)
     - [プレゼンスチャンネルへの接続](#joining-presence-channels)
     - [プレゼンスチャンネルへのブロードキャスト](#broadcasting-to-presence-channels)
+- [モデルブロードキャスト](#model-broadcasting)
+    - [モデルブロードキャスト規約](#model-broadcasting-conventions)
+    - [モデルブロードキャストのリッスン](#listening-for-model-broadcasts)
 - [クライアントイベント](#client-events)
 - [通知](#notifications)
 
@@ -743,6 +746,126 @@ Echo.channel('orders')
         .listen('NewMessage', (e) => {
             //
         });
+
+<a name="model-broadcasting"></a>
+## モデルブロードキャスト
+
+> {note} モデルブロードキャストに関する以降のドキュメントを読む前に、Laravelのモデルブロードキャストサービスの一般的なコンセプトや、ブロードキャストイベントを手動で作成したり、リッスンしたりする方法に精通しておくことをおすすめします。
+
+アプリケーションの[Eloquentモデル](/docs/{{version}}/eloquent)が作成、更新、または削除されたときにイベントをブロードキャストするのは一般的です。もちろん、これは自前で[Eloquentモデルの状態変化を表すカスタムイベントを定義](/docs/{{version}}/eloquent#events)し、それらのイベントを`ShouldBroadcast`インターフェイスでマークすることで簡単に実現できます。
+
+しかし、こうしたイベントをアプリケーション内で他の目的に使用しない場合、イベントをブロードキャストするためだけにイベントクラスを作成するのは面倒なことです。そのためLaravelは指定があれば、Eloquentモデルの状態変化を自動的にブロードキャストします。
+
+まず始めに、Eloquentモデルで、`Illuminate\Database\BroadcastsEvents`トレイトを使用する必要があります。さらに、そのモデルで`broadcastsOn`メソッドを定義する必要があります。このメソッドは、モデルイベントをブロードキャストするチャンネルの配列を返します。
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Database\Eloquent\BroadcastsEvents;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+    use BroadcastsEvents, HasFactory;
+
+    /**
+     * ポストが属するユーザーの取得
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * モデルイベントをブロードキャストするチャンネルを取得
+     *
+     * @param  string  $event
+     * @return \Illuminate\Broadcasting\Channel|array
+     */
+    public function broadcastOn($event)
+    {
+        return [$this, $this->user];
+    }
+}
+```
+
+モデルでこの特性を使い、そしてブロードキャスト・チャンネルを定義したら、モデルインスタンスの作成、更新、削除、ソフトデリートと復元のとき、自動的にイベントのブロードキャストが開始されます。
+
+さらに、`broadcastOn` メソッドが文字列の`$event`引数を受け取っていることにお気づきでしょう。この引数には、モデルで発生したイベントの種類が含まれており、`created`、`updated`、`deleted`、`trashed`、`restored`のいずれかの値を持ちます。この変数の値を調べることで、必要であれば、特定のイベントに対しモデルをどのチャンネルへブロードキャストするかを判定できます。
+
+```php
+/**
+ * モデルイベントをブロードキャストするチャンネルを取得
+ *
+ * @param  string  $event
+ * @return \Illuminate\Broadcasting\Channel|array
+ */
+public function broadcastOn($event)
+{
+    return match($event) {
+        'deleted' => [],
+        default => [$this, $this->user],
+    };
+}
+```
+
+<a name="model-broadcasting-conventions"></a>
+### モデルブロードキャスト規約
+
+<a name="model-broadcasting-channel-conventions"></a>
+#### チャンネル規約
+
+お気づきかもしれませんが、上記のモデル例の`broadcastOn`メソッドは、`Channel`インスタンスを返していません。代わりにEloquentモデルを直接返しています。モデルの`broadcastOn`メソッドが、Eloquentモデルインスタンスを返す場合（または、メソッドが返す配列に含まれている場合）、Laravelはモデルのクラス名と主キー識別子をチャンネル名とする、モデルのプライベートチャンネルインスタンスを自動的にインスタンス化します。
+
+つまり、`id`が`1`の`App\Models\User`モデルは、`App.Models.User.1`という名前の`Illuminate\Broadcasting\PrivateChannel`インスタンスへ変換されるわけです。もちろん、モデルの`broadcastOn`メソッドから、Eloquentモデルインスタンスを返すことに加え、モデルのチャンネル名を完全にコントロールするため、完全な`Channel`インスタンスを返すこともできます。
+
+```php
+use Illuminate\Broadcasting\PrivateChannel;
+
+/**
+ * モデルイベントをブロードキャストするチャンネルを取得
+ *
+ * @param  string  $event
+ * @return \Illuminate\Broadcasting\Channel|array
+ */
+public function broadcastOn($event)
+{
+    return [new PrivateChannel('user.'.$this->id)];
+}
+```
+
+モデルの`broadcastOn`メソッドからチャンネルのインスタンスを明示的に返す場合は、チャンネルのコンストラクタにEloquentモデルのインスタンスを渡すことができます。そうすると、Laravelは上述のモデルチャンネルの規約を使って、Eloquentモデルをチャンネル名の文字列に変換します。
+
+```php
+return [new Channel($this->user)];
+```
+
+<a name="model-broadcasting-event-conventions"></a>
+#### イベント規約
+
+モデルのブロードキャストイベントは、アプリケーションの`App\Events`ディレクトリ内の「実際の」イベントとは関連していないので、規約に基づいて名前が割り当てられます。Laravelの規約では、モデルの（名前空間を含まない）クラス名と、ブロードキャストをトリガーしたモデルイベントの名前を使って、イベントをブロードキャストします。
+
+例えば、`App\Models\Post`モデルが更新されると、`PostUpdated`というイベントがクライアントサイドのアプリケーションにブロードキャストされ、`App\Models\User`モデルが削除されると、`UserDeleted`というイベントがブロードキャストされることになります。
+
+<a name="listening-for-model-broadcasts"></a>
+### モデルブロードキャストのリッスン
+
+モデルへ`BroadcastsEvents`トレイトを追加し、モデルの`broadcastOn`メソッドを定義したら、クライアントサイドのアプリケーションで、ブロードキャストしたモデルイベントをリッスンする準備ができました。始める前に、[イベントのリッスン](#listening-for-events)の完全なドキュメントを参照しておくとよいでしょう。
+
+まず、`private`メソッドでチャンネルのインスタンスを取得し、それから`listen`メソッドを呼び出して、指定したイベントをリッスンします。通常、`private`メソッドへ指定するチャンネル名は、Laravelの[モデルブロードキャスト規約](#model-broadcasting-conventions)に対応していなければなりません。
+
+チャンネルインスタンスを取得したら、`listen`メソッドを使って特定のイベントをリッスンします。モデルのブロードキャストイベントは、アプリケーションの`App\Events`ディレクトリにある「実際の」イベントと関連付けられていないため、[イベント名](#model-broadcasting-event-conventions)の前に`.`を付けて、特定の名前空間に属していないことを示す必要があります。各モデルブロードキャストイベントは、そのモデルのブロードキャスト可能なプロパティをすべて含む`model`プロパティを持ちます。
+
+```js
+Echo.channel(`App.Models.User.${this.user.id}`)
+    .listen('.PostUpdated', (e) => {
+        console.log(e.model);
+    });
+```
 
 <a name="client-events"></a>
 ## クライアントイベント

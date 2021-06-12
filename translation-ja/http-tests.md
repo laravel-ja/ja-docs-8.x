@@ -75,6 +75,8 @@ Laravelは、アプリケーションにHTTPリクエストを送信し、レス
         }
     }
 
+通常、各テストはアプリケーションに対して 1 つのリクエストしか行わないようにしてください。１つのテストメソッドの中で複数のリクエストを実行すると、 予期せぬ動作が起きる可能性があります。
+
 > {tip} 利便性を良くするため、テストの実行時にCSRFミドルウェアを自動で無効にします。
 
 <a name="customizing-request-headers"></a>
@@ -553,6 +555,7 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 [assertCreated](#assert-created)
 [assertDontSee](#assert-dont-see)
 [assertDontSeeText](#assert-dont-see-text)
+[assertDownload](#assert-download)
 [assertExactJson](#assert-exact-json)
 [assertForbidden](#assert-forbidden)
 [assertHeader](#assert-header)
@@ -642,6 +645,17 @@ Laravelの`Illuminate\Testing\TestResponse`クラスは、アプリケーショ�
 指定する文字列がレスポンステキストに含まれていないことを宣言します。このアサートは、２番目の引数に`false`を渡さない限り、指定する文字列を自動的にエスケープします。このメソッドは、アサートを作成する前に、レスポンスコンテンツを`strip_tags` PHP関数へ渡します。
 
     $response->assertDontSeeText($value, $escaped = true);
+
+<a name="assert-download"></a>
+#### assertDownload
+
+レスポンスが「ダウンロード」であることを宣言します。通常、`Response::download`レスポンス、`BinaryFileResponse`、または`Storage::download`レスポンスを返すルートが起動されたことを意味します。
+
+    $response->assertDownload();
+
+お望みであれば、ダウンロード可能なファイルに指定のファイル名が付与されていることを宣言することもできます。
+
+    $response->assertDownload('image.jpg');
 
 <a name="assert-exact-json"></a>
 #### assertExactJson
