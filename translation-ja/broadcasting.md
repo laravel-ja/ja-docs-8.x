@@ -495,6 +495,31 @@ Echo.private(`orders.${orderId}`)
         authEndpoint: '/custom/endpoint/auth'
     });
 
+<a name="customizing-the-authorization-request"></a>
+#### 認可リクエストのカスタマイズ
+
+Laravel Echoの初期化時に、カスタムAuthorizerを指定し、Laravel Echoの認可リクエスト実行方法をカスタマイズできます。
+
+    window.Echo = new Echo({
+        // ...
+        authorizer: (channel, options) => {
+            return {
+                authorize: (socketId, callback) => {
+                    axios.post('/api/broadcasting/auth', {
+                        socket_id: socketId,
+                        channel_name: channel.name
+                    })
+                    .then(response => {
+                        callback(false, response.data);
+                    })
+                    .catch(error => {
+                        callback(true, error);
+                    });
+                }
+            };
+        },
+    })
+
 <a name="defining-authorization-callbacks"></a>
 ### 認可コールバックの定義
 
@@ -842,6 +867,12 @@ public function broadcastOn($event)
 
 ```php
 return [new Channel($this->user)];
+```
+
+モデルのチャンネル名を決定する必要がある場合は、モデルインスタンスで`broadcastChannel`メソッドを呼び出してください。たとえば、`1`の`id`を持つ`App\Models\User`モデルに対し、このメソッドは文字列`App.Models.User.1`を返します。
+
+```php
+$user->broadcastChannel()
 ```
 
 <a name="model-broadcasting-event-conventions"></a>

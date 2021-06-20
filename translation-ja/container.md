@@ -150,6 +150,18 @@ Laravelサービスコンテナを深く理解することは、強力で大規�
         return new Transistor($app->make(PodcastParser::class));
     });
 
+<a name="binding-scoped"></a>
+#### Binding Scoped Singletons
+
+`scoped`メソッドは、Laravelのリクエストやジョブのライフサイクルの中で、一度だけ解決されるべきクラスやインターフェイスをコンテナへ結合します。このメソッドは`singleton`メソッドと似ていますが、`scoped`メソッドを使って登録したインスタンスは、Laravelアプリケーションが新しい「ライフサイクル」を開始するたびにフラッシュされます。例えば、[Laravel Octane](/docs/{{version}}/octane)ワーカが新しいリクエストを処理するときや、Laravel [キューワーカ](/docs/{{version}}/queues)が新しいジョブを処理するときなどです。
+
+    use App\Services\Transistor;
+    use App\Services\PodcastParser;
+
+    $this->app->scoped(Transistor::class, function ($app) {
+        return new Transistor($app->make(PodcastParser::class));
+    });
+
 <a name="binding-instances"></a>
 #### インスタンスの結合
 

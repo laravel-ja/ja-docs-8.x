@@ -19,6 +19,7 @@
     - [Eventワッチャー](#event-watcher)
     - [Exceptionワッチャー](#exception-watcher)
     - [Gateワッチャー](#gate-watcher)
+    - [HTTPクライアントワッチャー](#http-client-watcher)
     - [Jobワッチャー](#job-watcher)
     - [Logワッチャー](#log-watcher)
     - [Mailワッチャー](#mail-watcher)
@@ -312,6 +313,11 @@ Gateワッチャーは、アプリケーションによる[ゲートとポリシ
         ],
         ...
     ],
+
+<a name="http-client-watcher"></a>
+### HTTPクライアントワッチャー
+
+HTTPクライアントウォッチャーは、アプリケーションが作成した[HTTPクライアントリクエスト](/docs/{{version}}/http-client)を記録します。
 
 <a name="job-watcher"></a>
 ### Jobワッチャー

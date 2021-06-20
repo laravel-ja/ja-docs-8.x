@@ -686,6 +686,7 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 [範囲](#rule-between)
 [論理](#rule-boolean)
 [確認](#rule-confirmed)
+[現在のパスワード](#rule-current-password)
 [日付](#rule-date)
 [同一日付](#rule-date-equals)
 [日付形式](#rule-date-format)
@@ -842,6 +843,13 @@ Laravelの組み込みバリデーションルールエラーメッセージの�
 #### confirmed
 
 フィールドが、`{field}_confirmation`フィールドと一致する必要があります。たとえば、バリデーション中のフィールドが「password」の場合、「password_confirmation」フィールドが入力に存在し一致している必要があります。
+
+<a name="rule-current-password"></a>
+#### current_password
+
+フィールドが、認証されているユーザーのパスワードと一致することをバリデートします。ルールの最初のパラメータで、[認証ガード](/docs/{{version}}/authentication)を指定できます。
+
+    'password' => 'current_password:api'
 
 <a name="rule-date"></a>
 #### date
@@ -1163,9 +1171,9 @@ PHPの`filter_var`関数を使用する`filter`バリデータは、Laravelに�
 <a name="rule-password"></a>
 #### password
 
-フィールドは、認証済みユーザーのパスワードと一致する必要があります。ルールの最初のパラメーターを使用して、[認証ガード](/docs/{{version}}/authentication)を指定できます。
+フィールドは、認証済みユーザーのパスワードと一致する必要があります。
 
-    'password' => 'password:api'
+> {note} このルールはLaravel9で削除するため、`current_password`へ名前を変更しました。代わりに[現在のパスワード](#rule-current-password)ルールを使用してください。
 
 <a name="rule-present"></a>
 #### present

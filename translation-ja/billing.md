@@ -27,7 +27,7 @@
 - [Subscriptions](#subscriptions)
     - [サブスクリプションの作成](#creating-subscriptions)
     - [サブスクリプション状態のチェック](#checking-subscription-status)
-    - [値段の変更](#changing-prices)
+    - [価格の変更](#changing-prices)
     - [サブスクリプション数](#subscription-quantity)
     - [複数価格のサブスクリプション](#multiprice-subscriptions)
     - [従量制課金](#metered-billing)
@@ -759,9 +759,9 @@ Stripeダッシュボード自体からも、サブスクリプションを作�
     Subscription::query()->recurring();
 
 <a name="changing-prices"></a>
-### 値段の変更
+### 価格の変更
 
-顧客がアプリケーションでサブスクリプションを購読した後に、新しいサブスクリプション価格に変更したいと思うことがあるでしょう。顧客のサブスクリプションを新しい価格に変更するには、Stripe価格の識別子を`swap`メソッドに渡します。指定する価格識別子は、Stripeダッシュボードの利用可能な Stripe価格の識別子に対応する必要があります。
+顧客がアプリケーションでサブスクリプションを購読した後に、新しいサブスクリプション価格に変更したいと思うことがあるでしょう。顧客のサブスクリプションを新しい価格に変更するには、Stripe価格の識別子を`swap`メソッドに渡します。価格を交換する場合に、それが以前にキャンセルされている場合、ユーザーはサブスクリプションの再アクティブ化を希望していると見なします。指定する価格識別子は、Stripeダッシュボードの利用可能な Stripe価格の識別子に対応する必要があります。
 
     use App\Models\User;
 

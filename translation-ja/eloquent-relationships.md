@@ -408,7 +408,7 @@ public function currentPricing()
 <a name="has-many-through"></a>
 ### Has Many Through
 
-"has-many-through"関係は、中間関係を介して離れた関係へアクセスするための便利な方法を提供します。たとえば、[Laravel Vapor](https://vapor.laravel.com)のようなデプロイメントプラットフォームを構築していると仮定しましょう。`Project`モデルは、中間の環境（`Environment`）モデルを介して多くの`Deployment`モデルにアクセスする可能性があります。この例では、特定の環境のすべてのデプロイメントを簡単に収集できます。この関係を定義するために必要なテーブルを見てみましょう。
+"has-many-through"関係は、中間関係を介して離れた関係へアクセスするための便利な方法を提供します。たとえば、[Laravel Vapor](https://vapor.laravel.com)のようなデプロイメントプラットフォームを構築していると仮定しましょう。`Project`モデルは、中間の環境（`Environment`）モデルを介して多くの`Deployment`モデルにアクセスする可能性があります。この例では、特定のプロジェクトの全デプロイメントを簡単に収集できます。この関係を定義するために必要なテーブルを見てみましょう。
 
     projects
         id - integer
