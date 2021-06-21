@@ -267,7 +267,7 @@ Eloquentは、それぞれのモデルがその主キーとして役立つこと
 <a name="retrieving-models"></a>
 ## モデルの取得
 
-モデルと[それと関連するデータベーステーブル](/docs/{{version}}/migrations#writing-migrations)を作成したら、データベースからデータを取得する準備が整いました。各Eloquentモデルは、モデルに関連付けたデータベーステーブルを流暢にクエリできる強力な[クエリビルダ](/docs/{{version}}/querys)と考えることができます。モデルの`all`メソッドは、モデルに関連付けたデータベーステーブルからすべてのレコードを取得します。
+モデルと[それと関連するデータベーステーブル](/docs/{{version}}/migrations#writing-migrations)を作成したら、データベースからデータを取得する準備が整いました。各Eloquentモデルは、モデルに関連付けたデータベーステーブルを流暢にクエリできる強力な[クエリビルダ](/docs/{{version}}/queries)と考えることができます。モデルの`all`メソッドは、モデルに関連付けたデータベーステーブルからすべてのレコードを取得します。
 
     use App\Models\Flight;
 
@@ -285,7 +285,7 @@ Eloquentの`all`メソッドは、モデルのテーブルにあるすべての�
                    ->take(10)
                    ->get();
 
-> {tip} Eloquentモデルはクエリビルダであるため、Laravelの[クエリビルダ](/docs/{{version}}/querys)が提供するすべてのメソッドを確認する必要があります。Eloquentでクエリを作成するときは、それらすべてのメソッドを使用できます。
+> {tip} Eloquentモデルはクエリビルダであるため、Laravelの[クエリビルダ](/docs/{{version}}/queries)が提供するすべてのメソッドを確認する必要があります。Eloquentでクエリを作成するときは、それらすべてのメソッドを使用できます。
 
 <a name="refreshing-models"></a>
 #### モデルのリフレッシュ
@@ -519,7 +519,7 @@ Eloquentは、高度なサブクエリサポートも提供します。これに
 <a name="retrieving-aggregates"></a>
 ### 集計の取得
 
-Eloquentモデルを操作するときは、Laravel [クエリビルダ](/docs/{{version}}/querys)が提供する`count`、`sum`、`max`、およびその他の[集計メソッド](/docs/{{version}}/queryes#aggregates)を使用することもできます。ご想像のとおり、これらのメソッドは、Eloquentモデルインスタンスの代わりにスカラー値を返します。
+Eloquentモデルを操作するときは、Laravel [クエリビルダ](/docs/{{version}}/queries)が提供する`count`、`sum`、`max`、およびその他の[集計メソッド](/docs/{{version}}/queries#aggregates)を使用することもできます。ご想像のとおり、これらのメソッドは、Eloquentモデルインスタンスの代わりにスカラー値を返します。
 
     $count = Flight::where('active', 1)->count();
 
