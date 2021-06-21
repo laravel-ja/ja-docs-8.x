@@ -278,7 +278,7 @@ Eloquentは、それぞれのモデルがその主キーとして役立つこと
 <a name="building-queries"></a>
 #### クエリの作成
 
-Eloquentの`all`メソッドは、モデルのテーブルにあるすべての結果を返します。しかし、各Eloquentモデルは[クエリビルダ](/docs/{{version}}/クエリ)として機能するため、クエリに制約を追加してから`get`メソッドを呼び出し、結果を取得することもできます。
+Eloquentの`all`メソッドは、モデルのテーブルにあるすべての結果を返します。しかし、各Eloquentモデルは[クエリビルダ](/docs/{{version}}/queries)として機能するため、クエリに制約を追加してから`get`メソッドを呼び出し、結果を取得することもできます。
 
     $flights = Flight::where('active', 1)
                    ->orderBy('name')
