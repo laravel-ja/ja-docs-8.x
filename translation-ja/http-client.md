@@ -385,9 +385,9 @@ Guzzleのデフォルト動作とは異なり、LaravelのHTTPクライアント
 <a name="events"></a>
 ## イベント
 
-LaravelはHTTPリクエストを送信する過程で、２つのイベントを発行します。`RequestSending`イベントはリクエストを送信する前に発行し、`ResponseReceived`イベントは指定したリクエストに対するレスポンスを受信した後に発行します。
+LaravelはHTTPリクエストを送信する過程で、3つのイベントを発行します。`RequestSending`イベントはリクエストが送信される前に発生し、`ResponseReceived`イベントは指定したリクエストに対するレスポンスを受け取った後に発行します。`ConnectionFailed`イベントは、指定したリクエストに対するレスポンスを受信できなかった場合に発行します。
 
-`RequestSending`イベントはパブリックの`$request`プロパティを含んでおり、これを使って`Illuminate\Http\Client\Request`インスタンスを調べられます。同様に、`ResponseReceived`イベントは、`$request`プロパティと`$response`プロパティを含んでおり、`Illuminate\Http\Client\Response`インスタンスの検査に使用できます。このイベントのイベントリスナは、`App\Providers\EventServiceProvider`サービスプロバイダで登録します。
+`RequestSending`と`ConnectionFailed`イベントは両方とも、パブリックの`$request`プロパティを含んでおり、これを使えば`Illuminate\Http\Client\Request`インスタンスを調べられます。同様に、`ResponseReceived`イベントは、`$request`プロパティと`$response`プロパティを含んでおり、`Illuminate\Http\Client\Response`インスタンスの検査に使用できます。このイベントのイベントリスナは、`App\Providers\EventServiceProvider`サービスプロバイダで登録します。
 
     /**
      * アプリケーションのイベントリスナマップ
@@ -400,5 +400,8 @@ LaravelはHTTPリクエストを送信する過程で、２つのイベントを
         ],
         'Illuminate\Http\Client\Events\ResponseReceived' => [
             'App\Listeners\LogResponseReceived',
+        ],
+        'Illuminate\Http\Client\Events\ConnectionFailed' => [
+            'App\Listeners\LogConnectionFailed',
         ],
     ];

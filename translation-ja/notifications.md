@@ -224,6 +224,12 @@ Laravelでは、各通知は通常、`app/Notifications`ディレクトリに保
                 ->route('slack', 'https://hooks.slack.com/services/...')
                 ->notify(new InvoicePaid($invoice));
 
+オンデマンド通知を`mail`ルートへ送信するとき、受信者名を指定したい場合は、メールアドレスをキーとし、名前を配列の最初の要素の値として含む配列を渡してください。
+
+    Notification::route('mail', [
+        'barrett@example.com' => 'Barrett Blair',
+    ])->notify(new InvoicePaid($invoice));
+
 <a name="mail-notifications"></a>
 ## メール通知
 
@@ -1170,7 +1176,7 @@ Laravelを使用すると、HTTPリクエストの現在のロケール以外の
 
 > {tip} `EventServiceProvider`でリスナを登録した後に、`event:generate` Artisanコマンドを使うと、リスナクラスが素早く生成できます。
 
-イベントリスナの中で、通知受信者や通知自身について調べるために、そのイベントの`notifiable`、`notification`、`channel`プロパティにアクセスできます。
+Within an event listener, you may access the `notifiable`, `notification`, `channel`, and `response` properties on the event to learn more about the notification recipient or the notification itself:
 
     /**
      * イベントの処理

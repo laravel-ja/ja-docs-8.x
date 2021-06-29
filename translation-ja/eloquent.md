@@ -901,6 +901,20 @@ Eloquentリレーションクエリを作成するときに、`forceDelete`メ�
 
     $billing->save();
 
+１つ以上の属性を新しいモデルへ複製しないためには、配列を`replicate`メソッドへ渡します。
+
+    $flight = Flight::create([
+        'destination' => 'LAX',
+        'origin' => 'LHR',
+        'last_flown' => '2020-03-04 11:00:00',
+        'last_pilot_id' => 747,
+    ]);
+
+    $flight = $flight->replicate([
+        'last_flown',
+        'last_pilot_id'
+    ]);
+
 <a name="query-scopes"></a>
 ## クエリスコープ
 

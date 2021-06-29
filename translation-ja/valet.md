@@ -195,7 +195,7 @@ Valetには、ローカルサイトを世界へ公開し共有するコマンド
 <a name="sharing-sites-via-expose"></a>
 ### Exposeによりサイトを共有する
 
-[Expose](https://beyondco.de/docs/expose)がインストールされている場合は、ターミナルのサイトのディレクトリに移動して「expose」コマンドを実行することで、サイトを共有できます。サポートされている追加のコマンドラインパラメーターについては、[Exposeのドキュメント](https://beyondco.de/docs/expose/introduction)を参照してください。サイトを共有した後、Exposeは他のデバイスまたはチームメンバー間で使用できる共有可能なURLを表示します。
+[Expose](https://expose.dev)がインストールされている場合は、ターミナルのサイトのディレクトリに移動して「expose」コマンドを実行することで、サイトを共有できます。サポートされている追加のコマンドラインパラメーターについては、[Exposeのドキュメント](https://expose.dev/docs)を参照してください。サイトを共有した後、Exposeは他のデバイスまたはチームメンバー間で使用できる共有可能なURLを表示します。
 
     cd ~/Sites/laravel
 

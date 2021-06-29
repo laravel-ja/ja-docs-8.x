@@ -901,6 +901,20 @@ You may create an unsaved copy of an existing model instance using the `replicat
 
     $billing->save();
 
+To exclude one or more attributes from being replicated to the new model, you may pass an array to the `replicate` method:
+
+    $flight = Flight::create([
+        'destination' => 'LAX',
+        'origin' => 'LHR',
+        'last_flown' => '2020-03-04 11:00:00',
+        'last_pilot_id' => 747,
+    ]);
+
+    $flight = $flight->replicate([
+        'last_flown',
+        'last_pilot_id'
+    ]);
+
 <a name="query-scopes"></a>
 ## Query Scopes
 

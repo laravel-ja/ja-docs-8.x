@@ -171,6 +171,7 @@
 [search](#method-search)
 [shift](#method-shift)
 [shuffle](#method-shuffle)
+[sliding](#method-sliding)
 [skip](#method-skip)
 [skipUntil](#method-skipuntil)
 [skipWhile](#method-skipwhile)
@@ -619,7 +620,7 @@
         ['email' => 'abigail@example.com', 'position' => 'Developer'],
         ['email' => 'james@example.com', 'position' => 'Designer'],
         ['email' => 'victoria@example.com', 'position' => 'Developer'],
-    ])
+    ]);
 
     $employees->duplicates('position');
 
@@ -1857,6 +1858,35 @@ staticの`make`メソッドは、新しいコレクションインスタンス�
     $shuffled->all();
 
     // [3, 2, 5, 1, 4] - (ランダムに生成される)
+
+<a name="method-sliding"></a>
+#### `sliding()` {#collection-method}
+
+`sliding`メソッドは、コレクション中のアイテムの「スライディングウィンドウ」ビューを表す新しいチャンクコレクションを返します。
+
+    $collection = collect([1, 2, 3, 4, 5]);
+
+    $chunks = $collection->sliding(2);
+
+    $chunks->toArray();
+
+    // [[1, 2], [2, 3], [3, 4], [4, 5]]
+
+これは[`eachSpread`](#method-eachspread)メソッドと組み合わせて使うと、特に便利です。
+
+    $transactions->sliding(2)->eachSpread(function ($previous, $current) {
+        $current->total = $previous->total + $current->amount;
+    });
+
+必要に応じて、それぞれのチャンクの最初の項目間にどのくらい距離を取るかを決定する２番目の「ステップ」値を渡せます。
+
+    $collection = collect([1, 2, 3, 4, 5]);
+
+    $chunks = $collection->sliding(3, step: 2);
+
+    $chunks->toArray();
+
+    // [[1, 2, 3], [3, 4, 5]]
 
 <a name="method-skip"></a>
 #### `skip()` {#collection-method}

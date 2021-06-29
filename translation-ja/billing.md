@@ -8,6 +8,7 @@
     - [Billableモデル](#billable-model)
     - [ＡＰＩキー](#api-keys)
     - [通貨設定](#currency-configuration)
+    - [税設定](#tax-configuration)
     - [ログ](#logging)
     - [カスタムモデルの使用](#using-custom-models)
 - [顧客](#customers)
@@ -17,7 +18,7 @@
     - [タックスID](#tax-ids)
     - [顧客データをStripeと同期する](#syncing-customer-data-with-stripe)
     - [請求ポータル](#billing-portal)
-- [Payment Methods](#payment-methods)
+- [支払い方法](#payment-methods)
     - [支払い方法の保存](#storing-payment-methods)
     - [支払い方法の取得](#retrieving-payment-methods)
     - [顧客に支払い方法があるか判定](#check-for-a-payment-method)
@@ -50,6 +51,7 @@
     - [商品の支払い](#product-checkouts)
     - [一回限りの支払い](#single-charge-checkouts)
     - [サブスクリプションの支払い](#subscription-checkouts)
+    - [課税IDの収集](#collecting-tax-ids)
     - [支払いボタンのスタイル](#styling-the-checkout-button)
 - [インボイス](#invoices)
     - [インボイスの取得](#retrieving-invoices)
@@ -163,6 +165,29 @@ Cashierの通貨の設定に加え、請求書に表示するの金額の値を�
     CASHIER_CURRENCY_LOCALE=nl_BE
 
 > {note} `en`以外のロケールを使用するには、`ext-intl` PHP拡張機能を確実にサーバにインストールおよび設定してください。
+
+<a name="tax-configuration"></a>
+### 税設定
+
+[Stripe Tax](https://stripe.com/tax)のおかげで、Stripeが生成するすべての請求書の税金を自動的に計算可能になりました。税金の自動計算を有効にするには、アプリケーションの`App\Providers\AppServiceProvider`クラスの`boot`メソッドで`calculateTaxes`メソッドを実行します。
+
+    use Laravel\Cashier\Cashier;
+
+    /**
+     * アプリケーションの全サービスの初期起動処理
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Cashier::calculateTaxes();
+    }
+
+税計算を有効にすると、新規サブスクリプションや単発の請求書が作成された場合、自動的に税計算が行われます。
+
+この機能を正常に動作させるためには、顧客の氏名、住所、課税IDなどの請求情報がStripeに同期されている必要があります。そのために、Cashierが提供する[顧客データの同期](#syncing-customer-data-with-stripe)や[課税ID](#tax-ids)のメソッドを使用できます。
+
+> {note} 残念ながら今のところ、[一回限りの課金](#single-charges)や[一回限りの支払い](#single-charge-checkouts)では税金が計算されません。また、Stripe Taxは現在、ベータ期間中で「招待制」となっています。Stripe Taxへのアクセスをリクエストするには、[Stripe Taxウェブサイト](https://stripe.com/tax#request-access)をご利用ください。
 
 <a name="logging"></a>
 ### ログ
@@ -1034,6 +1059,8 @@ Stripeダッシュボード自体からも、サブスクリプションを作�
 <a name="subscription-taxes"></a>
 ### サブスクリプションの税率
 
+> {note} 税率を手動で計算する代わりに、[Stripe Taxを使って自動的に税金を計算](#tax-configuration)できます。
+
 ユーザーがサブスクリプションで支払う税率を指定するには、Billableなモデルに`taxRates`メソッドを実装し、Stripe税率IDを含む配列を返す必要があります。これらの税率は、[Stripeダッシュボード](https://dashboard.stripe.com/test/tax-rates)で定義します。
 
     /**
@@ -1271,7 +1298,23 @@ Stripeは、Webフックを介してさまざまなイベントをアプリケ�
 - `customer.deleted`
 - `invoice.payment_action_required`
 
-> {note} Cashierが持っている[Webフック署名検証](/docs/{{version}}/billing#verifying-webhook-signatures)ミドルウェアを使用して、受信Stripe Webフックリクエストを保護してください。
+Cashierは、`cashier:webhook` Artisanコマンドを利便性のために用意しています。このコマンドはCashierが必要とするすべてのイベントをリッスンする、StripeのWebフックを作成します。
+
+    php artisan cashier:webhook
+
+作成されたWebhookはデフォルトで、環境変数`APP_URL`とCashierに含まれる`cashier.webhook`ルートで定義したURLを示します。別のURLを使用したい場合は、このコマンドを実行するとき、`--url`オプションで指定できます。
+
+    php artisan cashier:webhook --url "https://example.com/stripe/webhook"
+
+作成されるWebフックは、使用するCashierバージョンが対応しているStripe APIバージョンを使用します。異なるStripeのバージョンを使用したい場合は、`--api-version`オプションを指定してください。
+
+    php artisan cashier:webhook --app-version="2019-12-03"
+
+作成後、Webフックはすぐに有効になります。Webフックを作成するが、準備が整うまで無効にしておく場合は、コマンド実行時に、`--disabled`オプションを指定します。
+
+    php artisan cashier:webhook --disabled
+
+> {note} Cashierに含まれる[Webフック署名の確認](#verifying-webhook-signatures)ミドルウェアを使って、受信するStripe Webフックリクエストを保護してください。。
 
 <a name="webhooks-csrf-protection"></a>
 #### WebフックとCSRF保護
@@ -1316,7 +1359,7 @@ Cashierは、失敗した請求やその他の一般的なStripe Webフックイ
     Route::post(
         '/stripe/webhook',
         [WebhookController::class, 'handleWebhook']
-    );
+    )->name('cashier.webhook');
 
 > {tip} Cashierは、Webフックを受信すると`Laravel\Cashier\Events\WebhookReceived`イベントを発行し、WebフックがCashierによって処理されると`Laravel\Cashier\Events\WebhookHandled`イベントを発行します。どちらのイベントにも、Stripe Webフックの全ペイロードが含まれています。
 
@@ -1479,7 +1522,7 @@ Stripeの料金を払い戻す必要がある場合は、`refund`メソッドを
 <a name="checkout"></a>
 ## チェックアウト
 
-Cashier Stripeは、[Stripe Checkout](https://stripe.com/en-be/payments/checkout)もサポートしています。Stripe Checkoutは、チェックアウトページを事前に構築しホストするという、支払いを受け入れるためカスタムページを実装する手間を省きます。
+Cashier Stripeは、[Stripe Checkout](https://stripe.com/payments/checkout)もサポートしています。Stripe Checkoutは、チェックアウトページを事前に構築しホストするという、支払いを受け入れるためカスタムページを実装する手間を省きます。
 
 以下のドキュメントで、Stripe Checkoutをどのように利用開始するのかに関する情報を説明します。Stripe Checkoutの詳細は、[StrepeのCheckoutに関するドキュメント](https://stripe.com/docs/payments/checkout)を確認する必要があるでしょう
 
@@ -1586,6 +1629,15 @@ Stripe Checkoutはデフォルトで、[ユーザーが商品に使用できる�
 #### サブスクリプションとWebフック
 
 StripeとCashierはWebフックを使いサブスクリプションの状態を更新することを覚えておいてください。そのため、顧客が支払い情報を入力した後でアプリケーションに戻った時点で、サブスクリプションが有効になっていない可能性があります。このシナリオを処理するには、ユーザーに支払いやサブスクリプションが保留中であることをユーザーに知らせるメッセージを表示することを推奨します。
+
+<a name="collecting-tax-ids"></a>
+### 課税IDの収集
+
+Checkoutは、顧客の課税IDの収集もサポートしています。チェックアウトセッションでこれを有効にするには、セッションを作成するときに`collectTaxIds`メソッドを呼び出します。
+
+    $checkout = $user->collectTaxIds()->checkout('price_tshirt');
+
+このメソッドを呼び出すと、顧客が会社として購入するかを示すための新しいチェックボックスが利用可能になります。会社として購入する場合は、課税IDを入力してもらいます。
 
 <a name="styling-the-checkout-button"></a>
 ### 支払いボタンのスタイル

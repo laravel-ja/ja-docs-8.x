@@ -8,6 +8,7 @@
     - [Amazon S3コンパチファイルシステム](#amazon-s3-compatible-filesystems)
     - [キャッシュ](#caching)
 - [ディスクインスタンスの取得](#obtaining-disk-instances)
+    - [オンデマンドディスク](#on-demand-disks)
 - [ファイルの取得](#retrieving-files)
     - [ファイルのダウンロード](#downloading-files)
     - [ファイルのURL](#file-urls)
@@ -162,6 +163,22 @@ LaravelのFlysystem統合はSFTPでも最適に機能します。ただし、サ
 アプリケーションが複数のディスクを操作する場合は、`Storage`ファサードで`disk`メソッドを使用し、特定のディスク上のファイルを操作できます。
 
     Storage::disk('s3')->put('avatars/1', $content);
+
+<a name="on-demand-disks"></a>
+### オンデマンドディスク
+
+時には、アプリケーションの`filesystems`設定ファイルに実際にその構成が存在しなくても、指定する構成を使用して実行時にディスクを作成したい場合があります。これを実現するため、`Storage`ファサードの`build`メソッドへ設定配列を渡せます。
+
+```php
+use Illuminate\Support\Facades\Storage;
+
+$disk = Storage::build([
+    'driver' => 'local',
+    'root' => '/path/to/root',
+]);
+
+$disk->put('image.jpg', $content);
+```
 
 <a name="retrieving-files"></a>
 ## ファイルの取得

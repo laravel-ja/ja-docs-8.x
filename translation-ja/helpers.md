@@ -1526,6 +1526,10 @@ Laravelはさまざまな、グローバル「ヘルパ」PHP関数を用意し�
 
     // foo_bar
 
+    $converted = Str::snake('fooBar', '-');
+
+    // foo-bar
+
 <a name="method-str-start"></a>
 #### `Str::start()` {#collection-method}
 
