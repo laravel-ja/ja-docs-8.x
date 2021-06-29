@@ -1746,7 +1746,7 @@ Duskテストを[Heroku CI](https://www.heroku.com/continuous-integration)上で
 
     install:
       - cp .env.testing .env
-      - travis_retry composer install --no-interaction --prefer-dist --no-suggest
+      - travis_retry composer install --no-interaction --prefer-dist
       - php artisan key:generate
       - php artisan dusk:chrome-driver
 
@@ -1777,7 +1777,7 @@ Duskテストを[Heroku CI](https://www.heroku.com/continuous-integration)上で
               sudo systemctl start mysql
               mysql --user="root" --password="root" -e "CREATE DATABASE 'my-database' character set UTF8mb4 collate utf8mb4_bin;"
           - name: Install Composer Dependencies
-            run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+            run: composer install --no-progress --prefer-dist --optimize-autoloader
           - name: Generate Application Key
             run: php artisan key:generate
           - name: Upgrade Chrome Driver
