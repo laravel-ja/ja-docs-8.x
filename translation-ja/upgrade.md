@@ -262,7 +262,7 @@ Laravelの他の機能との整合性を保つため、キュー投入したジ�
 <a name="queue-allOnQueue-allOnConnection"></a>
 #### `allOnQueue()`／`allOnConnection()`メソッド
 
-**Likelihood Of Impact: High**
+**影響の可能性： 高い**
 
 他のディスパッチメソッドとの一貫性を保つため、ジョブチェーンで使用されていた`allOnQueue()`メソッドと`allOnConnection()`メソッドを削除しました。代わりに、`onQueue()`メソッドと`onConnection()`メソッドを使用してください。これらのメソッドは、`dispatch`メソッドを呼び出す前に呼び出す必要があります。
 
