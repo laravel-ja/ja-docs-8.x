@@ -195,7 +195,7 @@ Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration#ma
 
 **影響の可能性： 中程度**
 
-`php artisan down`コマンドの` --message`オプションを削除しました。別の方法として、選択したメッセージで[メンテナンスモードビューの事前レンダリング]（/docs/{{version}}/configuration#maintenance-mode）の使用を検討してください。
+`php artisan down`コマンドの` --message`オプションを削除しました。別の方法として、選択したメッセージで[メンテナンスモードビューの事前レンダリング](/docs/{{version}}/configuration#maintenance-mode)の使用を検討してください。
 
 <a name="php-artisan-serve-no-reload-option"></a>
 #### The `php artisan serve --no-reload` Option
