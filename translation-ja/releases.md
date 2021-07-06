@@ -276,7 +276,7 @@ _動的Bladeコンポーネントは、[Taylor Otwell](https://github.com/taylor
 
     <x-dynamic-component :component="$componentName" class="mt-4" />
 
-Bladeコンポーネントの詳細は、[Bladeのドキュメント]（/docs/{{version}}/blade#components）をご覧ください。
+Bladeコンポーネントの詳細は、[Bladeのドキュメント](/docs/{{version}}/blade#components)をご覧ください。
 
 <a name="event-listener-improvements"></a>
 ### イベントリスナの向上

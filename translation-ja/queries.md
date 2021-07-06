@@ -739,7 +739,7 @@ where exists (
                     ->having('account_id', '>', 100)
                     ->get();
 
-より高度な`having`ステートメントを作成するには、[`havingRaw`]（＃raw-methods）メソッドを参照してください。
+より高度な`having`ステートメントを作成するには、[`havingRaw`](#raw-methods)メソッドを参照してください。
 
 <a name="limit-and-offset"></a>
 ### 件数制限とオフセット
