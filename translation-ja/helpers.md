@@ -3029,7 +3029,7 @@ Str::of('Hello, world!')->wordCount(); // 2
 <a name="method-transform"></a>
 #### `transform()` {#collection-method}
 
-`transform`関数は、値が[空白]（＃method-blank）でない場合、指定値に対してクロージャを実行し、クロージャの戻り値を返します。
+`transform`関数は、値が[空白](#method-blank)でない場合、指定値に対してクロージャを実行し、クロージャの戻り値を返します。
 
     $callback = function ($value) {
         return $value * 2;

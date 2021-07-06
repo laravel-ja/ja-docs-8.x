@@ -116,7 +116,7 @@ sail artisan queue:work
 <a name="executing-php-commands"></a>
 ### PHPコマンドの実行
 
-PHPコマンドは、`php`コマンドを使用して実行します。もちろん、これらのコマンドは、アプリケーション用に構成されたPHPバージョンを使用して実行されます。Laravel Sailで利用可能なPHPバージョンの詳細については、[PHPバージョンのドキュメント]（#sail-php-versions）を参照してください。
+PHPコマンドは、`php`コマンドを使用して実行します。もちろん、これらのコマンドは、アプリケーション用に構成されたPHPバージョンを使用して実行されます。Laravel Sailで利用可能なPHPバージョンの詳細については、[PHPバージョンのドキュメント](#sail-php-versions)を参照してください。
 
 ```bash
 sail php --version

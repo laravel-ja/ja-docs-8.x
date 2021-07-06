@@ -105,7 +105,7 @@ Laravel Sanctumは、[Laravel Jetstream](https://jetstream.laravel.com)（[和�
 
 次に、アプリケーションがサードパーティによって使用されるAPIを提供している場合は、[Passport](/docs/{{version}}/passport)または[Sanctum](/docs/{{version}}/sanctum)のどちらかを選んでください。アプリケーションにAPIトークン認証を提供します。一般に、Sanctumは、API認証、SPA認証、さらに「スコープ(socpe)」や「能力(ability)」のサポートを含むモバイル認証のためのシンプルで完全なソリューションであるため、使える場合はこちらを推奨します。
 
-Laravelをバックエンドで利用するシングルページアプリケーション（SPA）を構築している場合は、[Laravel Sanctum](/docs/{{version}}/sanctum)を使用するべきでしょう。Sanctumを使用する場合は、[独自のバックエンド認証ルートを手動で実装する]（#authenticating-users）か、[Laravel Fortify](/docs/{{version}}/fortify)をユーザー登録、パスワードのリセット、メールの検証などの機能のためのルートとコントローラを提供するヘッドレス認証バックエンドサービスとして利用する必要があります。
+Laravelをバックエンドで利用するシングルページアプリケーション（SPA）を構築している場合は、[Laravel Sanctum](/docs/{{version}}/sanctum)を使用するべきでしょう。Sanctumを使用する場合は、[独自のバックエンド認証ルートを手動で実装する](#authenticating-users)か、[Laravel Fortify](/docs/{{version}}/fortify)をユーザー登録、パスワードのリセット、メールの検証などの機能のためのルートとコントローラを提供するヘッドレス認証バックエンドサービスとして利用する必要があります。
 
 パスポートは、アプリケーションがOAuth2仕様によって提供されるすべての機能を絶対に必要とする場合に選択できます。
 
@@ -114,7 +114,7 @@ Laravelをバックエンドで利用するシングルページアプリケー�
 <a name="authentication-quickstart"></a>
 ## 認証クイックスタート
 
-> {note} ドキュメントのこの部分では、[Laravelアプリケーションスターターキット](/docs/{{version}}/starter-kits)を介したユーザーの認証について説明します。これには、すばやく開始するのに便利なＵＩスカフォールドが含まれています。Laravelの認証システムを直接統合したい場合は、[ユーザーの手動認証]（#authenticating-users）に関するドキュメントを確認してください。
+> {note} ドキュメントのこの部分では、[Laravelアプリケーションスターターキット](/docs/{{version}}/starter-kits)を介したユーザーの認証について説明します。これには、すばやく開始するのに便利なＵＩスカフォールドが含まれています。Laravelの認証システムを直接統合したい場合は、[ユーザーの手動認証](#authenticating-users)に関するドキュメントを確認してください。
 
 <a name="install-a-starter-kit"></a>
 ### スターターキットのインストール

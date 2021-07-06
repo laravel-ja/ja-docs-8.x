@@ -195,7 +195,7 @@ Laravel8.xでは[メンテナンスモード](/docs/{{version}}/configuration#ma
 
 **影響の可能性： 中程度**
 
-`php artisan down`コマンドの` --message`オプションを削除しました。別の方法として、選択したメッセージで[メンテナンスモードビューの事前レンダリング]（/docs/{{version}}/configuration#maintenance-mode）の使用を検討してください。
+`php artisan down`コマンドの` --message`オプションを削除しました。別の方法として、選択したメッセージで[メンテナンスモードビューの事前レンダリング](/docs/{{version}}/configuration#maintenance-mode)の使用を検討してください。
 
 <a name="php-artisan-serve-no-reload-option"></a>
 #### The `php artisan serve --no-reload` Option
@@ -262,7 +262,7 @@ Laravelの他の機能との整合性を保つため、キュー投入したジ�
 <a name="queue-allOnQueue-allOnConnection"></a>
 #### `allOnQueue()`／`allOnConnection()`メソッド
 
-**Likelihood Of Impact: High**
+**影響の可能性： 高い**
 
 他のディスパッチメソッドとの一貫性を保つため、ジョブチェーンで使用されていた`allOnQueue()`メソッドと`allOnConnection()`メソッドを削除しました。代わりに、`onQueue()`メソッドと`onConnection()`メソッドを使用してください。これらのメソッドは、`dispatch`メソッドを呼び出す前に呼び出す必要があります。
 
