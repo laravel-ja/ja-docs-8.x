@@ -15,6 +15,7 @@
     - [顧客の取得](#retrieving-customers)
     - [顧客の作成](#creating-customers)
     - [顧客の更新](#updating-customers)
+    - [Balances](#balances)
     - [タックスID](#tax-ids)
     - [顧客データをStripeと同期する](#syncing-customer-data-with-stripe)
     - [請求ポータル](#billing-portal)
@@ -261,6 +262,34 @@ BillableなモデルのStripe顧客オブジェクトを返す場合は、`asStr
 たまに、Stripeの顧客を追加情報と一緒に直接更新したい状況が起こるでしょう。これは、`updateStripeCustomer`メソッドを使用して実行できます。このメソッドは、[StripeAPIでサポートされている顧客更新オプション](https://stripe.com/docs/api/customers/update)の配列を引数に取ります。
 
     $stripeCustomer = $user->updateStripeCustomer($options);
+
+<a name="balances"></a>
+### Balances
+
+Stripeでは、顧客の「残高」に入金または引き落としができます。後日新しい請求書に基づき、この残高は入金もしくは引き落としされます。顧客の合計残高を確認するには、Billableモデルに用意してある`balance`メソッドを使用します。`balance`メソッドは、顧客の通貨建てで残高をフォーマットした文字列で返します。
+
+    $balance = $user->balance();
+
+顧客の残高へ入金するには、`applyBalance`メソッドに正の値を指定します。また、必要に応じて、説明を指定することもできます。
+
+    $user->applyBalance(500, 'Premium customer top-up.');
+
+`applyBalance`メソッドに負の値を与えると、顧客の残高から引き落とされます。
+
+    $user->applyBalance(-300, 'Bad usage penalty.');
+
+`applyBalance`メソッドは、その顧客にたいする新しい顧客残高トランザクションを作成します。これらのトランザクションレコードは`balanceTransactions`メソッドを使って取得でき、顧客に確認してもらうため入金と引き落としのログを提供するのに便利です。
+
+    // 全トランザクションの取得
+    $transactions = $user->balanceTransactions();
+
+    foreach ($transactions as $transaction) {
+        // トランザクションの金額
+        $amount = $transaction->amount(); // $2.31
+
+        // 利用できるなら、関連するインボイスの取得
+        $invoice = $transaction->invoice();
+    }
 
 <a name="tax-ids"></a>
 ### タックスID
@@ -1413,19 +1442,25 @@ Webフックの検証を有効にするには、`STRIPE_WEBHOOK_SECRET`環境変
 <a name="charge-with-invoice"></a>
 ### インボイス付きの支払い
 
-時に１回限りの請求を行い、PDFレシートを顧客に提供する必要がおきるでしょう。`invoiceFor`メソッドを使用すると、まさにそれを実行できます。たとえば、「メンテナンス料金」を顧客に$5.00請求するとします。
+時には、一回限りの請求を行い、顧客にPDFのインボイスを提供する必要があるでしょう。`invoicePrice`メソッドを使えば、それが可能です。例えば、新しいシャツを5枚購入した顧客へ請求書を発行してみましょう。
 
-    $user->invoiceFor('One Time Fee', 500);
+    $user->invoicePrice('price_tshirt', 5);
 
-インボイスは、ユーザーのデフォルトの支払い方法に対し即時請求されます。`invoiceFor`メソッドは３番目の引数として配列も受け入れます。この配列には、インボイスアイテムの請求オプションを指定します。メソッドの４番目の引数も配列で、インボイス自体の請求オプションを指定します。
+インボイスは、ユーザーのデフォルトの支払い方法に対し即時請求されます。`invoicePrice`メソッドは３番目の引数として配列も受け入れます。この配列には、インボイスアイテムの請求オプションを指定します。メソッドの４番目の引数も配列で、インボイス自体の請求オプションを指定します。
 
-    $user->invoiceFor('Stickers', 500, [
-        'quantity' => 50,
+    $user->invoicePrice('price_tshirt', 5, [
+        'discounts' => ['coupon' => 'SUMMER21SALE'],
     ], [
         'default_tax_rates' => ['txr_id'],
     ]);
 
-> {note} `invoiceFor`メソッドは、失敗した請求を再試行するStripeインボイスを作成します。課金に失敗した請求を再試行したくない場合は、最初の失敗した請求の後にStripe　APIを使用し、インボイスをを閉じる必要があります。
+もしくは、`invoiceFor`メソッドを使って、顧客のデフォルトの支払い方法に対して「一回限り」の請求を行うこともできます。
+
+    $user->invoiceFor('One Time Fee', 500);
+
+`invoiceFor`メソッドを利用することもできますが、あらかじめ価格を設定した`invoicePrice`メソッドを利用することを推奨します。そうすることにより、Stripeダッシュボード内で、商品ごとの売上に関するより良い分析とデータへアクセスできるようになります。
+
+> {note} `invoicePrice`と`invoiceFor`メソッドは、失敗した請求を再試行するStripeのインボイスを作成します。請求に失敗したインボイスを再試行したくない場合は、最初の請求に失敗した後で、Stripe APIを使いインボイスを閉じる必要があります。
 
 <a name="refunding-charges"></a>
 ### 支払いの払い戻し

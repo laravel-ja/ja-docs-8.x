@@ -39,6 +39,7 @@
     - [失敗したジョブの再試行](#retrying-failed-jobs)
     - [見つからないモデルの無視](#ignoring-missing-models)
     - [失敗したジョブのDynamoDBへの保存](#storing-failed-jobs-in-dynamodb)
+    - [失敗したジョブの切り詰め](#pruning-failed-jobs)
     - [失敗したジョブイベント](#failed-job-events)
 - [キューからのジョブクリア](#clearing-jobs-from-queues)
 - [ジョブイベント](#job-events)
@@ -1749,6 +1750,17 @@ composer require aws/aws-sdk-php
     'table' => 'failed_jobs',
 ],
 ```
+
+<a name="pruning-failed-jobs"></a>
+### 失敗したジョブの切り詰め
+
+アプリケーションの`failed_jobs`テーブルのレコードをすべて削除するには、`queue:prune-failed` Artisanコマンドを実行します。
+
+    php artisan queue:prune-failed
+
+このコマンドに`--hours`オプションを指定すると、過去N時間以内に挿入された失敗したジョブレコードのみが保持されます。たとえば、次のコマンドは、48時間以上前に挿入された失敗したジョブレコードをすべて削除します。
+
+    php artisan queue:prune-failed --hours=48
 
 <a name="failed-job-events"></a>
 ### 失敗したジョブイベント

@@ -9,6 +9,7 @@
     - [検索可能データの設定](#configuring-searchable-data)
     - [モデルIDの設定](#configuring-the-model-id)
     - [ユーザーの識別](#identifying-users)
+- [ローカル開発](#local-development)
 - [インデックス](#indexing)
     - [バッチ取り込み](#batch-import)
     - [レコード追加](#adding-records)
@@ -29,7 +30,7 @@
 
 Laravel Scout（Scout、斥候）は、[Eloquentモデル](/docs/{{version}}/eloquent)へ、シンプルなドライバベースのフルテキストサーチを提供します。モデルオブサーバを使い、Scoutは検索インデックスを自動的にEloquentレコードと同期します。
 
-現在、Scoutは[Algolia](https://www.algolia.com/)と[MeiliSearch](https://www.meilisearch.com)ドライバを用意しています。しかし、カスタムドライバは簡単に書けますので、独自の検索を実装し、Scoutを拡張できます。
+現在、Scoutは[Algolia](https://www.algolia.com/)と[MeiliSearch](https://www.meilisearch.com)ドライバを用意しています。さらに、Scoutは、ローカル開発用に設計した"collection"ドライバも用意しており、これは外部依存やサードパーティのサービスを必要としません。さらに、カスタムドライバの記述も簡単で、独自な検索実装を行い自由にScoutを拡張できます。
 
 <a name="installation"></a>
 ## インストール
@@ -198,6 +199,19 @@ Scoutを使用すると、[Algolia](https://algolia.com)を使用するときに
     SCOUT_IDENTIFY=true
 
 この機能を有効にすると、リクエストのIPアドレスと認証済みユーザーのプライマリ識別子もAlgoliaに渡されるため、これらのデータはそのユーザーが行った検索リクエストへ関連付けられます。
+
+<a name="local-development"></a>
+## ローカル開発
+
+ローカル開発時には、AlgoliaやMeiliSearchの検索エンジンを自由に使用することができますが、「コレクション（collection）」エンジンでスタートした方が便利な場合もあります。コレクション・エンジンは、既存データベースからの結果に対して、「where」節とコレクション・フィルタリングを用いて、クエリに該当する検索結果を決定します。このエンジンを使用する場合、Searchableモデルをインデックス化する必要はなく、シンプルにローカル・データベースから検索します。
+
+コレクションエンジンを使用するには，環境変数`SCOUT_DRIVER`の値を`collection`に設定するか，アプリケーションの`scout`設定ファイルで`collection`ドライバを直接指定します。
+
+```ini
+SCOUT_DRIVER=collection
+```
+
+コレクションドライバを使用ドライバに指定したら、モデルに対して[検索クエリの実行](#searching)を開始できます。コレクションエンジンを使用する場合、AlgoliaやMeiliSearchのインデックスのシードに必要なインデックス作成などの検索エンジンのインデックス作成は不要です。
 
 <a name="indexing"></a>
 ## インデックス

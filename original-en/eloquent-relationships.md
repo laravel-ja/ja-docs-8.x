@@ -318,6 +318,8 @@ public function largestOrder()
 }
 ```
 
+> {note} Because PostgreSQL does not support executing the `MAX` function against UUID columns, it is not currently possible to use one-of-many relationships in combination with PostgreSQL UUID columns.
+
 <a name="advanced-has-one-of-many-relationships"></a>
 #### Advanced Has One Of Many Relationships
 

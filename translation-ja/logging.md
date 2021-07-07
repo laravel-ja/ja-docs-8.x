@@ -6,6 +6,7 @@
     - [チャンネルの事前設定](#channel-prerequisites)
 - [ログスタックの構築](#building-log-stacks)
 - [ログメッセージの書き込み](#writing-log-messages)
+    - [コンテキスト情報](#contextual-information)
     - [特定チャンネルへの書き込み](#writing-to-specific-channels)
 - [monologチャンネルカスタマイズ](#monolog-channel-customization)
     - [チャンネル向けMonologカスタマイズ](#customizing-monolog-for-channels)
@@ -170,11 +171,44 @@ Laravelはメッセージをログに記録するときに、デフォルトで`
     }
 
 <a name="contextual-information"></a>
-#### コンテキスト情報
+### コンテキスト情報
 
-コンテキストデータの配列をlogメソッドへ渡すこともできます。このコンテキストデータはフォーマットされ、ログメッセージとともに表示されます。
+コンテキストデータの配列をlogメソッドへ渡せます。このコンテキストデータはフォーマットされ、ログメッセージとともに表示されます。
+
+    use Illuminate\Support\Facades\Log;
 
     Log::info('User failed to login.', ['id' => $user->id]);
+
+後続のすべてのログエントリに含めるコンテキスト情報を指定したい場合もあるでしょう。例えば、アプリケーションに入ってくる各リクエストに関連付けたリクエストIDをログに記録したい場合があります。実現するには、`Log`ファサードの`withContext`メソッドを呼び出してください。
+
+    <?php
+
+    namespace App\Http\Middleware;
+
+    use Closure;
+    use Illuminate\Support\Facades\Log;
+    use Illuminate\Support\Str;
+
+    class AssignRequestId
+    {
+        /**
+         * 受信リクエストの処理
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @param  \Closure  $next
+         * @return mixed
+         */
+        public function handle($request, Closure $next)
+        {
+            $requestId = (string) Str::uuid();
+
+            Log::withContext([
+                'request-id' => $requestId
+            ]);
+
+            return $next($request)->header('Request-Id', $requestId);
+        }
+    }
 
 <a name="writing-to-specific-channels"></a>
 ### 特定チャンネルへの書き込み

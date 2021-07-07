@@ -283,8 +283,15 @@
     $users = User::factory()
                     ->count(10)
                     ->state(new Sequence(
-                        fn () => ['role' => UserRoles::all()->random()],
+                        fn ($sequence) => ['role' => UserRoles::all()->random()],
                     ))
+                    ->create();
+
+シーケンスクロージャ内では，クロージャへ注入されるシーケンスインスタンスの`$index`または`$count`プロパティにアクセスできます。`$index`プロパティには、これまでに行われたシーケンスの反復回数が格納され、`$count`プロパティには、シーケンスが起動された合計回数が格納されます。
+
+    $users = User::factory()
+                    ->count(10)
+                    ->sequence(fn ($sequence) => ['name' => 'Name '.$sequence->index])
                     ->create();
 
 <a name="factory-relationships"></a>

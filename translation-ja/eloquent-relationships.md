@@ -318,6 +318,8 @@ public function largestOrder()
 }
 ```
 
+> {note} PostgreSQLはUUID列に対する`MAX`関数の実行をサポートしていないため、今のところPostgreSQLのUUIDカラムと組み合わせて１対多の関係を使用できません。
+
 <a name="advanced-has-one-of-many-relationships"></a>
 #### 上級Has One Of Manyリレーション
 

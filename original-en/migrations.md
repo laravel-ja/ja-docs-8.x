@@ -611,7 +611,7 @@ The `multiPolygon` method creates a `MULTIPOLYGON` equivalent column:
 <a name="column-method-nullableTimestamps"></a>
 #### `nullableTimestamps()` {#collection-method}
 
-The method is similar to the [timestamps](#column-method-timestamps) method; however, the column that is created will be "nullable":
+The `nullableTimestamps` method is an alias of the [timestamps](#column-method-timestamps) method:
 
     $table->nullableTimestamps(0);
 
@@ -754,7 +754,7 @@ The `tinyIncrements` method creates an auto-incrementing `UNSIGNED TINYINT` equi
 The `tinyInteger` method creates a `TINYINT` equivalent column:
 
     $table->tinyInteger('votes');
-    
+
 <a name="column-method-tinyText"></a>
 #### `tinyText()` {#collection-method}
 
@@ -1142,4 +1142,3 @@ For convenience, each migration operation will dispatch an [event](/docs/{{versi
 | `Illuminate\Database\Events\MigrationsEnded` | A batch of migrations has finished executing. |
 | `Illuminate\Database\Events\MigrationStarted` | A single migration is about to be executed. |
 | `Illuminate\Database\Events\MigrationEnded` | A single migration has finished executing. |
-

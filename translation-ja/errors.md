@@ -156,6 +156,26 @@
         });
     }
 
+また、`renderable`メソッドを使い、`NotFoundHttpException`などのLaravelやSymfonyの組み込み例外のレンダー動作をオーバーライドすることもできます。`renderable`メソッドに指定したクロージャが値を返さない場合は、Laravelのデフォルト例外レンダーが利用されます。
+
+    use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+    /**
+     * アプリケーションの例外処理コールバックの登録
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->renderable(function (NotFoundHttpException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Record not found.'
+                ], 404);
+            }
+        });
+    }
+
 <a name="renderable-exceptions"></a>
 ### Reportable／Renderable例外
 
