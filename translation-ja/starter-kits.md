@@ -16,7 +16,7 @@
 <a name="laravel-breeze"></a>
 ## Laravel Breeze
 
-Laravel Breezeにログイン、ユーザー登録、パスワードのリセット、メールの検証、パスワードの確認など、Laravelのすべての[認証機能](/docs/{{version}}/authentication)を最小限シンプルに実装プルな実装しました。Laravel Breezeのデフォルトビュー層は、[Tailwind CSS](https://tailwindcss.com)でスタイルを設定したシンプルな[Bladeテンプレート](/docs/{{version}}/blade)で構成しています。Breezeは、新しいLaravelアプリケーションを開始するための素晴らしい出発点を提供します。
+Laravel Breezeにログイン、ユーザー登録、パスワードのリセット、メールの検証、パスワードの確認など、Laravelのすべての[認証機能](/docs/{{version}}/authentication)を最小限シンプルに実装しました。Laravel Breezeのデフォルトビュー層は、[Tailwind CSS](https://tailwindcss.com)でスタイルを設定したシンプルな[Bladeテンプレート](/docs/{{version}}/blade)で構成しています。Breezeは、新しいLaravelアプリケーションを開始するための素晴らしい出発点を提供します。
 
 <a name="laravel-breeze-installation"></a>
 ### インストール
