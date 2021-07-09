@@ -1068,7 +1068,7 @@ public function bestImage()
 
 `resolveRelationUsing`メソッドを使用して、実行時にEloquentモデル間のリレーションを定義できます。通常のアプリケーション開発には推奨しませんが、Laravelパッケージの開発時には役立つでしょう。
 
-`resolveRelationUsing`メソッドは、最初の引数に付けたいリレーション名を引数に取ります。メソッドの２番目の引数は、モデルインスタンスを引数に取り、有効なEloquenリレーションの定義を返すクロージャです。通常、[サービスプロバイダ](/docs/{{version}}/provider)のbootメソッド内で動的リレーションを設定する必要があります。
+`resolveRelationUsing`メソッドは、最初の引数に付けたいリレーション名を引数に取ります。メソッドの２番目の引数は、モデルインスタンスを引数に取り、有効なEloquentリレーションの定義を返すクロージャです。通常、[サービスプロバイダ](/docs/{{version}}/provider)のbootメソッド内で動的リレーションを設定する必要があります。
 
     use App\Models\Order;
     use App\Models\Customer;
