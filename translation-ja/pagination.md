@@ -125,7 +125,6 @@ select * from users where id > 15 order by id asc limit 15;
 
 - `simplePaginate`のように、カーソルのペジネーションは"次へ"と"前へ"のリンクを表示するためにのみ使用でき、ページ番号付きのリンクの生成をサポートしていません。
 - ソート順は少なくとも１つの一意なカラム、または一意なカラムの組み合わせに基づく必要があります。
-- 複数の"order by"句がある場合、"order by"のソート方向（降順／昇順）が同じである必要があります。
 - "order by"句のクエリ表現はエイリアス化され、"select"句にも同様に追加されている場合のみサポートします。
 
 <a name="manually-creating-a-paginator"></a>

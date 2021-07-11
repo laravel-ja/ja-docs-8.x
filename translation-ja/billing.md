@@ -1534,7 +1534,10 @@ Stripeの料金を払い戻す必要がある場合は、`refund`メソッドを
     use Illuminate\Http\Request;
 
     Route::get('/user/invoice/{invoice}', function (Request $request, $invoiceId) {
-        return $request->user()->downloadInvoice($invoiceId);
+        return $request->user()->downloadInvoice($invoiceId, [
+            'vendor' => 'Your Company',
+            'product' => 'Your Product',
+        ]);
     });
 
 インボイスのすべてのデータはデフォルトで、Stripeに保存されている顧客と請求書のデータから作成します。しかし、`downloadInvoice`メソッドの第２引数に配列を指定することで、データの一部をカスタマイズ可能です。この配列で、会社や製品の詳細などの情報がカスタマイズできます。

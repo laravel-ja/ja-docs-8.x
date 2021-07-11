@@ -37,6 +37,7 @@ Laravelは、[Guzzle HTTPクライアント](http://docs.guzzlephp.org/en/stable
 
     $response->body() : string;
     $response->json() : array|mixed;
+    $response->object() : object;
     $response->collect() : Illuminate\Support\Collection;
     $response->status() : int;
     $response->ok() : bool;
